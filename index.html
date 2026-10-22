@@ -1,0 +1,3346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<title>鹈鹕骑车</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%0A%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%232f5d50%22%2F%3E%0A%3Cellipse%20cx%3D%2230%22%20cy%3D%2233%22%20rx%3D%2215%22%20ry%3D%2210%22%20fill%3D%22%23f3efe6%22%2F%3E%0A%3Cpath%20d%3D%22M44%2033l13-9v18z%22%20fill%3D%22%23f3efe6%22%2F%3E%0A%3Ccircle%20cx%3D%2223%22%20cy%3D%2230%22%20r%3D%222.3%22%20fill%3D%22%231d3a32%22%2F%3E%0A%3C%2Fsvg%3E">
+<meta name="theme-color" content="#2f5d50">
+<meta property="og:title" content="性价比人生 · 鹈鹕骑车">
+<meta property="og:description" content="骑上你的车，从 18 岁骑到 60 岁。摔了、翻了、蹬不动了，才会懂一条道理。">
+<meta property="og:type" content="website">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="鹈鹕骑车">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script>
+  /* 运行时错误收集（自动化测试用） */
+  window.__errs = [];
+  window.addEventListener('error', e => { window.__errs.push(String((e && e.message) || (e && e.error) || 'error')); });
+  window.addEventListener('unhandledrejection', e => { window.__errs.push('rejection: ' + String((e && e.reason) || '')); });
+</script>
+<style>
+  :root { --bg: #f3efe6; --text: #3a3530; --border: rgba(0,0,0,.12); --btn: #ffffff; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg: #1d1f24; --text: #e4e1da; --border: rgba(255,255,255,.16); --btn: #2a2d33; }
+  }
+  :root[data-theme="dark"] { --bg: #1d1f24; --text: #e4e1da; --border: rgba(255,255,255,.16); --btn: #2a2d33; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh; padding: 24px 16px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    /* 手机上：不要长按弹菜单、不要点一下闪灰、不要整页橡皮筋 */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    overscroll-behavior-y: contain;
+  }
+  h1 { margin: 0; font-size: 1.35rem; font-weight: 600; }
+  .stage {
+    position: relative;
+    width: 100%; max-width: 920px; border-radius: 18px; overflow: hidden;
+    border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  }
+  svg { display: block; width: 100%; height: auto; }
+
+  /* ===== 亲自蹬车：操控层 ===== */
+  #speedlines { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0; }
+  #speedlines i {
+    position: absolute; left: 0; width: 150px; height: 3px; border-radius: 2px;
+    background: linear-gradient(90deg, rgba(80,105,135,0), rgba(72,98,128,.42));
+    animation: windline .48s linear infinite;
+  }
+  @keyframes windline { from { transform: translate3d(120%, 0, 0); } to { transform: translate3d(-80%, 0, 0); } }
+
+  #drive-hud {
+    position: absolute; left: 50%; transform: translateX(-50%); bottom: 10px;
+    display: flex; align-items: center; gap: 9px;
+    padding: 6px 12px 6px 11px; border-radius: 999px;
+    background: rgba(255,255,255,.88); border: 1px solid rgba(0,0,0,.08);
+    box-shadow: 0 3px 12px rgba(0,0,0,.1); font-size: .74rem; color: #3a3530;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  #drive-hud .lab { letter-spacing: .08em; opacity: .75; }
+  #drive-hud .stam { width: 84px; height: 8px; border-radius: 4px; background: #e6dfd1; overflow: hidden; }
+  #drive-hud .stam span {
+    display: block; height: 100%; width: 100%; border-radius: 4px; background: #2f5d50;
+    transition: width .08s linear, background .25s;
+  }
+  #drive-hud .kmh { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 50px; text-align: right; }
+
+  /* 两个大按钮：左蹬右跳，拇指够得着 */
+  #pedal-pad {
+    position: absolute; left: 10px; right: 10px; bottom: 10px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    pointer-events: none;
+  }
+  #pedal-pad button {
+    pointer-events: auto;
+    width: 66px; height: 66px; border-radius: 50%; padding: 0; line-height: 1.1;
+    border: 1px solid rgba(0,0,0,.12); background: rgba(255,255,255,.86); color: #3a3530;
+    font-size: .92rem; font-weight: 800; cursor: pointer; user-select: none; -webkit-user-select: none;
+    touch-action: none; box-shadow: 0 4px 14px rgba(0,0,0,.16);
+    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    transition: transform .08s, background .12s, color .12s;
+  }
+  #pedal-pad button.on { background: #2f5d50; color: #fff; transform: scale(.92); }
+  @media (pointer: coarse) { #pedal-pad button { width: 78px; height: 78px; font-size: 1rem; } }
+
+  #drive-tip {
+    position: absolute; left: 50%; top: 12px; transform: translateX(-50%);
+    padding: 6px 15px; border-radius: 999px; white-space: nowrap;
+    background: rgba(58,53,48,.82); color: #fff; font-size: .76rem; letter-spacing: .05em;
+    transition: opacity .4s; pointer-events: none;
+  }
+
+  /* ===== 手机适配 ===== */
+  #scene { touch-action: none; -webkit-user-select: none; user-select: none; }
+
+  /* ===== 手机竖屏 ===== */
+  @media (max-width: 700px) {
+    body {
+      padding: 6px 0 calc(10px + env(safe-area-inset-bottom, 0px));
+      gap: 8px; min-height: 100svh; justify-content: flex-start;
+    }
+    h1 { font-size: .95rem; font-weight: 700; }
+    /* 画面通到两边，多出 16px 宽度都留给游戏 */
+    .stage { width: 100%; max-width: none; border-radius: 0; border-left: 0; border-right: 0; box-shadow: none; }
+    .controls, .chips, .hint { padding-left: 8px; padding-right: 8px; }
+    .controls { gap: 6px; }
+    .controls button { padding: 7px 12px; font-size: .8rem; }
+    .controls label { font-size: .78rem; gap: 4px; }
+    .controls input[type=range] { width: 84px; }
+    .chips { gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .odo { font-size: .74rem; }
+    .hint { display: none; }
+    #life-hud { font-size: .74rem; flex-wrap: wrap; gap: 6px 10px; padding: 6px 8px; }
+    .lhud-chip { font-size: .72rem; }
+    #drive-hud { font-size: .7rem; gap: 6px; padding: 5px 10px; }
+    #drive-hud .stam { width: 58px; }
+    #drive-tip { font-size: .7rem; padding: 5px 11px; top: 8px; }
+    #life-prompt { font-size: .8rem; padding: 7px 12px; top: 44px; }
+    .life-card { padding: 20px 16px; border-radius: 16px; }
+    .lc-title { font-size: 1.18rem; }
+    /* 按钮给拇指留出安全区 */
+    #pedal-pad { bottom: max(10px, env(safe-area-inset-bottom, 0px)); }
+  }
+
+  /* ===== 手机横屏：全屏沉浸，藏掉页面所有杂物 ===== */
+  @media (orientation: landscape) and (max-height: 560px) {
+    body {
+      padding: 0; gap: 0; height: 100svh; min-height: 0; overflow: hidden;
+      justify-content: center; background: #10141a;
+    }
+    h1, .controls, .chips, .hint { display: none !important; }
+    /* 进度条脱离文档流，否则它会把整页顶高 45px 出现滚动条 */
+    #life-hud {
+      position: absolute; top: 0; left: 0; right: 0; z-index: 30;
+      padding: 3px 10px; font-size: .7rem;
+      background: linear-gradient(rgba(255,255,255,.5), rgba(255,255,255,0));
+    }
+    .stage {
+      width: 100vw; max-width: none; height: 100svh;
+      border: 0; border-radius: 0; box-shadow: none;
+      display: flex; align-items: center; justify-content: center;
+      background: #141a21;
+    }
+    /* 完整显示整幅画面（宁可两侧留黑边，也不能把鹈鹕裁掉）；
+       黑边正好成了拇指放按钮的地方，不挡画面 */
+    .stage > svg { width: 100%; height: 100%; overflow: hidden; contain: paint; }
+    #pedal-pad { bottom: max(8px, env(safe-area-inset-bottom, 0px)); }
+    #life-hud { font-size: .72rem; padding: 4px 10px; }
+    .life-card { padding: 18px 18px; max-height: 88svh; overflow: auto; }
+    .lc-title { font-size: 1.1rem; }
+  }
+
+  /* 速度越快，四周越暗一点，像风压过来 */
+  #vignette {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s linear;
+    background: radial-gradient(ellipse 78% 72% at 50% 58%, rgba(0,0,0,0) 52%, rgba(20,26,34,.42) 100%);
+  }
+
+  /* 人生阶段入场字幕：只出现 3 秒，不打断任何操作 */
+  #era-banner {
+    position: absolute; left: 50%; top: 13%; transform: translate(-50%, 8px);
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 10px 22px; border-radius: 14px; pointer-events: none; text-align: center;
+    background: rgba(38,34,29,.62); color: #fff; opacity: 0;
+    transition: opacity .5s ease, transform .5s ease;
+    backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  }
+  #era-banner.on { opacity: 1; transform: translate(-50%, 0); }
+  #era-banner b { font-size: .74rem; font-weight: 600; letter-spacing: .22em; opacity: .8; }
+  #era-banner span { font-size: 1.16rem; font-weight: 800; letter-spacing: .1em; }
+
+  /* 窄屏：字幕压成顶部一行（必须写在基础规则之后，否则会被覆盖） */
+  @media (max-width: 700px) {
+    #era-banner {
+      top: 4px; padding: 3px 10px; border-radius: 9px;
+      flex-direction: row; align-items: baseline; gap: 7px;
+    }
+    #era-banner b { font-size: .58rem; letter-spacing: .12em; }
+    #era-banner span { font-size: .8rem; letter-spacing: .02em; font-weight: 700; }
+  }
+  /* 障碍警示牌轻微上下浮动，更容易被注意到 */
+  .warn { animation: warnBob 1.1s ease-in-out infinite alternate; }
+  @keyframes warnBob { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+  .controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  button {
+    padding: 8px 20px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--btn); color: inherit; font-size: .95rem; cursor: pointer;
+  }
+  button:focus-visible, input:focus-visible { outline: 2px solid #e0413a; outline-offset: 2px; }
+  label { display: flex; align-items: center; gap: 8px; font-size: .9rem; }
+  input[type="range"] { width: 150px; accent-color: #e0413a; }
+
+  /* SVG 内部的 CSS 动画，时长随速度变量缩放 */
+  #scene { --spd: 1; }
+  #eye { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
+  @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+  #wingTip { transform-box: fill-box; transform-origin: 100% 0%;
+    animation: flutter calc(.4s / var(--spd)) ease-in-out infinite alternate; }
+  @keyframes flutter { from { transform: rotate(-8deg); } to { transform: rotate(5deg); } }
+  #scarfTail { transform-box: fill-box; transform-origin: 100% 30%;
+    animation: wave calc(.3s / var(--spd)) ease-in-out infinite alternate; }
+  @keyframes wave { from { transform: rotate(-6deg) scaleX(.95); } to { transform: rotate(7deg) scaleX(1.05); } }
+  .speed line { animation: whoosh calc(.7s / var(--spd)) linear infinite; }
+  @keyframes whoosh { 0% { transform: translateX(40px); opacity: 0; } 30% { opacity: .9; } 100% { transform: translateX(-70px); opacity: 0; } }
+  #scene.paused *:not(#bell):not(.star) { animation-play-state: paused !important; }
+
+  /* 车铃、对话气泡、星星、飞鸟 */
+  #bell { cursor: pointer; transform-box: fill-box; transform-origin: 50% 100%; }
+  #bell:focus { outline: none; }
+  #bell:focus-visible circle.hit { stroke: #e0413a; stroke-width: 2; }
+  #bell.ring { animation: ring .09s ease-in-out 6 alternate; }
+  @keyframes ring { from { transform: rotate(-20deg); } to { transform: rotate(20deg); } }
+  #bubble { opacity: 0; transition: opacity .2s; pointer-events: none; }
+  #bubble.show { opacity: 1; }
+  .star { fill: #fffbe6; animation: twinkle 2.4s ease-in-out infinite alternate; }
+  @keyframes twinkle { from { opacity: .25; } to { opacity: 1; } }
+  .bird { transform-box: fill-box; transform-origin: center; animation: flap .32s ease-in-out infinite alternate; }
+  @keyframes flap { from { transform: scaleY(1); } to { transform: scaleY(-.5); } }
+  .odo { font-size: .9rem; font-variant-numeric: tabular-nums; min-width: 9.5em; text-align: center; }
+  .hint { margin: 0; font-size: .8rem; opacity: .7; }
+  #scene { touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+
+  /* ============ 人生骑行 · HUD / 提示 / 覆盖层 ============ */
+  #life-hud {
+    width: 100%; max-width: 920px; box-sizing: border-box;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap; padding: 10px 4px 2px; margin-top: 6px;
+  }
+  #life-hud .lhud-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .lhud-origin { font-size: .85rem; font-weight: 600; color: #2f5d50; }
+  .lhud-stats { display: flex; gap: 8px; }
+  .lhud-chip {
+    display: inline-flex; align-items: center; gap: 5px; font-size: .8rem;
+    background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px;
+  }
+  .lhud-chip b { font-weight: 700; }
+  .lhud-chip i { font-style: normal; font-weight: 700; font-variant-numeric: tabular-nums; }
+  #life-hud .lhud-right { display: flex; align-items: center; gap: 8px; }
+  #lhud-prog { font-size: .82rem; color: #6b6358; font-variant-numeric: tabular-nums; }
+  .pill {
+    padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--btn); color: inherit; font-size: .82rem; cursor: pointer;
+  }
+  .pill:hover { border-color: #2f5d50; }
+
+  /* 里程碑提示（底部药丸） */
+  #life-prompt {
+    position: absolute; left: 50%; top: 56px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 12px; z-index: 6;
+    background: rgba(47,93,80,.95); color: #fff; padding: 10px 16px; border-radius: 999px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.3); font-size: .92rem; max-width: 92%;
+    animation: promptIn .3s ease;
+  }
+  #life-prompt.hidden { display: none; }
+  #life-prompt .lp-title { font-weight: 600; }
+  #life-prompt .lp-hint { opacity: .85; font-size: .82rem; }
+  #life-prompt .lp-skip {
+    border: 1px solid rgba(255,255,255,.5); background: transparent; color: #fff;
+    border-radius: 999px; padding: 3px 10px; font-size: .78rem; cursor: pointer;
+  }
+  @keyframes promptIn { from { opacity: 0; transform: translate(-50%, -12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+  /* 覆盖层通用 */
+  .life-overlay {
+    position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center;
+    padding: 18px; background: rgba(28,26,22,.45); backdrop-filter: blur(3px);
+  }
+  .life-overlay.hidden { display: none; }
+  .hidden { display: none !important; }
+  .life-card {
+    background: #f7f3ea; color: #3a3530; border-radius: 20px; width: 100%; max-width: 540px;
+    max-height: 90vh; overflow: auto; padding: 26px 24px; box-shadow: 0 24px 70px rgba(0,0,0,.35);
+  }
+  .life-card h2 { margin: 0 0 6px; font-size: 1.3rem; }
+  .life-card .sub { margin: 0 0 16px; opacity: .7; font-size: .9rem; }
+  .btn {
+    display: inline-block; margin-top: 14px; padding: 10px 22px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--btn); color: inherit; font-size: .95rem; cursor: pointer;
+  }
+  .btn.primary { background: #2f5d50; color: #fff; border-color: #2f5d50; }
+  .btn.primary:hover { filter: brightness(1.06); }
+
+  /* 出身卡 */
+  .origin-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .origin-item {
+    text-align: left; border: 1px solid var(--border); background: #fff; border-radius: 14px;
+    padding: 12px 14px; cursor: pointer; transition: .15s;
+  }
+  .origin-item:hover { border-color: #2f5d50; transform: translateY(-2px); }
+  .origin-item .oi-name { font-weight: 700; font-size: 1rem; }
+  .origin-item .oi-tag { font-size: .76rem; color: #2f5d50; }
+  .origin-item .oi-note { font-size: .78rem; opacity: .7; margin-top: 6px; line-height: 1.4; }
+  .origin-item .oi-bike {
+    margin-top: 7px; font-size: .78rem; color: #2f5d50;
+    background: rgba(47,93,80,.08); border-radius: 8px; padding: 5px 9px; line-height: 1.5;
+  }
+  .origin-item .oi-stats { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .oi-stats span { font-size: .72rem; border-radius: 999px; padding: 1px 7px; color: #fff; }
+
+  /* 章节卡 */
+  .lc-gate { text-align: center; }
+  .lc-num { font-size: 2.6rem; font-weight: 800; color: #2f5d50; line-height: 1; }
+  .lc-meta { font-size: .82rem; color: #6b6358; margin: 8px 0 4px; }
+  .lc-title { font-size: 1.4rem; font-weight: 700; margin: 4px 0; }
+  .lc-chap { font-size: .8rem; color: #8a8276; margin-bottom: 8px; }
+  .lc-why {
+    margin: 0 0 14px; padding: 8px 12px; border-radius: 10px;
+    background: rgba(47,93,80,.09); color: #2f5d50; font-size: .84rem; line-height: 1.6;
+  }
+
+  .lc-lines { font-size: 1.02rem; line-height: 1.85; min-height: 120px; }
+  .lc-lines .ln { margin: 0 0 10px; opacity: .35; transition: opacity .3s; }
+  .lc-lines .ln.shown { opacity: 1; }
+  .lc-lines .ln.cur { opacity: 1; }
+  .lc-lines .ln.cur::after { content: "▍"; color: #2f5d50; animation: blinkCur .8s steps(1) infinite; }
+  @keyframes blinkCur { 50% { opacity: 0; } }
+  .lc-foot { text-align: center; font-size: .8rem; color: #8a8276; margin-top: 6px; }
+
+  .lc-choices { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+  .choice {
+    text-align: left; border: 1px solid var(--border); background: #fff; border-radius: 14px;
+    padding: 12px 14px; cursor: pointer; font-size: .92rem; line-height: 1.5; transition: .15s;
+  }
+  .choice:hover { border-color: #2f5d50; background: #f1f7f4; }
+  .choice .ci { display: inline-block; min-width: 22px; height: 22px; line-height: 22px; text-align: center;
+    background: #2f5d50; color: #fff; border-radius: 6px; font-size: .78rem; margin-right: 8px; }
+
+  .lc-outcome-text { font-size: 1rem; line-height: 1.8; }
+  .lc-delta { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+  .od-chip { font-size: .8rem; border-radius: 999px; padding: 3px 10px; font-weight: 600; }
+  .od-chip.up { background: #e3f1ea; color: #2f7d5f; }
+  .od-chip.down { background: #f7e3e0; color: #b0473f; }
+
+  /* 启示卡 */
+  .ins-quote { font-size: 1.18rem; font-weight: 700; line-height: 1.6; }
+  .ins-src { font-size: .8rem; color: #8a8276; margin: 8px 0 14px; }
+  .ins-data { font-size: .92rem; line-height: 1.8; background: #fff; border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 14px; }
+  .ins-moral { font-size: .98rem; line-height: 1.8; margin-top: 12px; font-style: italic; color: #4a524c; }
+  .ins-alt { margin-top: 14px; border-top: 1px dashed var(--border); padding-top: 12px; }
+  .ins-alt .k { font-size: .78rem; letter-spacing: .2em; color: #8a8276; margin-bottom: 8px; }
+  .alt-row { display: flex; justify-content: space-between; gap: 10px; font-size: .84rem; padding: 4px 0; }
+  .alt-row.me { color: #2f5d50; font-weight: 700; }
+  .alt-n.up { color: #2f7d5f; font-weight: 700; }
+  .alt-n.down { color: #b0473f; font-weight: 700; }
+
+  /* 阶段对账单 */
+  .st-sub { font-size: .82rem; color: #8a8276; margin-bottom: 14px; }
+  .st-row { display: flex; align-items: center; gap: 10px; font-size: .88rem; padding: 6px 0; border-bottom: 1px dashed var(--border); }
+  .st-row .st-age { width: 44px; color: #8a8276; }
+  .st-row .st-pick { flex: 1; }
+  .st-row .st-net { font-weight: 700; }
+  .st-row.good .st-net { color: #2f7d5f; }
+  .st-row.bad .st-net { color: #b0473f; }
+  .st-summary { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+    font-size: .95rem; line-height: 1.7; margin-bottom: 10px; }
+
+  /* 结算 */
+  .r-grade { font-size: 3rem; font-weight: 800; color: #2f5d50; line-height: 1; text-align: center; }
+  .r-title { text-align: center; font-size: 1.3rem; font-weight: 700; margin: 4px 0; }
+  .r-desc { text-align: center; font-size: .9rem; color: #6b6358; line-height: 1.6; margin-bottom: 10px; }
+  .pt-name { text-align: center; font-weight: 700; margin-top: 10px; }
+  .pt-desc { font-size: .88rem; color: #5a5348; line-height: 1.7; text-align: center; margin: 6px 4px 12px; }
+  .ledger { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 14px; }
+  .ledger-row { display: grid; grid-template-columns: 92px 1fr 36px; align-items: center; gap: 10px; font-size: .85rem; }
+  .ledger-row .lb { height: 10px; background: #e6dfd1; border-radius: 999px; overflow: hidden; }
+  .ledger-row .lf { display: block; height: 100%; width: 0; border-radius: 999px; transition: width .9s cubic-bezier(.2,.7,.2,1); }
+  .ledger-row .lv { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tip { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+  .tip h3 { margin: 0 0 8px; font-size: .92rem; color: #b0473f; }
+  .tip ul { margin: 0; padding-left: 18px; font-size: .85rem; line-height: 1.7; }
+  .path { display: flex; flex-direction: column; gap: 6px; margin-bottom: 6px; }
+  .path-row { display: grid; grid-template-columns: 36px 1fr 36px; gap: 8px; font-size: .82rem; align-items: center; }
+  .path-row .path-age { color: #8a8276; }
+  .path-row .path-pick { line-height: 1.4; }
+  .path-row.good .path-age:last-child { color: #2f7d5f; font-weight: 700; }
+  .path-row.bad .path-age:last-child { color: #b0473f; font-weight: 700; }
+
+  /* 启示录 */
+  .codex-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+  .codex-item { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; background: #fff; }
+  .codex-item.locked { opacity: .5; }
+  .codex-item .cx-top { display: flex; justify-content: space-between; font-size: .82rem; color: #8a8276; }
+  .codex-item .cx-title { font-weight: 700; font-size: .98rem; margin: 2px 0; }
+  .codex-item .cx-quote { font-size: .86rem; line-height: 1.6; }
+  .codex-item.done { cursor: pointer; }
+  .codex-item.done:hover { border-color: #2f5d50; }
+
+  /* 里程碑牌（SVG 内） */
+  .sign .board { transition: opacity .3s; }
+  .sign.done .board { opacity: .4; }
+  .sign.active .ring { opacity: 1; }
+  @media (max-width: 560px) {
+    .origin-list { grid-template-columns: 1fr; }
+  }
+  #pouch { transform-box: fill-box; transform-origin: 50% 0%; }
+  #pouch.gulp { animation: gulp .5s ease-out; }
+  @keyframes gulp { 0% { transform: scale(1); } 35% { transform: scale(1.08, 1.4); } 100% { transform: scale(1); } }
+  /* 海岸线：浪花拍岸、帆船摇晃、海面反光闪烁、灯塔闪烁 */
+  .surf { animation: surf 1.8s ease-in-out infinite alternate; }
+  @keyframes surf { from { transform: translateY(0); opacity: .95; } to { transform: translateY(-6px); opacity: .35; } }
+  .boat { transform-box: fill-box; transform-origin: 50% 100%; animation: bob 2.4s ease-in-out infinite alternate; }
+  @keyframes bob { from { transform: rotate(-3deg) translateY(0); } to { transform: rotate(3deg) translateY(2px); } }
+  #glint ellipse { animation: shimmer 1.3s ease-in-out infinite alternate; }
+  #glint ellipse:nth-child(2n) { animation-delay: -.6s; }
+  #glint ellipse:nth-child(3n) { animation-delay: -1s; }
+  @keyframes shimmer { from { opacity: .25; } to { opacity: .9; } }
+  .lampGlow { transform-box: fill-box; transform-origin: center; animation: lamp 2s ease-in-out infinite; }
+  @keyframes lamp { 0%, 100% { transform: scale(.5); opacity: .4; } 50% { transform: scale(1.3); opacity: 1; } }
+  .chips { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
+  kbd { padding: 1px 6px; border: 1px solid var(--border); border-radius: 4px; font-family: inherit; font-size: .75rem; }
+  .controls .ctrl-switch {
+    padding: 7px 13px; border-radius: 9px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--btn); color: inherit;
+    font-size: .8rem; font-family: inherit;
+  }
+  .controls .ctrl-switch:hover { border-color: #2f5d50; color: #2f5d50; }
+  @media (max-width: 700px) { .controls .ctrl-switch { padding: 6px 10px; font-size: .76rem; } }
+</style>
+</head>
+<body>
+<h1>鹈鹕骑自行车</h1>
+
+<div class="stage">
+<svg id="scene" viewBox="0 0 900 560" role="img" aria-labelledby="t d">
+  <title id="t">鹈鹕骑自行车</title>
+  <desc id="d">一只戴头盔、围红围巾的白色鹈鹕骑着蓝色自行车前进，后座篮子里装着一条鱼，背景是海岸线：远处的小岛和灯塔、有帆船的大海、沙滩、椰子树和遮阳伞，都随车向后移动。可以让鹈鹕跳起来用嘴接住空中的鱼，也可以切换昼夜和雨天。</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fd0f2"/><stop offset="1" stop-color="#fdf1d8"/>
+    </linearGradient>
+    <linearGradient id="bodyG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dde2e7"/>
+    </linearGradient>
+    <linearGradient id="pouchG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd98a"/><stop offset="1" stop-color="#f2a444"/>
+    </linearGradient>
+    <linearGradient id="nightG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1633"/><stop offset="1" stop-color="#2d3d6b"/>
+    </linearGradient>
+    <!-- 夜间地面阴影：从地平线往下逐渐加深，避免出现硬边 -->
+    <linearGradient id="shadeG" gradientUnits="userSpaceOnUse" x1="0" y1="200" x2="0" y2="340">
+      <stop offset="0" stop-color="#0a1230" stop-opacity="0"/><stop offset="1" stop-color="#0a1230" stop-opacity="1"/>
+    </linearGradient>
+    <!-- 可收集的鱼，颜色由 <use fill> 继承 -->
+    <g id="fishT">
+      <path d="M-33 0 Q-10 -20 17 -6 L35 -18 L31 2 L37 18 L17 6 Q-7 18 -33 0 Z" stroke="#fff" stroke-width="2"/>
+      <path d="M-8 -9 Q-2 0 -8 9" stroke="#fff" stroke-width="2" fill="none" opacity=".7"/>
+      <circle cx="-21" cy="-3" r="2.8" fill="#1d1d1d"/>
+    </g>
+    <!-- 海水：远处深蓝，靠近沙滩变成浅青色 -->
+    <linearGradient id="seaG" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="445">
+      <stop offset="0" stop-color="#3f93c2"/><stop offset=".65" stop-color="#4aa9cf"/><stop offset="1" stop-color="#7fd6d2"/>
+    </linearGradient>
+    <!-- 椰子树，原点在树根 -->
+    <g id="palm">
+      <path d="M0 0 Q-6 -60 14 -110" stroke="#9b6b3f" stroke-width="11" fill="none" stroke-linecap="round"/>
+      <path d="M0 0 Q-6 -60 14 -110" stroke="#7d5330" stroke-width="11" fill="none" stroke-dasharray="2 9"/>
+      <path d="M14 -110 Q-8 -112 -26 -76 Q-6 -104 14 -104 Z" fill="#3f8a47"/>
+      <path d="M14 -110 Q40 -112 52 -72 Q34 -102 14 -104 Z" fill="#3f8a47"/>
+      <path d="M14 -110 Q-18 -130 -50 -98 Q-16 -114 14 -104 Z" fill="#4f9e4a"/>
+      <path d="M14 -110 Q48 -132 78 -96 Q44 -116 14 -104 Z" fill="#4f9e4a"/>
+      <path d="M14 -110 Q-4 -146 -30 -140 Q0 -136 14 -108 Z" fill="#58a64f"/>
+      <path d="M14 -110 Q36 -150 62 -138 Q32 -136 14 -108 Z" fill="#58a64f"/>
+      <circle cx="9" cy="-104" r="5" fill="#6b4a2b"/><circle cx="19" cy="-103" r="5" fill="#5a3d22"/>
+    </g>
+    <linearGradient id="beamG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff4b8" stop-opacity=".7"/><stop offset="1" stop-color="#fff4b8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 天空与太阳 -->
+  <rect width="900" height="560" fill="url(#sky)"/>
+  <rect id="nightSky" width="900" height="560" fill="url(#nightG)" opacity="0"/>
+  <g id="stars" opacity="0"></g>
+  <g id="sun">
+    <circle cx="740" cy="95" r="70" fill="#ffe89a" opacity=".35"/>
+    <circle cx="740" cy="95" r="46" fill="#ffd65a"/>
+  </g>
+  <g id="moon" opacity="0">
+    <circle cx="740" cy="95" r="62" fill="#f4f0d6" opacity=".12"/>
+    <circle cx="740" cy="95" r="36" fill="#f1edd4"/>
+    <circle cx="728" cy="86" r="7" fill="#dcd6b8"/><circle cx="752" cy="104" r="5" fill="#dcd6b8"/><circle cx="745" cy="80" r="3" fill="#dcd6b8"/>
+  </g>
+
+  <!-- 云（最慢视差层） -->
+  <g id="lClouds" fill="#fff" opacity=".9">
+    <g id="tClouds">
+      <ellipse cx="130" cy="90" rx="52" ry="20"/><ellipse cx="160" cy="76" rx="34" ry="22"/><ellipse cx="105" cy="80" rx="26" ry="16"/>
+      <ellipse cx="480" cy="60" rx="44" ry="16"/><ellipse cx="505" cy="49" rx="28" ry="18"/>
+      <ellipse cx="760" cy="170" rx="40" ry="14"/><ellipse cx="780" cy="160" rx="24" ry="14"/>
+    </g>
+    <use href="#tClouds" x="900"/>
+  </g>
+
+  <!-- 雨云（下雨时显现） -->
+  <g id="lStorm" opacity="0" fill="#7b8592">
+    <g id="tStorm">
+      <rect x="0" y="-10" width="900" height="40"/>
+      <ellipse cx="110" cy="30" rx="105" ry="38"/><ellipse cx="290" cy="42" rx="120" ry="42"/>
+      <ellipse cx="480" cy="28" rx="100" ry="36"/><ellipse cx="660" cy="44" rx="115" ry="40"/>
+      <ellipse cx="820" cy="30" rx="78" ry="34"/>
+    </g>
+    <use href="#tStorm" x="900"/>
+  </g>
+  <path id="bolt" fill="none" stroke="#fffbe0" stroke-width="3.5" stroke-linejoin="round" opacity="0"/>
+
+  <!-- 飞鸟 -->
+  <g fill="none" stroke="#3a3f45" stroke-width="2.5" stroke-linecap="round">
+    <g class="birdPos"><path class="bird" d="M-12 0 Q-6 -7 0 0 Q6 -7 12 0"/></g>
+    <g class="birdPos"><path class="bird" d="M-12 0 Q-6 -7 0 0 Q6 -7 12 0" style="animation-delay:-.12s"/></g>
+    <g class="birdPos"><path class="bird" d="M-12 0 Q-6 -7 0 0 Q6 -7 12 0" style="animation-delay:-.22s"/></g>
+  </g>
+
+  <!-- 远处的小岛与灯塔（最远的地面层） -->
+  <g id="lFar">
+    <g id="tFar">
+      <path fill="#8fb3c8" d="M50 301 Q105 258 170 268 Q225 278 262 301 Z"/>
+      <path fill="#9dbfd2" d="M510 301 Q555 274 600 279 Q640 284 668 301 Z"/>
+      <path fill="#a8c7d8" d="M715 301 Q742 287 772 301 Z"/>
+      <!-- 灯塔 -->
+      <path d="M145 272 L148 226 H158 L161 272 Z" fill="#f4f1ea"/>
+      <path d="M146.5 254 H159.5 L160 262 H146 Z M147.6 236 H158.4 L158.8 244 H147.2 Z" fill="#e0413a"/>
+      <rect x="146" y="216" width="14" height="10" rx="1" fill="#fff3a8" stroke="#5a5f65" stroke-width="1.5"/>
+      <path d="M144 216 L153 206 L162 216 Z" fill="#b02d27"/>
+      <g id="lamp" opacity="0"><circle class="lampGlow" cx="153" cy="221" r="16" fill="#fff4b8"/></g>
+    </g>
+    <use href="#tFar" x="900"/>
+  </g>
+
+  <!-- 大海 -->
+  <rect y="300" width="900" height="205" fill="url(#seaG)"/>
+  <rect y="299" width="900" height="2" fill="#c4e8f4" opacity=".8"/>
+  <!-- 太阳 / 月亮在海面的倒影 -->
+  <g id="glint" fill="#fff6c8">
+    <ellipse cx="740" cy="306" rx="26" ry="1.6"/><ellipse cx="736" cy="316" rx="34" ry="2"/>
+    <ellipse cx="744" cy="329" rx="40" ry="2.4"/><ellipse cx="738" cy="344" rx="30" ry="2.4"/>
+    <ellipse cx="746" cy="360" rx="22" ry="2.4"/>
+  </g>
+
+  <!-- 海浪与帆船 -->
+  <g id="lWaves">
+    <g id="tWaves">
+      <g class="boat">
+        <line x1="420" y1="356" x2="420" y2="300" stroke="#5a4a3c" stroke-width="2.5"/>
+        <path d="M423 350 V303 L448 348 Z" fill="#ffffff"/>
+        <path d="M417 348 V312 L399 348 Z" fill="#f28c6b"/>
+        <path d="M394 354 H450 L440 367 H404 Z" fill="#7a5c45"/>
+      </g>
+      <g id="waveMarks" fill="none" stroke="#e8f6fb" stroke-linecap="round" opacity=".7"></g>
+    </g>
+    <use href="#tWaves" x="900"/>
+  </g>
+
+  <!-- 沙滩（波浪形海岸线，周期 300 保证无缝） -->
+  <g id="lBeach">
+    <g id="tBeach">
+      <path fill="#ecd6a4" d="M0 440 Q75 428 150 440 T300 440 T450 440 T600 440 T750 440 T900 440 V505 H0 Z"/>
+      <path id="shore" d="M0 440 Q75 428 150 440 T300 440 T450 440 T600 440 T750 440 T900 440" fill="none"/>
+      <use href="#shore" y="6" stroke="#d8bd86" stroke-width="7"/>
+      <use class="surf" href="#shore" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity=".9"/>
+      <!-- 海星和贝壳 -->
+      <polygon transform="translate(205 474) rotate(15)" fill="#f28c6b"
+               points="0,-8 2,-3 7.5,-2.5 3.5,1 5,7 0,4 -5,7 -3.5,1 -7.5,-2.5 -2,-3"/>
+      <polygon transform="translate(640 486) rotate(-20)" fill="#e9a23b"
+               points="0,-8 2,-3 7.5,-2.5 3.5,1 5,7 0,4 -5,7 -3.5,1 -7.5,-2.5 -2,-3"/>
+      <ellipse cx="420" cy="468" rx="5" ry="3.5" fill="#f7efe0" stroke="#d2b98d"/>
+      <ellipse cx="820" cy="478" rx="4" ry="3" fill="#f7efe0" stroke="#d2b98d"/>
+      <ellipse cx="90" cy="490" rx="6" ry="2.5" fill="#cdb488"/>
+    </g>
+    <use href="#tBeach" x="900"/>
+  </g>
+
+  <!-- 椰树、遮阳伞、冲浪板 -->
+  <g id="lTrees">
+    <g id="tTrees">
+      <use href="#palm" transform="translate(90 482)"/>
+      <g transform="translate(320 484)">
+        <path d="M-52 0 L-12 0 L-4 -8 L-44 -8 Z" fill="#5fc2a6"/>
+        <line x1="0" y1="0" x2="0" y2="-72" stroke="#7a7f85" stroke-width="3" stroke-linecap="round"/>
+        <path d="M-48 -62 Q0 -104 48 -62 Z" fill="#e0413a"/>
+        <path d="M0 -83 L-18 -62 H18 Z" fill="#ffffff"/>
+        <circle cy="-85" r="3" fill="#7a7f85"/>
+      </g>
+      <use href="#palm" transform="translate(560 484) scale(.85)"/>
+      <g transform="translate(770 486) rotate(12)">
+        <ellipse cy="-36" rx="10" ry="40" fill="#e8524a"/>
+        <line x1="0" y1="-74" x2="0" y2="2" stroke="#e0413a" stroke-width="2.5"/>
+      </g>
+    </g>
+    <use href="#tTrees" x="900"/>
+  </g>
+
+  <!-- 人生阶段的色调（天空/海/沙滩会随之变化） -->
+  <rect id="eraTint" x="0" y="0" width="900" height="560" fill="#000" opacity="0" pointer-events="none"/>
+
+  <!-- 起伏地形（登山赛车式）：由脚本逐帧生成，压在椰林之后 -->
+  <g id="terrain"></g>
+
+  <!-- 路面 -->
+  <rect y="500" width="900" height="60" fill="#5f646b"/>
+  <rect y="498" width="900" height="5" fill="#8a8f96"/>
+  <rect id="wet" y="503" width="900" height="57" fill="#a9bdd1" opacity="0"/>
+  <g id="lRoad" fill="#f3f3f0">
+    <g id="tRoad">
+      <rect x="0" y="528" width="50" height="6" rx="3"/><rect x="150" y="528" width="50" height="6" rx="3"/>
+      <rect x="300" y="528" width="50" height="6" rx="3"/><rect x="450" y="528" width="50" height="6" rx="3"/>
+      <rect x="600" y="528" width="50" height="6" rx="3"/><rect x="750" y="528" width="50" height="6" rx="3"/>
+    </g>
+    <use href="#tRoad" x="900"/>
+  </g>
+
+  <!-- 障碍物原型：不进画面，按需克隆 -->
+  <g id="obProto" style="display:none">
+    <!-- 石头：碾过去，掉点速度 -->
+    <g id="rockProto">
+      <ellipse cx="0" cy="504" rx="30" ry="5" fill="#000" opacity=".18"/>
+      <path d="M-25 504 Q-28 486 -11 477 Q2 470 14 478 Q29 487 25 504 Z"
+            fill="#454b54" stroke="#f2b134" stroke-width="3.5" stroke-linejoin="round"/>
+      <path d="M-16 486 Q-7 478 4 482" stroke="#aeb6bf" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M-9 496 Q-2 492 6 496" stroke="#6b7178" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <g class="warn">
+        <path d="M-18 452 L0 424 L18 452 Z" fill="#f2b134" stroke="#a9711a" stroke-width="2.5" stroke-linejoin="round"/>
+        <text x="0" y="449" text-anchor="middle" font-size="19" font-weight="800" fill="#3a3530"
+              font-family="system-ui, sans-serif">!</text>
+      </g>
+    </g>
+    <!-- 倒下的椰子树干：挡路，得跳过去 -->
+    <g id="logProto">
+      <ellipse cx="0" cy="504" rx="56" ry="6" fill="#000" opacity=".16"/>
+      <rect x="-56" y="466" width="112" height="34" rx="17" fill="#8a5a34"/>
+      <rect x="-56" y="466" width="112" height="14" rx="7" fill="#a5714a"/>
+      <ellipse cx="56" cy="483" rx="9" ry="17" fill="#c99a67"/>
+      <ellipse cx="56" cy="483" rx="4.5" ry="9" fill="#8a5a34"/>
+      <ellipse cx="-56" cy="483" rx="9" ry="17" fill="#734a2a"/>
+      <path d="M-40 470 Q-30 462 -18 470 M14 492 Q30 486 44 492" stroke="#6f4526" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".7"/>
+      <g class="warn">
+        <path d="M-18 438 L0 410 L18 438 Z" fill="#f2b134" stroke="#a9711a" stroke-width="2.5" stroke-linejoin="round"/>
+        <text x="0" y="435" text-anchor="middle" font-size="19" font-weight="800" fill="#3a3530"
+              font-family="system-ui, sans-serif">!</text>
+      </g>
+    </g>
+    <!-- 软沙堆：不撞，但一路拖着你 -->
+    <g id="sandProto">
+      <path d="M-78 505 Q-60 480 -22 486 Q10 470 46 484 Q72 486 78 505 Z" fill="#e8d3a8" opacity=".95"/>
+      <path d="M-78 505 Q-60 480 -22 486 Q10 470 46 484 Q72 486 78 505 Z" fill="none" stroke="#cbb184" stroke-width="2"/>
+      <g fill="#cbb184" opacity=".9">
+        <circle cx="-40" cy="496" r="2.2"/><circle cx="-8" cy="490" r="1.8"/>
+        <circle cx="24" cy="494" r="2"/><circle cx="52" cy="500" r="1.6"/>
+      </g>
+    </g>
+    <!-- 海边的木板跳台：冲上去会被弹起来 -->
+    <g id="rampProto">
+      <ellipse cx="0" cy="504" rx="52" ry="5" fill="#000" opacity=".14"/>
+      <path d="M-50 504 L44 470 L50 504 Z" fill="#c08a4e"/>
+      <path d="M-50 504 L44 470 L46 480 L-44 504 Z" fill="#d9a86b"/>
+      <path d="M-50 504 L44 470" stroke="#8a5a34" stroke-width="4" stroke-linecap="round"/>
+      <path d="M-30 504 L-24 484 M-6 504 L0 487 M18 504 L22 490" stroke="#8a5a34" stroke-width="2.5" opacity=".55"/>
+    </g>
+  </g>
+
+  <!-- 障碍物层 -->
+  <g id="obLayer"></g>
+
+  <!-- 影子 -->
+  <ellipse id="shadow" cx="440" cy="505" rx="240" ry="7" fill="#000" opacity=".22"/>
+
+  <!-- 人生里程碑牌（骑行途中的关卡站） -->
+  <g id="milestones"></g>
+
+  <!-- 后轮扬起的尘土 -->
+  <g id="dust" fill="#cbbb9f"></g>
+
+  <!-- 速度线 -->
+  <g class="speed" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity=".8">
+    <line x1="150" y1="250" x2="200" y2="250"/>
+    <line x1="120" y1="320" x2="185" y2="320" style="animation-delay:-.25s"/>
+    <line x1="140" y1="390" x2="180" y2="390" style="animation-delay:-.5s"/>
+  </g>
+
+  <!-- 夜间地面变暗 -->
+  <rect id="landShade" y="200" width="900" height="360" fill="url(#shadeG)" opacity="0"/>
+  <!-- 雨天整体变灰 -->
+  <rect id="rainShade" width="900" height="560" fill="#4a5563" opacity="0"/>
+
+  <!-- 空中的鱼（跳起来用嘴接） -->
+  <g id="treats"></g>
+
+  <!-- 车灯光束 -->
+  <g id="beam" opacity="0">
+    <polygon points="596,316 900,255 900,505 596,328" fill="url(#beamG)"/>
+    <circle cx="590" cy="322" r="16" fill="#fff3a8" opacity=".6"/>
+  </g>
+
+  <g id="riderWrap">
+  <g id="rider">
+    <!-- 远侧腿和曲柄（在车架后面） -->
+    <line id="farCrank" stroke="#4a4f55" stroke-width="7" stroke-linecap="round"/>
+    <polyline id="farLeg" fill="none" stroke="#d98a2b" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path id="farFoot" fill="#d98a2b"/>
+
+    <!-- 车轮 -->
+    <g id="wheels">
+      <g>
+        <circle class="tire" cx="300" cy="420" r="78" fill="none" stroke="#26282b" stroke-width="10"/>
+        <circle class="rim" cx="300" cy="420" r="71" fill="none" stroke="#c4c9cf" stroke-width="3"/>
+        <g id="rearSpokes" stroke="#9aa1a8" stroke-width="1.4"></g>
+        <circle cx="300" cy="420" r="7" fill="#6d7278"/>
+      </g>
+      <g>
+        <circle class="tire" cx="600" cy="420" r="78" fill="none" stroke="#26282b" stroke-width="10"/>
+        <circle class="rim" cx="600" cy="420" r="71" fill="none" stroke="#c4c9cf" stroke-width="3"/>
+        <g id="frontSpokes" stroke="#9aa1a8" stroke-width="1.4"></g>
+        <circle cx="600" cy="420" r="7" fill="#6d7278"/>
+      </g>
+    </g>
+
+    <!-- 链条与飞轮 -->
+    <path id="chain" d="M440 410 L300 411 A9 9 0 0 0 300 429 L440 450"
+          fill="none" stroke="#474b50" stroke-width="3" stroke-dasharray="5 3"/>
+    <circle cx="300" cy="420" r="10" fill="none" stroke="#6d7278" stroke-width="3"/>
+
+    <!-- 后货架与篮子 -->
+    <g id="basketG">
+    <g stroke="#8d949b" stroke-width="4" stroke-linecap="round" fill="none">
+      <line x1="300" y1="420" x2="285" y2="340"/>
+      <line x1="245" y1="340" x2="345" y2="340"/>
+      <line x1="345" y1="340" x2="412" y2="318"/>
+    </g>
+    <!-- 篮子里的鱼 -->
+    <g id="fish">
+      <path d="M262 312 Q285 292 312 306 L330 294 L326 314 L332 330 L312 318 Q288 330 262 312 Z" fill="#6fb3d9"/>
+      <circle cx="274" cy="309" r="2.5" fill="#1d1d1d"/>
+    </g>
+    <path d="M242 310 H348 L338 340 H252 Z" fill="#c98e4f"/>
+    <g stroke="#a86f35" stroke-width="2">
+      <line x1="245" y1="320" x2="345" y2="320"/><line x1="248" y1="330" x2="342" y2="330"/>
+      <line x1="270" y1="310" x2="272" y2="340"/><line x1="295" y1="310" x2="295" y2="340"/><line x1="320" y1="310" x2="318" y2="340"/>
+    </g>
+    </g>
+
+    <!-- 车架 -->
+    <g id="frameG" stroke="#2f7fd1" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <line x1="300" y1="420" x2="440" y2="430"/>
+      <line x1="300" y1="420" x2="414" y2="312"/>
+      <line x1="440" y1="430" x2="412" y2="305"/>
+      <line x1="414" y1="312" x2="566" y2="306"/>
+      <line x1="440" y1="430" x2="576" y2="345"/>
+      <line x1="564" y1="298" x2="578" y2="348"/>
+    </g>
+    <line x1="577" y1="345" x2="600" y2="420" stroke="#c4c9cf" stroke-width="7" stroke-linecap="round"/>
+    <!-- 车灯 -->
+    <rect x="580" y="316" width="16" height="12" rx="4" fill="#f5d547" stroke="#8d949b" stroke-width="2"/>
+    <!-- 座杆与车座 -->
+    <line x1="412" y1="305" x2="409" y2="290" stroke="#8d949b" stroke-width="6"/>
+    <path d="M380 288 Q405 278 440 286 Q436 296 410 296 Q388 296 380 288 Z" fill="#2b2b2b"/>
+    <!-- 车把 -->
+    <line x1="564" y1="298" x2="560" y2="276" stroke="#8d949b" stroke-width="6" stroke-linecap="round"/>
+    <path d="M560 276 Q548 270 536 282" stroke="#303236" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <!-- 车铃（可点击） -->
+    <g id="bell" role="button" tabindex="0" aria-label="按车铃">
+      <circle class="hit" cx="562" cy="262" r="16" fill="transparent"/>
+      <path d="M552 270 Q552 254 562 252 Q572 254 572 270 Z" fill="#f2c94c" stroke="#b8902a" stroke-width="2"/>
+      <circle cx="562" cy="250" r="2.5" fill="#b8902a"/>
+      <path d="M556 262 Q557 258 560 256" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/>
+    </g>
+
+    <!-- 牙盘 -->
+    <g id="chainring">
+      <circle cx="440" cy="430" r="21" fill="#d3d7db" stroke="#5a5f65" stroke-width="4" stroke-dasharray="3 2"/>
+      <path d="M440 413 V447 M423 430 H457" stroke="#8d949b" stroke-width="3"/>
+    </g>
+
+    <!-- 鹈鹕 -->
+    <g id="pelican">
+      <!-- 尾巴 -->
+      <path d="M345 245 L300 238 L312 254 L296 266 L352 270 Z" fill="#cdd4da"/>
+      <!-- 身体 -->
+      <ellipse cx="412" cy="248" rx="80" ry="48" fill="url(#bodyG)" transform="rotate(-14 412 248)"/>
+
+      <!-- 头和脖子（点头动画） -->
+      <g id="head">
+        <path d="M448 232 C470 200 462 172 492 148 L522 158 C496 176 506 208 478 244 Z" fill="#fbfbfb"/>
+        <path d="M456 226 C474 200 470 180 494 158" stroke="#e1e6ea" stroke-width="3" fill="none"/>
+        <circle cx="512" cy="136" r="27" fill="#ffffff"/>
+        <!-- 头盔 -->
+        <path d="M484 128 Q488 98 516 98 Q544 100 540 126 Z" fill="#e0413a"/>
+        <path d="M494 110 L500 104 M512 104 L514 100 M528 108 L532 104" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+        <path d="M486 128 H542" stroke="#b02d27" stroke-width="3" stroke-linecap="round"/>
+        <path d="M492 130 Q498 150 510 158" stroke="#555" stroke-width="1.5" fill="none"/>
+        <!-- 喉囊与喙 -->
+        <path id="pouch" d="M526 146 L676 170 Q652 206 598 212 Q548 214 524 160 Z" fill="url(#pouchG)"/>
+        <path d="M526 132 Q600 140 682 162 Q690 170 678 174 Q600 160 524 150 Z" fill="#f4a340"/>
+        <path d="M530 140 Q600 148 674 166" stroke="#d98a2b" stroke-width="2" fill="none"/>
+        <path d="M674 162 Q694 164 688 180 Q682 173 674 174 Z" fill="#e0761f"/>
+        <!-- 眼睛 -->
+        <g id="eye">
+          <circle cx="520" cy="130" r="7" fill="#fff" stroke="#f0c46a" stroke-width="2"/>
+          <circle cx="522" cy="130" r="3.5" fill="#1d1d1d"/>
+          <circle cx="523.5" cy="128.5" r="1.2" fill="#fff"/>
+        </g>
+      </g>
+
+      <!-- 围巾 -->
+      <path id="scarfTail" d="M458 214 Q420 200 380 212 Q390 222 376 232 Q420 226 460 230 Z" fill="#e0413a"/>
+      <path d="M446 216 Q470 206 494 214 L490 232 Q468 226 450 236 Z" fill="#f05a4f"/>
+
+      <!-- 翅膀伸向车把 -->
+      <g id="wingTip">
+        <path d="M352 236 L322 246 L336 252 L318 262 L340 264 L328 276 L362 266 Z" fill="#33383e"/>
+      </g>
+      <path d="M352 238 Q410 212 470 236 Q510 254 540 276 Q530 290 510 284 Q478 276 448 272 Q400 284 364 276 Q340 268 352 238 Z"
+            fill="#eef1f3" stroke="#c6ccd2" stroke-width="2"/>
+      <path d="M380 256 Q412 248 448 256 M392 268 Q420 262 452 266" stroke="#c6ccd2" stroke-width="2" fill="none"/>
+      <ellipse cx="538" cy="281" rx="10" ry="7" fill="#eef1f3" stroke="#c6ccd2" stroke-width="2"/>
+    </g>
+
+    <!-- 近侧腿和曲柄 -->
+    <polyline id="nearLeg" fill="none" stroke="#f4a340" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <path id="nearFoot" fill="#f4a340"/>
+    <line id="nearCrank" stroke="#6d7278" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="440" cy="430" r="5" fill="#303236"/>
+  </g>
+  </g>
+
+  <!-- 雨滴、水花、闪电 -->
+  <g id="rain" stroke="#dce8f5" stroke-width="1.6" stroke-linecap="round" opacity="0"></g>
+  <g id="splashes" fill="none" stroke="#e6eef7" stroke-width="1.4"></g>
+  <text id="plusOne" font-size="26" font-weight="700" fill="#ff9a3c" stroke="#fff" stroke-width="1"
+        text-anchor="middle" opacity="0" font-family="system-ui, sans-serif">+1</text>
+  <rect id="flash" width="900" height="560" fill="#f4f7ff" opacity="0" pointer-events="none"/>
+
+  <!-- 对话气泡 -->
+  <g id="bubble" aria-hidden="true">
+    <path d="M590 40 H760 Q776 40 776 56 V84 Q776 100 760 100 H640 L612 118 L620 100 H590 Q574 100 574 84 V56 Q574 40 590 40 Z"
+          fill="#fff" stroke="#3a3530" stroke-width="2.5"/>
+    <text id="bubbleText" x="675" y="78" text-anchor="middle" font-size="22" font-weight="600" fill="#3a3530"
+          font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">叮铃铃~</text>
+  </g>
+</svg>
+
+<div id="speedlines"></div>
+<div id="vignette"></div>
+<div id="era-banner"><b></b><span></span></div>
+<div id="drive-tip">按住「蹬」前进 · 石头碾过去 · 倒木和断崖按「跳」</div>
+<div id="drive-hud">
+  <span class="lab">体力</span>
+  <span class="stam"><span id="stam-fill"></span></span>
+  <span class="kmh" id="kmh">0 km/h</span>
+</div>
+<div id="pedal-pad">
+  <button id="pedalBtn" type="button">蹬</button>
+  <button id="jumpBtn2" type="button">跳</button>
+</div>
+<div id="life-prompt" class="hidden">
+  <span class="lp-title" id="lp-title"></span>
+  <span class="lp-hint">按 E / 空格 或点击进入</span>
+  <button class="lp-skip" id="lp-skip">先路过</button>
+</div>
+</div>
+
+<div class="controls">
+  <button id="toggle" type="button" aria-pressed="false">暂停</button>
+  <label for="speed">最大速度 <input id="speed" type="range" min="0.9" max="3.0" step="0.1" value="2.1"></label>
+  <button id="jumpBtn" type="button">跳一下</button>
+  <button id="dayNight" type="button" aria-pressed="false">切到夜晚</button>
+  <button id="rainBtn" type="button" aria-pressed="false">下雨</button>
+  <button id="sound" type="button" aria-pressed="true">声音：开</button>
+  <button type="button" class="ctrl-switch" onclick="location.href='corridor.html'">另一个人生：回廊 →</button>
+</div>
+<div class="chips">
+  <span class="odo" id="odo" aria-live="off">里程 0.00 km</span>
+  <span class="odo" id="score" aria-live="polite">接到鱼 0 条 · 最高 0</span>
+</div>
+<p class="hint"><kbd>→</kbd> 按住蹬车 · <kbd>←</kbd> 刹车 · <kbd>↑</kbd>/点击 起跳 · 石头碾过去、倒木要跳、软沙拖慢你、跳板会把你弹起来 · 摔了、翻了、蹬不动了，才会懂一条道理 · <kbd>空格</kbd> 响铃 · <kbd>P</kbd> 暂停</p>
+
+<!-- ===== 人生骑行：HUD 与覆盖层 ===== -->
+<div id="life-hud">
+  <div class="lhud-left">
+    <span class="lhud-origin" id="lhud-origin">未选出身</span>
+    <div class="lhud-stats" id="lhud-stats"></div>
+  </div>
+  <div class="lhud-right">
+    <span id="lhud-prog">已领悟 0 / 14</span>
+    <button class="pill" id="lhud-codex">启示录</button>
+    <button class="pill" id="lhud-reset">重骑</button>
+  </div>
+</div>
+
+<div id="life-origin" class="life-overlay hidden">
+  <div class="life-card">
+    <h2>先选一个出身</h2>
+    <p class="sub">不同起点，四样本钱不同。这趟骑行，底色由此决定。</p>
+    <div class="origin-list" id="origin-list"></div>
+  </div>
+</div>
+
+<div id="life-chapter" class="life-overlay hidden">
+  <div class="life-card">
+    <div class="lc-gate" id="lc-gate">
+      <div class="lc-num" id="lc-num">01</div>
+      <div class="lc-meta"><span id="lc-age"></span> · <span id="lc-place"></span></div>
+      <div class="lc-title" id="lc-title"></div>
+      <div class="lc-chap" id="lc-chap"></div>
+      <p class="lc-why" id="lc-why"></p>
+      <button class="btn primary" id="lc-start">翻开这一页</button>
+    </div>
+    <div class="lc-story hidden" id="lc-story">
+      <div class="lc-lines" id="lc-lines"></div>
+      <div class="lc-foot" id="lc-foot">点击任意处继续</div>
+    </div>
+    <div class="lc-choices hidden" id="lc-choices"></div>
+    <div class="lc-outcome hidden" id="lc-outcome">
+      <div class="lc-outcome-text" id="lc-outcome-text"></div>
+      <div class="lc-delta" id="lc-delta"></div>
+      <button class="btn primary" id="lc-insight">查看启示</button>
+    </div>
+  </div>
+</div>
+
+<div id="life-insight" class="life-overlay hidden">
+  <div class="life-card">
+    <div class="ins-quote" id="ins-quote"></div>
+    <div class="ins-src" id="ins-src"></div>
+    <div class="ins-data" id="ins-data"></div>
+    <div class="ins-moral" id="ins-moral"></div>
+    <div class="ins-alt" id="ins-alt"></div>
+    <button class="btn primary" id="ins-continue">继续骑行</button>
+  </div>
+</div>
+
+<div id="life-stage" class="life-overlay hidden">
+  <div class="life-card">
+    <h2 id="st-title"></h2>
+    <div class="st-sub" id="st-sub"></div>
+    <div class="st-summary" id="st-summary"></div>
+    <div id="st-body"></div>
+    <button class="btn primary" id="st-go">继续骑行</button>
+  </div>
+</div>
+
+<div id="life-result" class="life-overlay hidden">
+  <div class="life-card">
+    <div class="r-grade" id="r-grade"></div>
+    <div class="r-title" id="r-title"></div>
+    <div class="r-desc" id="r-desc"></div>
+    <div id="r-radar"></div>
+    <div class="pt-name" id="pt-name"></div>
+    <div class="pt-desc" id="pt-desc"></div>
+    <div class="ledger" id="ledger"></div>
+    <div class="tip"><h3 id="tip-title"></h3><ul id="tip-list"></ul></div>
+    <div class="path" id="path-list"></div>
+    <button class="btn primary" id="r-restart">再骑一趟</button>
+  </div>
+</div>
+
+<div id="life-codex" class="life-overlay hidden">
+  <div class="life-card">
+    <h2>启示录</h2>
+    <p class="sub">已经走过的站，启示都在这里。点开可重读。</p>
+    <div class="codex-list" id="codex-list"></div>
+    <button class="btn" id="codex-close">关闭</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+ * 《性价比人生》剧情数据
+ * 全部内容取自《高性价比人生指南》全书 34 节 765 条
+ * https://cdyforever.github.io/how-to-live-better/
+ * ============================================================ */
+
+const STAT_META = {
+  health: { name: '命', full: '命 · 身体本钱', color: '#c0504d' },
+  time:   { name: '时', full: '时 · 可支配时间', color: '#4a7fa5' },
+  money:  { name: '钱', full: '钱 · 抗风险余量', color: '#b8892b' },
+  mind:   { name: '心', full: '心 · 心力与关系', color: '#5a8a5f' },
+};
+
+const CHAPTERS = [
+
+  /* ---------------- 序章 ---------------- */
+  {
+    id: 0,
+    age: 18,
+    label: '序章',
+    title: '零点十分',
+    place: '城中村出租屋 · 凌晨 0:10',
+    chapter: '第 3 节 · 不要浪费精力',
+    lines: [
+      '屏幕右上角跳成 00:10 的时候，你已经躺下两个小时了。',
+      '你对自己说过七次"最后一个"。进度条没有尽头，它也不需要尽头——它只需要你再抬一次拇指。',
+      '全国有无数人和你一样，平均要到 0:10 才入睡。你并不孤单。但"大家都在熬"从来不是一剂药，它只是一张免罪符。',
+      '明天早上八点，你要交人生第一份方案。',
+    ],
+    choices: [
+      {
+        text: '「真的最后一个。」把亮度调到最低，继续刷',
+        effects: { health: -6, time: -8, mind: -4 },
+        outcome: '你睡着的时候是 1:40。第二天会议室里，你听不清主管问的是什么。你以为你偷到了一小时，其实那是向明天的自己借的——利息比你想的高。',
+      },
+      {
+        text: '把手机反扣到客厅充电，床头灯调到最暗',
+        effects: { health: 6, time: 6, mind: 5 },
+        outcome: '你没有立刻睡着，黑暗里那二十分钟很难熬。然后你听见自己的呼吸慢下来。第二天你比闹钟早醒四分钟——那种"白赚了"的感觉，你已经很久没体会过了。',
+      },
+      {
+        text: '开着「夜间模式」继续刷，暖黄色总该好点',
+        effects: { health: -3, time: -5, mind: -2 },
+        outcome: '屏幕变黄了，你的兴奋没变黄。至于夜间模式到底管多大用，那项研究压根没测。',
+      },
+    ],
+    insight: {
+      quote: '到点就睡，不为游戏、短视频、色情内容熬夜',
+      source: '第 3 节「不要浪费精力」· 第 9 条 · B 级 · 性价比高',
+      data: '2025 年中国人夜间平均睡眠 6.97 小时，平均入睡时间 0:10。睡前用便携设备的人，睡不够的可能性约是不用的 2.17 倍，白天犯困约 2.72 倍。设备只是放在卧室里、并不使用，数字也差不多——所以最省事的办法是手机不进卧室。',
+      moral: '熬夜不是在偷时间，是在借命。而睡眠是唯一一笔你赖不掉、也没法分期还的债。',
+    },
+  },
+
+  /* ---------------- 第一关 ---------------- */
+  {
+    id: 1,
+    age: 19,
+    label: '第一关',
+    title: '副驾上的那声「咔哒」',
+    place: '深夜高架 · 朋友的车后排',
+    chapter: '第 1 节 · 不要早死',
+    lines: [
+      '朋友喝了酒，但他说"就两瓶啤酒，清醒得很"。他坚持要开，你坐在后排。',
+      '你摸到那根安全带，它被谁塞进了座椅缝里，冰凉、积灰、显然很久没被人拉出来过。',
+      '朋友从后视镜里瞥你一眼："后排系什么，交警又不查后排。"',
+      '车速 78。窗外是连成一条线的橙色路灯。',
+    ],
+    choices: [
+      {
+        text: '把带子拉出来扣上，顺手提醒副驾也系',
+        effects: { health: 8, mind: 3 },
+        outcome: '"咔哒"一声很轻。朋友笑你小题大做，但还是伸手把副驾的也扣上了。有些规矩，你替别人多说一句，它就成立了。',
+      },
+      {
+        text: '后排不用系，反正交警不查',
+        effects: { health: -10, mind: -2 },
+        outcome: '你把手缩了回来。你赌的是"今天不出事"。这个赌，赢的时候什么都没发生，输的时候也什么都不用再发生了。',
+      },
+      {
+        text: '自己系上，但不提醒别人',
+        effects: { health: 5, mind: -2 },
+        outcome: '你保住了自己那一份。副驾那位全程没系。你后来常常想起这件事——不是因为后悔，是因为你发现自己当时其实可以开口。',
+      },
+    ],
+    insight: {
+      quote: '系安全带，前排后排都系',
+      source: '第 1 节「不要早死」· 第 1 条',
+      data: '坐轿车前排系上安全带，出车祸时被撞死的概率降四成多；坐轻型卡车前排的降六成。美国 2022 年死在车里的人里，能查到系没系带的，有一半没系。',
+      moral: '人生的账本里，"活着"是前面那个 1，其余都是后面的 0。性价比的第一课不是省钱，是把那个 1 保住。',
+    },
+  },
+
+  /* ---------------- 第二关 ---------------- */
+  {
+    id: 2,
+    age: 21,
+    label: '第二关',
+    title: '一根烟的账',
+    place: '写字楼天台 · 加班间隙',
+    chapter: '第 2 节 · 不要慢慢死',
+    lines: [
+      '天台上永远有人抽烟，也永远有人在递烟。',
+      '这是这个月第三次有人递给你。烟在这个地方不是烟，是社交货币——是"我跟你是一伙的"，是"我理解你有多累"。',
+      '你其实不喜欢那个味道。但你也不喜欢被排除在天台之外。',
+      '递烟的同事说："来一根，提神。"',
+    ],
+    choices: [
+      {
+        text: '接过来点上',
+        effects: { health: -8, money: -4, mind: 2 },
+        outcome: '你咳了两声，大家都笑了，你顺利地成为了天台的一员。这根烟的账，要等到很久以后，用一种你完全看不见的方式，一笔一笔还。',
+      },
+      {
+        text: '「我戒了。」其实你从没抽过，但这次是真的不接',
+        effects: { health: 6, mind: 4 },
+        outcome: '天台安静了半秒，然后话题滑到了别的方向。你发现"融入"这件事，其实有比烟更低价的入场券——比如认真听人把一句话说完。',
+      },
+      {
+        text: '接过来，夹在手里不点',
+        effects: { health: -2, mind: -3 },
+        outcome: '你既没有拿到那点快感，也没有保住那点诚实。中间地带最贵的地方在于：它两头收费。',
+      },
+    ],
+    interact: {
+      type: 'streak',
+      intro: '同一根烟，会递三次，一次比一次难拒。每次只有 5 秒，不选，就等于接了。',
+      seconds: 5,
+      rounds: [
+        { scene: '烟盒推到你面前，他还在等你的回答。' },
+        { scene: '项目被砍。老板站你旁边自己点上一根，顺手把烟盒递过来。' },
+        { scene: '父亲住院，你在走廊坐了一整夜。隔壁床的家属递过来一根：「抽口吧，能好受点。」' },
+      ],
+      yes: '接', no: '不接',
+      feedback: {
+        yes: '你接了。这一次不难受，难受的是它变成了默认选项。',
+        no:  '你没接。你发现拒绝其实只要一句话，难的是把这句话说三次。',
+        timeout: '你没来得及选——顺从了默认的那一个。',
+      },
+    },
+    insight: {
+      quote: '戒烟，越早越好',
+      source: '第 2 节「不要慢慢死」· 第 1 条',
+      data: '吸烟的人平均比不吸烟的人少活十年以上。40 岁前戒掉，能把接着吸烟带来的死亡风险抹掉九成左右。戒得越早，捡回来的越多。',
+      moral: '早死是一声巨响，慢慢死是一笔分期付款——后者更像"生活"，所以更容易被忽略。',
+    },
+  },
+
+  /* ---------------- 第三关 ---------------- */
+  {
+    id: 3,
+    age: 23,
+    label: '第三关',
+    title: '玻璃柜台里的「调理」',
+    place: '老家县城 · 保健品店',
+    chapter: '第 6 节 · 反面清单',
+    lines: [
+      '过年前一天，母亲说带你去看个"好东西"。',
+      '店员比你还会叫人——她喊你母亲"妈"，喊得比你自然。玻璃柜台里摆着几盒金灿灿的东西，一盒 1980。',
+      '"阿姨吃了睡得香，"店员指着墙上的锦旗，"隔壁王阿姨买了三疗程。"',
+      '母亲没说话，但她看你的眼神里有一句话：孩子出息了，也该给妈买点什么了。',
+    ],
+    choices: [
+      {
+        text: '买。一年也就这一次',
+        effects: { money: -10, mind: 3 },
+        outcome: '母亲很高兴，把盒子放在客厅最显眼的位置。你买对了心意，买错了东西。而这两件事，本来是可以分开的。',
+      },
+      {
+        text: '当场拆穿，说这是骗人的，拉着母亲走',
+        effects: { money: 4, mind: -7 },
+        outcome: '你赢了道理。回家路上你们一句话没说。有些胜利要在很久以后才能兑现成亲近，而有些，永远兑不了。',
+      },
+      {
+        text: '不买这盒，改成带她去做一次体检，再买台血压计',
+        effects: { money: -2, health: 9, mind: 7 },
+        outcome: '体检单上有一个从没人注意过的箭头。你把它变成了第二年的一件小事，而不是第五年的一件大事。母亲后来还是把那台血压计摆在了客厅最显眼的位置。',
+      },
+    ],
+    interact: {
+      type: 'appraise',
+      intro: '柜台上摆着六样东西。每一样你都要当场决定：这钱掏不掏？',
+      items: [
+        { name: '进口复合维生素', price: 680, useful: false, why: '为了长寿或防心血管病吃复合维生素——一样样查过，都没看出管用。' },
+        { name: '电子血压计', price: 299, useful: true, why: '量血压，高了就吃药降到达标。这是真能改结局的那种钱。' },
+        { name: '排毒酵素', price: 880, useful: false, why: '排毒、清肠、酵素、碱性水这类产品——不要买。' },
+        { name: '粪便隐血检测（结直肠癌筛查）', price: 120, useful: true, why: '45 到 50 岁起做结直肠癌筛查，属于那几项有证据的。' },
+        { name: '氨糖软骨素', price: 520, useful: false, why: '不要指望氨糖/软骨素治膝关节炎。' },
+        { name: '戒烟药（伐尼克兰）', price: 460, useful: true, why: '戒烟别光靠忍，先去拿药，成功率能翻一倍多。' },
+      ],
+    },
+    insight: {
+      quote: '不要花大钱买保健品、膏方、滋补品来「调理身体」',
+      source: '第 6 节「反面清单」· 第 10 条',
+      data: '多维、鱼油、维 D 这些常见成分，在本节前六条里已逐一查过，都没看出管用。包装上那句"保健食品不是药物，不能代替药物治疗疾病"，是监管部门规定必须印的。这笔钱要是买给父母、提着上门的，那份心意没有问题，只是东西选错了。',
+      moral: '把心意和证据分开：心意一定要给，但别让它搭错车。孝顺的性价比，取决于你买的是安慰，还是真有用的那一次检查。',
+    },
+  },
+
+  /* ---------------- 第四关 ---------------- */
+  {
+    id: 4,
+    age: 25,
+    label: '第四关',
+    title: '通勤的两个半小时',
+    place: '两份录用通知之间',
+    chapter: '第 4 节 · 不要浪费时间',
+    lines: [
+      '两份 offer 摆在你面前。',
+      'A：月薪多 2000，公司在城东，单程通勤 75 分钟，两趟地铁加一趟公交。',
+      'B：月薪少 2000，骑车 12 分钟，路上会经过一个有梧桐树的路口。',
+      '你掏出计算器：2000 × 12 = 24000。一年两万四。这笔账看起来很清楚。',
+      '但你漏算了另外一笔：每天 150 分钟，一年 250 个工作日，是 625 个小时——整整 26 天。',
+    ],
+    choices: [
+      {
+        text: '选 A，钱是真的，累可以克服',
+        effects: { money: 9, time: -11, mind: -6 },
+        outcome: '半年后你已经能在地铁上睡着了，站着都能睡。那 2000 块变成了房租、变成了外卖、变成了周末用来恢复的一整天。你从来没有真正拿到它。',
+      },
+      {
+        text: '选 B，把省下的时间用来睡觉和学东西',
+        effects: { money: -4, time: 11, mind: 7 },
+        outcome: '你每天多出来的两个多小时，先是被用来睡觉，后来被你拿来学一门手艺。三年后，那门手艺带来的收入差，第一次超过了 2000。',
+      },
+      {
+        text: '选 A，通勤时间拿来听课，时间就不会浪费',
+        effects: { money: 7, time: -6, mind: -3 },
+        outcome: '你在地铁上确实听了课，但那是在人贴着人的早高峰里。你听完了 70%，记住了 30%，并且每天到家时都已经是另一个人了。',
+      },
+    ],
+    interact: {
+      type: 'commute',
+      intro: '拖动滑块，选一个你打算接受的单程通勤时长。填上时薪，看看它一年到底抽走你多少。',
+      min: 5, max: 120, step: 5, default: 45,
+      hourlyDefault: 60,
+    },
+    insight: {
+      quote: '选住处时把通勤时长放在前面，缩短单程通勤',
+      source: '第 4 节「不要浪费时间」· 第 18 条',
+      data: '德国的跟踪数据里，通勤越长的人，自己觉得过得越不好；这笔损失并没有在工资或者住房上被补回来。单程少 30 分钟，一周就省出 5 小时。',
+      moral: '工资单上的钱是显性的，通勤扣掉的时间是隐性的。人生的账要两边都记：你卖出去的时间，得按你的时薪算回来才算划算。',
+    },
+  },
+
+  /* ---------------- 第五关 ---------------- */
+  {
+    id: 5,
+    age: 26,
+    label: '第五关',
+    title: '八万块的奶茶店',
+    place: '朋友租下的铺面 · 还没装修',
+    chapter: '第 12 节 · 创业与做生意',
+    lines: [
+      '大学同学拉你合伙开奶茶店，说这是个"风口"，加盟费都谈好了。',
+      '"你出八万，占三成。"他眼睛发亮，"我算过了，一年回本。"',
+      '你卡里一共十万。另外五万，是父母攒了三年、准备给你应急的钱。',
+      '铺面还是毛坯，墙上写着上一个租户留下的四个字：旺铺转让。',
+    ],
+    choices: [
+      {
+        text: '全押上，再找亲戚借五万凑满',
+        effects: { money: -16, mind: -9 },
+        outcome: '店开起来了，也倒在了第八个月。你不但赔光了自己的，还欠了亲戚的钱。最难受的不是数字，是你从此不敢接家里电话。',
+      },
+      {
+        text: '只出亏得起的那一万五，并且把出资、分钱、退出写成书面协议',
+        effects: { money: -3, mind: 8, time: 4 },
+        outcome: '店倒了，你损失了一万五，还有一段需要修复的友情——但那份协议让这段友情至少还能修复。你明白了：亏得起的钱叫投资，亏不起的钱叫赌命。',
+      },
+      {
+        text: '不出钱，周末来帮忙，按小时算工钱',
+        effects: { money: 3, time: -5, mind: 3 },
+        outcome: '你看见了整个开店的真实流程，也看见了它是怎么死的。这份经验后来帮你在自己的项目里避开了三个坑——而你为此付出的，只是几个周末。',
+      },
+    ],
+    insight: {
+      quote: '只拿亏得起的钱创业，不动家底、不借钱开张',
+      source: '第 12 节「创业与做生意：别把家底赔进去」· 第 1 条',
+      data: '同节还提醒：不给公司贷款签个人担保，配偶更不要跟着签；开张前选对主体，个体户和合伙人赔到底，有限公司才"有限"；几个人合伙开店，要把出资、分钱、谁说了算、怎么退出写成书面协议。',
+      moral: '判断一笔投入划不划算，先问的不是"能赚多少"，而是"亏光之后我还能不能正常活下去"。能回答这个问题的钱，才叫本钱。',
+    },
+  },
+
+  /* ---------------- 第六关 ---------------- */
+  {
+    id: 6,
+    age: 27,
+    label: '第六关',
+    title: '凌晨三点的需求变更',
+    place: '工位 · 项目第 8 个月',
+    chapter: '第 4 节 · 不要浪费时间',
+    lines: [
+      '这个项目你已经做了八个月。合同金额不大，客户换了三任对接人，需求改了十一版。',
+      '第三任对接人今晚发来消息："整体方向要调一下，不过前面的逻辑可以复用。"',
+      '你盯着屏幕。八个月的代码、八个月的周末、八个月里推掉的所有聚会，全都堆在那个"可以复用"后面。',
+      '继续做下去，还要四个月。现在停手，八个月就白干了。',
+    ],
+    choices: [
+      {
+        text: '继续。都投了八个月了，现在停等于全白费',
+        effects: { time: -12, mind: -11 },
+        outcome: '你又做了四个月。项目最后还是没上线。你亏的不是八个月，是十二个月——后面那四个月，是被前面那八个月推着走的。',
+      },
+      {
+        text: '只看"还要投多少"和"还能拿回多少"，谈一次退出',
+        effects: { time: 11, mind: 8, money: 3 },
+        outcome: '你算了一页纸：往后还要四个月人力，能收回的尾款是其中的三成。你拿着这页纸去谈，客户同意按阶段结清。你用半页纸，换回了四个月。',
+      },
+      {
+        text: '硬扛着做完，做完就不想这事了',
+        effects: { time: -7, mind: -7, money: 2 },
+        outcome: '你做完了，钱也结了。但你这一年的记忆，只剩下凌晨三点的工位。有些"完成"，代价是把自己耗空。',
+      },
+    ],
+    insight: {
+      quote: '决定是否继续时，只看未来投入和未来回报，不看已投入多少',
+      source: '第 4 节「不要浪费时间」· 第 3 条',
+      data: '已经投进去的钱和时间，会让人更想接着干下去。98 组数据合起来算，这个倾向稳定存在。所以判断要不要继续，只算往后还要投多少、还能拿回多少。已经花掉的那些，不要算进去。',
+      moral: '沉没成本不是成本，它只是一段你不能重来的记忆。真正划算的决定，永远只由"接下来"决定。',
+    },
+  },
+
+  /* ---------------- 第七关 ---------------- */
+  {
+    id: 7,
+    age: 28,
+    label: '第七关',
+    title: '购物车里的自己',
+    place: '年终奖到账的那一晚',
+    chapter: '第 6 节 · 反面清单',
+    lines: [
+      '三万块年终奖到账。手机震了一下。',
+      '同一天，隔壁工位的同事提了新车，钥匙放在桌上，角度很讲究。',
+      '你的购物车里躺着那几样放了半年的东西：一块表、一台相机、一把很贵的椅子。你其实分不清你是真的想要它们，还是想要"拥有它们之后的那个自己"。',
+      '结算按钮是橙色的，很大。',
+    ],
+    choices: [
+      {
+        text: '全买。辛苦一年，该犒劳自己',
+        effects: { money: -11, mind: 3 },
+        outcome: '拆快递的那个晚上确实很快乐。这种快乐持续了大概十一天。第十二天，你看见同事换了更贵的车钥匙，那股快乐就悄悄过期了。',
+      },
+      {
+        text: '不买这些，拿这笔钱去一趟一直想去的地方，或者学一门课',
+        effects: { money: -6, mind: 11, time: 4 },
+        outcome: '三年后你还能完整讲出那趟路上的某一天。研究发现，花钱买一段经历比买东西更让人快乐——因为东西会被习惯，经历会被反复讲。',
+      },
+      {
+        text: '什么都不买，全部存起来',
+        effects: { money: 10, mind: -3 },
+        outcome: '账户数字变大了，你却有点空。省钱本身不是目的，把钱换回你真正想要的东西才是。纯粹的克制，也是一种浪费。',
+      },
+    ],
+    interact: {
+      type: 'budget',
+      intro: '三万块就在这里。两个滑块，自己分——剩下那份自动进「存起来」。',
+      total: 30000,
+      buckets: [
+        { key: 'buy',   name: '买东西', desc: '表、相机、那把很贵的椅子', now: 1.00, later: 0.25 },
+        { key: 'exp',   name: '买经历', desc: '一趟路、一门课、一次出门', now: 0.90, later: 0.95 },
+        { key: 'save',  name: '存起来', desc: '不动，留在账户里', now: 0.30, later: 0.70 },
+      ],
+    },
+    insight: {
+      quote: '不要指望买东西改善心情或身份感',
+      source: '第 6 节「反面清单」· 第 23 条',
+      data: '把钱和物质看得越重的人，自己觉得越不幸福（关联很弱）。另有研究发现，花钱买一段经历比买东西更让人快乐。同节第 24 条：拿收入一样的人来比，邻居挣得越多，这个人报告的幸福感越低——为了搬进一个人人都比你宽裕的地方而多花的钱，买到的是把自己往下挪一档。',
+      moral: '消费能买到商品，买不到身份。想要"被看见"是一种真实的饥饿，但货架上的东西填不饱它。',
+    },
+  },
+
+  /* ---------------- 第八关 ---------------- */
+  {
+    id: 8,
+    age: 29,
+    label: '第八关',
+    title: '三万块的「包就业」',
+    place: '手机屏幕上的招生广告',
+    chapter: '第 23 节 · 学什么技能划算',
+    lines: [
+      '"六个月，零基础转行，毕业即就业，平均起薪 18K。"',
+      '学费三万。课程顾问发来十几张学员入职截图，还有一句："现在报名，本周还能减 2000。"',
+      '你在行业里干了五年，越来越觉得自己随时可以被换掉。',
+      '三万块，六个月。这笔账该怎么算？',
+    ],
+    choices: [
+      {
+        text: '报。听说工资高，说明行业缺人',
+        effects: { money: -10, time: -7, mind: -3 },
+        outcome: '"网上说工资高"和"这里缺人"是两件事。你后来才去查了当地的紧缺职业目录——你学的那个方向，三年前就不在名单上了。',
+      },
+      {
+        text: '先查三件事：证在不在国家职业资格目录、当地紧缺目录有没有、政府补贴能不能覆盖',
+        effects: { money: 8, time: 5, mind: 7 },
+        outcome: '你花了两个晚上查完。结果是：同样的方向，人社备案的评价机构有政府补贴班，自费部分不到四千。你省下了两万六和两个月的弯路。',
+      },
+      {
+        text: '不学。都这个年纪了，就这样吧',
+        effects: { time: -5, mind: -5 },
+        outcome: '你选择了不动。不动其实也有成本——只是它不开发票，你会误以为它是免费的。',
+      },
+    ],
+    insight: {
+      quote: '先记住基准线：多受一年教育，全球平均的私人回报约为每年 9%',
+      source: '第 23 节「学什么技能划算」· 第 7 条',
+      data: '按全世界平均算，多读一年书，个人收入每年高约 9%，女性的回报一直高于男性（这是正规上学的数，报一个班不能直接套）。拿它当尺子：一个课程要你花 3 万元和半年，就问它带来的收入变化，抵不抵多读一年书。同节提醒：挑技能优先看"要不要动手、要不要现场判断"，这类最难被自动化顶掉。',
+      moral: '所有"投资自己"的广告都该过同一道闸：拿它和多读一年书的 9% 比一比。贵不是问题，贵得没有依据才是。',
+    },
+  },
+
+  /* ---------------- 第九关 ---------------- */
+  {
+    id: 9,
+    age: 30,
+    label: '第九关',
+    title: '三十年的月供',
+    place: '售楼处 · 沙盘前',
+    chapter: '第 15 节 · 租房与买房',
+    lines: [
+      '"这套月供 9800，三十年。"销售把计算器推过来，"您父母那边支持一点首付，压力就不大了。"',
+      '你父母那点钱，是他们攒了一辈子、准备用来看病的钱。',
+      '女朋友（现在是妻子了）没说话，但她看着样板间里那盏灯的眼神，你认识。',
+      '窗外是同一片夜色。你想起了那年那个关于"往上挪一档"的下午。',
+    ],
+    choices: [
+      {
+        text: '掏空两边父母的养老钱，先上车再说',
+        effects: { money: -13, mind: -9, health: -4 },
+        outcome: '你上车了。三年后父亲住院，你们在缴费窗口前算了一遍又一遍。房子让你在这个城市有了坐标，也让你失去了腾挪的余地。',
+      },
+      {
+        text: '继续租，把差价变成现金流和定投，两年后再看',
+        effects: { money: 7, mind: 5, health: 3 },
+        outcome: '你们租住了两年，把省下的钱留成了随时能动的现金。两年后政策变了、收入也变了，你在一个不那么慌的时点重新做了决定——这才是"划算"真正的样子。',
+      },
+      {
+        text: '买小一点、远一点，月供不超过收入三成',
+        effects: { money: -3, mind: 5, health: 2 },
+        outcome: '房子不大，但月供没有掐住你的喉咙。你还能辞职、还能生病、还能说不——这三样东西，比面积值钱。',
+      },
+    ],
+    insight: {
+      quote: '不要为了「在周围人里往上挪一档」多花钱换房、换车、换圈子',
+      source: '第 6 节「反面清单」· 第 24 条',
+      data: '拿收入一样的人来比，邻居挣得越多，这个人报告的幸福感越低；这主要发生在学历和自己相同的邻居身上。所以为了搬进一个人人都比你宽裕的地方而多花的钱，买到的是把自己往下挪一档。第 15 节同时提醒：买房签约前查清有没有查封和抵押，期房定金首付只打进合同写明的预售资金监管账户。',
+      moral: '买房买的是"能承受的生活方式"，不是"别人眼里的位置"。月供真正买走的东西叫选择权，你要算清楚它值不值。',
+    },
+  },
+
+  /* ---------------- 第十关 ---------------- */
+  {
+    id: 10,
+    age: 32,
+    label: '第十关',
+    title: '领证前的三张表',
+    place: '民政局门口的台阶',
+    chapter: '第 10 节 · 恋爱和结婚划不划算',
+    lines: [
+      '你们约好今天领证。身份证揣在口袋里，一纸签字声明，不用户口簿，不收钱，当场发证——简单得有点不像一件事。',
+      '但有三件事你们始终没摊开说：',
+      '一，首付里父母出的那笔，是借还是送？二，婚后的家务和照护，到底怎么分工？三，如果有一天走不下去，退出要付多少？',
+      '"谈钱伤感情。"这句话你从小听到大。',
+    ],
+    choices: [
+      {
+        text: '婚前把这三张表摊开算清楚：出资写清借还是送、家务按"无酬劳动"记账、做一次婚检',
+        effects: { mind: 11, money: 7, health: 4 },
+        outcome: '那个晚上谈得很累，也谈出了你们第一次真正意义上的共识。你们不是因为不信任才算账，是因为想把这段关系当一件长期的事来经营。',
+      },
+      {
+        text: '谈这些太伤感情了，先领证，以后再说',
+        effects: { mind: -5, money: -9 },
+        outcome: '"以后再说"后来都变成了"早知道当初"。模糊不是温柔，模糊只是把账推迟到利息更高的时候再还。',
+      },
+      {
+        text: '只去做婚检，其他两件以后自然会清楚',
+        effects: { mind: 3, health: 4, money: -3 },
+        outcome: '婚检做对了——有重大疾病必须在登记前如实告知，这是法律，也是底线。但另外两笔账，并不会因为你不提就自动结清。',
+      },
+    ],
+    insight: {
+      quote: '父母出资买房，在转账的时候就把是借是送写清楚',
+      source: '第 10 节「恋爱和结婚划不划算」· 第 11 条',
+      data: '同节还给出：时间账按"无酬劳动"算，谈清分工再领证；结婚的钱账先看法律默认规则，再决定要不要书面约定；婚前做一次婚检，有重大疾病必须在登记前如实告诉对方；算退出成本——协议离婚有 30 天冷静期。',
+      moral: '亲密关系里最贵的不是钱，是不清不楚。把账算明白，不是把感情算薄，是把关系放进能长期运行的结构里。',
+    },
+  },
+
+  /* ---------------- 第十一关 ---------------- */
+  {
+    id: 11,
+    age: 40,
+    label: '第十一关',
+    title: '父亲的体检报告',
+    place: '老家 · 父亲的书桌抽屉',
+    chapter: '第 24 节 · 看病怎么少花钱少走弯路',
+    lines: [
+      '你在抽屉最里面翻出那份体检报告，三个箭头朝上，一个朝下。日期是去年十月。',
+      '"没什么事，"父亲说，"县医院看也一样，去省城干嘛，还得找人。"',
+      '他不是不想治，他是怕麻烦你，也怕那一串你没法替他承担的数字。',
+      '你手里有三个选项，和一位正在变老的父亲。',
+    ],
+    choices: [
+      {
+        text: '先去社区医院，按基层逐级转诊往上走，每份病历和影像自己存一份',
+        effects: { health: 11, money: 5, mind: 7, time: 3 },
+        outcome: '同一个统筹地区里，医院级别越低报销比例越高，差约 10 个百分点；逐级转诊上去，住院起付线还接着算。你没有多花冤枉钱，也没有耽误事——你把"孝心"换成了一条正确的路径。',
+      },
+      {
+        text: '直接去省城大医院，找个号贩子买专家号',
+        effects: { health: 7, money: -9, time: -7 },
+        outcome: '你挂上了号，也多花了三千块和两个通宵排队。病看对了，路走弯了。指南里那句"别找号贩子"，你是在事后才读到的。',
+      },
+      {
+        text: '听他的，先不管，等他自己说不舒服再说',
+        effects: { health: -11, mind: -5 },
+        outcome: '两年后那三个箭头变成了住院通知。你后来才知道：很多病不是突然来的，只是突然被发现的。',
+      },
+    ],
+    insight: {
+      quote: '常见病先在社区看，经基层逐级转诊上去；要去大医院，走转诊中心，别找号贩子',
+      source: '第 24 节「看病：怎么少花钱少走弯路」· 第 1、3 条',
+      data: '同一个统筹地区里，级别越低报销比例越高，差距约 10 个百分点。每次看完病，把病历、检查报告和影像自己存一份；对诊疗有疑问就当场要求封存病历。急重的伤病直奔急诊预检分诊台，别去挂号窗口排队；没带钱、没带证件、说不清自己是谁，急诊也必须先救。',
+      moral: '看病这件事上，最贵的往往不是药，是走错的路。信息差本身就是一笔税，而它是可以事先省的。',
+    },
+  },
+
+  /* ---------------- 第十二关 ---------------- */
+  {
+    id: 12,
+    age: 45,
+    label: '第十二关',
+    title: '塌下来的那一年',
+    place: '老家的客厅 · 母亲走后的第 9 天',
+    chapter: '第 29 节 · 遭遇重大打击之后',
+    lines: [
+      '第九天。你已经把该办的都办完了，剩下的都是不该现在办的。',
+      '中介打电话来问老家的房子卖不卖。单位问你要不要调去外地，说是个机会。你弟弟问要不要把母亲的东西都清掉。',
+      '你三天没怎么睡，两天没正经吃饭。你有一种强烈的冲动：赶紧把这些事一次性处理干净，好像处理完了，这件事就过去了。',
+      '窗台上有一盆母亲养的水仙，还活着。',
+    ],
+    choices: [
+      {
+        text: '立刻处理掉所有事：卖房、辞职、清空',
+        effects: { mind: -13, money: -7, health: -5 },
+        outcome: '你在三个月里做完了五个不可逆的决定。半年后你回头看，发现其中有四个，是在你最不清醒的时候替未来的自己签的字。',
+      },
+      {
+        text: '头三个月，所有不可逆的大决定一律往后推；先把三餐、睡觉和慢性病药交给一个固定的人盯着',
+        effects: { mind: 13, health: 6, money: 4 },
+        outcome: '你只做了三件事：按时吃饭、按时睡、每天给那盆水仙换水。等那三个月过去，你再去看那五个决定——有两个已经不需要做了，另外三个你做出了完全不同的选择。',
+      },
+      {
+        text: '谁也不说，一个人扛',
+        effects: { mind: -15, health: -8 },
+        outcome: '你以为沉默是坚强。实际上孤独会把哀伤的时间从几个月拉长到几年。要人陪着说话，可以打 12356——这条号码写在那本书里，写了很多次。',
+      },
+    ],
+    insight: {
+      quote: '变故后的头三个月，凡是不可逆的大决定一律往后推',
+      source: '第 29 节「遭遇重大打击之后」· 第 12 条',
+      data: '同节还写：亲人刚走的那几天别一个人待着，有心脏病、高血压、糖尿病的照常吃药；丧偶后的头半年，把三餐、睡觉、慢性病的药和复查交给一个固定的人盯着；哀伤过了半年还在原地、日子过不下去，去精神科或临床心理科挂号；要人陪着说话打 12356，未成年人打 12355。',
+      moral: '人在最痛的时候，最想做的往往是"赶紧把一切解决掉"。真正的性价比，是在风暴里先什么都不决定——把不可逆的选择，留给清醒的自己。',
+    },
+  },
+
+  /* ---------------- 第十三关（终章） ---------------- */
+  {
+    id: 13,
+    age: 60,
+    label: '终章',
+    title: '结账',
+    place: '六十岁生日 · 同一张书桌',
+    chapter: '第 6 节 · 不要浪费时间',
+    lines: [
+      '六十岁。你坐在同一张书桌前，这台电脑上还存着二十八岁那年的一份方案。',
+      '你翻过那本书。528 条（现在更多了），你践行过的不到三分之一——但就是那三分之一，把你送到了这里。',
+      '如果现在能往回发一条消息，只准一句，你会发给三十岁的自己什么？',
+    ],
+    choices: [
+      {
+        text: '「早点睡。你以为你在省钱省时间，其实你在透支。」',
+        effects: { health: 8, time: 5 },
+        outcome: '你按下发送。你想起了那个 0:10 的夜晚、那根被塞进座椅缝的安全带、那盒 1980 的保健品。原来一整个人生的走向，常常就藏在最不起眼的那几次"算了"和"还是吧"里。',
+      },
+      {
+        text: '「最划算的那些事，几乎都不花钱。」',
+        effects: { money: 8, mind: 6 },
+        outcome: '走路、睡觉、晒太阳、认真刷牙、给家里装个烟雾报警器、把父母拉去体检、在风暴里什么都不决定——这些真正改写曲线的事，没有一件需要你先变有钱。',
+      },
+      {
+        text: '「先别死。别的都好说。」',
+        effects: { health: 10, mind: 4 },
+        outcome: '这是全书第一节的标题，也是最笨、最管用的一条。三十岁的人约九成二能活到六十岁——你现在就坐在这里，是那个九成二的证明。',
+      },
+    ],
+    insight: {
+      quote: '不要因为「人随时会死，早点把钱花完才快乐」就不存钱，三十岁的人约九成能活到六十岁',
+      source: '第 6 节「反面清单」· 第 32 条',
+      data: '按世界卫生组织给中国算的数，三十岁的人约九成二能活到六十岁，一半以上能活到八十岁。年轻人普遍把自己早死的可能估得太高，照这个感觉过日子，存下的钱比该存的少约四分之一。',
+      moral: '高性价比的人生，不是把每一分都花在刀刃上，而是把有限的命、时间、钱、心力，投到那些确实会被时间放大几倍的事情上，然后耐心地活到收获的那天。',
+    },
+  },
+];
+
+/* 结算语：按分数段与最低维度给出 */
+const RESULT_TIERS = [
+  { min: 340, grade: 'S', title: '活得明白', desc: '你把有限的本钱，投在了会被时间放大的地方。这不是运气，是一连串清醒的小决定。' },
+  { min: 300, grade: 'A', title: '相当划算', desc: '大方向没走偏。你踩过坑，但踩完就记住了——这已经是大多数人做不到的事。' },
+  { min: 260, grade: 'B', title: '收支平衡', desc: '你过完了普通的一生，不亏，也不算赚。有几处本可以更划算，它们现在还来得及。' },
+  { min: 220, grade: 'C', title: '有点亏', desc: '你付出的比得到的多。问题通常不在某一件大事，而在那些年被忽略的日常。' },
+  { min: 0,   grade: 'D', title: '被生活收了利息', desc: '你把本钱花在了不会被时间回报的地方。好消息是：这本书可以重读，人生也还长。' },
+];
+
+const LOWEST_TIPS = {
+  health: {
+    title: '最该补的一课：把「活着」排在最前面',
+    tips: [
+      '系安全带、装烟雾报警器、量血压——这三件事的共同点是：做一次，保护很多年。',
+      '每天走到 7000–8000 步，或每周快走 150–300 分钟，性价比高得离谱。',
+      '每晚睡 7 小时左右，作息比时长更重要。',
+    ],
+  },
+  time: {
+    title: '最该补的一课：把时间按你的时薪记账',
+    tips: [
+      '选住处把通勤时长放在前面——单程少 30 分钟，一周省 5 小时。',
+      '决定要不要继续时，只看未来投入和未来回报，不看已投入多少。',
+      '用自己的时薪决定哪些家务可以外包；花钱买时间的人，生活满意度更高。',
+    ],
+  },
+  money: {
+    title: '最该补的一课：守住「亏得起」这条线',
+    tips: [
+      '只拿亏得起的钱创业，不动家底、不借钱开张。',
+      '关掉所有自动续费，改为到期手动续——翻一遍扣款列表用不了 20 分钟。',
+      '三十岁的人约九成二能活到六十岁，别用"随时会死"当不存钱的理由。',
+    ],
+  },
+  mind: {
+    title: '最该补的一课：心力也是一种本钱',
+    tips: [
+      '变故后的头三个月，凡是不可逆的大决定一律往后推。',
+      '花钱买一段经历比买东西更让人快乐。',
+      '关系里最贵的不是钱，是不清不楚；把账算明白，关系才跑得久。',
+    ],
+  },
+};
+
+/* ============================================================
+ * 出身：开局决定你的四样本钱从哪里起步
+ * 依据：第 23 节「学什么技能划算」、第 31 节「十八岁之后有哪几条路」
+ * ============================================================ */
+const ORIGINS = [
+  {
+    id: 'county',
+    name: '县城做题家',
+    tag: '第一次进省城',
+    stats: { health: 62, time: 58, money: 48, mind: 62 },
+    line: '你考上了一所二本。报到那天是你第一次坐高铁，也是你父母第一次出省。他们把你送到宿舍楼下，第二天就回去了。',
+    note: '你最薄的是钱，最整的是时间。这笔账决定了你前几关的活法。',
+  },
+  {
+    id: 'skill',
+    name: '职校出来的手艺人',
+    tag: '手上先有一门活',
+    stats: { health: 58, time: 62, money: 56, mind: 58 },
+    line: '你十六岁就进了实训车间。别人在背公式的时候，你在练手上功夫。老师说，这类活最难被机器顶掉。',
+    note: '你有时间也有手艺，缺的是把技能换成等级的门路。',
+  },
+  {
+    id: 'repeat',
+    name: '复读过一年的人',
+    tag: '多花了一年',
+    stats: { health: 60, time: 54, money: 52, mind: 48 },
+    line: '你在同一个教室里多坐了一年。最后考得不算差，但那一整年的消耗，没有人替你记账。',
+    note: '你的心力起步就比别人低一截，要格外留意它在什么时候见底。',
+  },
+  {
+    id: 'city',
+    name: '家里有底的城市孩子',
+    tag: '有兜底，但不知道要什么',
+    stats: { health: 64, time: 60, money: 72, mind: 52 },
+    line: '你不缺钱，也不缺退路。你缺的是一个必须由你自己回答的问题——家里能给你兜底，但兜不住你不知道要去哪儿。',
+    note: '钱是你最厚的本钱，也是最容易让你误以为不需要算账的东西。',
+  },
+];
+
+/* ============================================================
+ * 阶段对账单：每走完一段，回头看一次
+ * ============================================================ */
+const STAGES = [
+  {
+    afterId: 5,          // 做完第 5 关（index 4）后触发
+    title: '二十几岁的账',
+    sub: '18 岁 → 25 岁',
+    lines: {
+      good: '这一段你赚了。你没有在最便宜的年纪，把最贵的东西花掉。',
+      mid:  '这一段大体持平。你没走大弯路，但也没攒下多少余量。',
+      bad:  '这一段你是净亏的。好消息是：二十五岁的亏损，是全部人生里最好补的一类。',
+    },
+  },
+  {
+    afterId: 10,
+    title: '三十上下的账',
+    sub: '26 岁 → 30 岁',
+    lines: {
+      good: '这一段你赚了。最难的不是赚到，而是在别人都急着往前冲的时候，你守住了"亏得起"那条线。',
+      mid:  '这一段持平。你开始承担别人了，也终于明白了账不能只算自己。',
+      bad:  '这一段你亏得比上一段狠。因为这一段的每个决定，都牵扯到了别人。',
+    },
+  },
+  {
+    afterId: 14,
+    title: '往后的账',
+    sub: '32 岁 → 60 岁',
+    lines: {
+      good: '最后这一段你赚了。最重要的是：你终于学会了在风暴里什么都不决定。',
+      mid:  '最后这一段持平。你把该扛的扛住了，这就已经比大多数人强。',
+      bad:  '最后这一段是亏的。但你还是走到了六十岁——这本身就是那九成二的证明。',
+    },
+  },
+];
+
+/* ============================================================
+ * 结局画像：最强的那一项 + 最弱的那一项，决定你成了什么样的人
+ * ============================================================ */
+const PORTRAITS = {
+  'health-money': { name: '活得久，但一直紧绷', desc: '你把身体保住了，却没有给自己留下多少缓冲。你的风险不在病床上，在每个月底。' },
+  'health-mind':  { name: '硬朗，但有点孤', desc: '你的各项指标都还行，可身边能说话的人越来越少。身体账做得漂亮，关系账一直没开始做。' },
+  'health-time':  { name: '健康，但一直在赶', desc: '你保住了命，却把所有时间都交出去了。你活到了六十岁，但很少有一天是属于自己的。' },
+  'money-health': { name: '攒下了钱，透支了人', desc: '账户是好看的，身体账是欠着的。你赚到的余量，有一部分要在后面这些年还回去。' },
+  'money-mind':   { name: '有余钱，没滋味', desc: '你不慌了，但也不怎么高兴。钱解决了恐惧，解决不了无意义。' },
+  'money-time':   { name: '钱有了，时间没了', desc: '你把自己最不能再生那样东西，换成了最可再生的一样。这笔账，六十岁才看得清。' },
+  'time-health':  { name: '从容，但底子薄', desc: '你把时间安排得很好，唯独没给身体留出位置。从容是本事，但它需要一副能撑住的身子。' },
+  'time-money':   { name: '自由，但手上紧', desc: '你有大把可支配的时间，也没有被钱拖死——只是每一次要用钱的时候，都得重新想一遍。' },
+  'time-mind':    { name: '时间充裕，心里空', desc: '你不忙了，但也不太知道该拿这些时间做什么。空闲本身不会自动变成好日子。' },
+  'mind-health':  { name: '通透，但身体欠账', desc: '你想明白了很多事，唯独没把身体当成其中一件。明白是最难得的，也是最容易晚到的。' },
+  'mind-money':   { name: '心里富足，口袋一般', desc: '你没被生活打垮，关系也还在。只是抗风险的余量一直没攒起来，一次意外就能把这段平衡掀翻。' },
+  'mind-time':    { name: '心是稳的，时间是别人的', desc: '你扛住了几次大的打击，但你的时间几乎从来没有属于过你自己。' },
+};
+
+/* ============================================================
+ * 每关的意象图标（line-art，stroke 使用 currentColor）
+ * ============================================================ */
+const ICONS = [
+  // 0 零点十分：深夜里的手机信息流
+  '<rect x="15" y="5" width="18" height="38" rx="3"/><path d="M19 11h10M19 17h10M19 23h7"/><path d="M21 37h6"/>',
+  // 1 安全带：车 + 斜带
+  '<path d="M7 30V21l7-9h20l7 9v9a3 3 0 0 1-3 3H10a3 3 0 0 1-3-3z"/><circle cx="14" cy="33" r="3.2"/><circle cx="34" cy="33" r="3.2"/><path d="M17 13 31 35"/>',
+  // 2 烟
+  '<rect x="9" y="29" width="22" height="5" rx="2.5"/><path d="M31 31c7-2 7-8 0-11s0-9 5-12"/><circle cx="14" cy="13" r="3.5"/><circle cx="23" cy="9" r="2.2"/>',
+  // 3 保健品：瓶 + 十字
+  '<rect x="16" y="17" width="16" height="23" rx="3"/><path d="M20 17v-4a4 4 0 0 1 8 0v4"/><path d="M24 26v9M19.5 30.5h9"/>',
+  // 4 通勤：时钟 + 路
+  '<circle cx="24" cy="21" r="13"/><path d="M24 12v9l7 5"/><path d="M8 44h32"/>',
+  // 5 奶茶店：铺面
+  '<path d="M9 20 24 8l15 12"/><path d="M13 20v21h22V20"/><rect x="20" y="28" width="8" height="13"/>',
+  // 6 沉没成本：沙漏
+  '<path d="M15 8h18M15 40h18"/><path d="M17 8l7 14 7-14z"/><path d="M17 40l7-14 7 14z"/>',
+  // 7 购物车
+  '<path d="M6 10h6l4 21h20"/><path d="M12 14h28l-3 17"/><circle cx="16" cy="39" r="3"/><circle cx="35" cy="39" r="3"/>',
+  // 8 证书
+  '<rect x="12" y="9" width="24" height="30" rx="2.5"/><path d="M18 17h12M18 23h12M18 29h8"/><circle cx="33" cy="33" r="4.5"/><path d="M33 30.5v5M30.5 33h5"/>',
+  // 9 房子与月供
+  '<path d="M8 22 24 9l16 13"/><path d="M13 21v20h22V21"/><rect x="20" y="28" width="8" height="13"/><path d="M24 9V5"/>',
+  // 10 结婚：双环
+  '<circle cx="18" cy="26" r="11"/><circle cx="30" cy="26" r="11"/>',
+  // 11 体检单
+  '<rect x="14" y="7" width="20" height="34" rx="2.5"/><path d="M19 15h10M19 21h10M19 27h10"/><path d="M24 33v6M21 36h6"/>',
+  // 12 窗台植物
+  '<path d="M15 29h18l-2 13H17z"/><path d="M24 29V14"/><path d="M24 19c-6 0-9-4-9-9 6 0 9 4 9 9z"/><path d="M24 24c6 0 9-4 9-9-6 0-9 4-9 9z"/>',
+  // 13 结账：天平
+  '<path d="M24 8v30"/><path d="M9 42h30"/><path d="M8 16h32"/><path d="M8 16 4 27h8z"/><path d="M40 16l-4 11h8z"/>',
+];
+
+</script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const svg = $("scene");
+  const BB = { x: 440, y: 430 };     // 牙盘中心
+  const HIP = { x: 424, y: 278 };    // 髋关节
+  const CRANK = 32, THIGH = 92, SHIN = 92;
+  const WHEEL_R = 78, GEAR = 2.2, BASE_SPEED = 240; // 地面速度 px/s
+
+  // 生成辐条
+  const NS = "http://www.w3.org/2000/svg";
+  function spokes(g, cx, cy) {
+    for (let i = 0; i < 18; i++) {
+      const a = i / 18 * Math.PI * 2;
+      const l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", cx); l.setAttribute("y1", cy);
+      l.setAttribute("x2", cx + Math.cos(a) * 70); l.setAttribute("y2", cy + Math.sin(a) * 70);
+      g.appendChild(l);
+    }
+  }
+  spokes($("rearSpokes"), 300, 420);
+  spokes($("frontSpokes"), 600, 420);
+
+  // 海面上的小浪花：越靠近岸边越大（透视），x 留出余量避免跨过 900 的接缝
+  {
+    let s = 11;
+    const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 26; i++) {
+      const y = 312 + r() * 118, k = (y - 300) / 130;
+      const w = 8 + k * 16, x = 10 + r() * (870 - w * 2);
+      const p = document.createElementNS(NS, "path");
+      p.setAttribute("d", `M${x.toFixed(1)} ${y.toFixed(1)} q${(w / 2).toFixed(1)} ${(-w / 3).toFixed(1)} ${w.toFixed(1)} 0`);
+      p.setAttribute("stroke-width", (1.2 + k * 1.6).toFixed(1));
+      $("waveMarks").appendChild(p);
+    }
+  }
+
+  // 两段式 IK：膝盖朝前
+  function knee(hip, foot) {
+    const dx = foot.x - hip.x, dy = foot.y - hip.y;
+    const d = Math.min(Math.hypot(dx, dy), THIGH + SHIN - 0.01);
+    const base = Math.atan2(dy, dx);
+    const off = Math.acos((THIGH * THIGH + d * d - SHIN * SHIN) / (2 * THIGH * d));
+    const a = { x: hip.x + Math.cos(base - off) * THIGH, y: hip.y + Math.sin(base - off) * THIGH };
+    const b = { x: hip.x + Math.cos(base + off) * THIGH, y: hip.y + Math.sin(base + off) * THIGH };
+    return a.x > b.x ? a : b;
+  }
+
+  // 蹼足，脚尖朝前
+  const foot = p =>
+    `M${p.x - 9} ${p.y - 1} L${p.x + 20} ${p.y - 7} L${p.x + 16} ${p.y + 1} L${p.x + 23} ${p.y + 5} L${p.x - 6} ${p.y + 7} Z`;
+
+  function leg(prefix, angle, dx) {
+    const pedal = { x: BB.x + Math.cos(angle) * CRANK, y: BB.y + Math.sin(angle) * CRANK };
+    const hip = { x: HIP.x + dx, y: HIP.y };
+    const k = knee(hip, pedal);
+    $(prefix + "Leg").setAttribute("points", `${hip.x},${hip.y} ${k.x},${k.y} ${pedal.x},${pedal.y}`);
+    $(prefix + "Foot").setAttribute("d", foot(pedal));
+    const c = $(prefix + "Crank");
+    c.setAttribute("x1", BB.x); c.setAttribute("y1", BB.y);
+    c.setAttribute("x2", pedal.x); c.setAttribute("y2", pedal.y);
+  }
+
+  // 视差图层：每层内容宽 900，用 <use> 复制一份实现无缝循环
+  const layers = [
+    ["lClouds", 0.06], ["lFar", 0.1], ["lWaves", 0.22], ["lBeach", 0.6], ["lTrees", 0.6], ["lRoad", 1]
+  ].map(([id, f]) => ({ el: $(id), f }));
+
+  // 星星（固定种子的伪随机，每次位置一致）
+  let seed = 7;
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 45; i++) {
+    const s = document.createElementNS(NS, "circle");
+    s.setAttribute("class", "star");
+    s.setAttribute("cx", (rand() * 900).toFixed(1));
+    s.setAttribute("cy", (rand() * 230).toFixed(1));
+    s.setAttribute("r", (0.8 + rand() * 1.6).toFixed(1));
+    s.style.animationDelay = `${(-rand() * 2.4).toFixed(2)}s`;
+    $("stars").appendChild(s);
+  }
+
+  // 尘土粒子池
+  const dust = Array.from({ length: 28 }, () => {
+    const c = document.createElementNS(NS, "circle");
+    c.setAttribute("r", 0);
+    $("dust").appendChild(c);
+    return { el: c, life: 0, x: 0, y: 0, vx: 0, vy: 0, r: 0 };
+  });
+  let dustAcc = 0;
+  // 落地/撞击时的一团尘
+  function burstDust(x, y, n, power) {
+    for (let i = 0; i < n; i++) {
+      const p = dust.find(d => d.life <= 0);
+      if (!p) break;
+      Object.assign(p, {
+        life: 1, x: x + (Math.random() - 0.5) * 26, y: y + Math.random() * 6,
+        vx: (Math.random() - 0.5) * 90 * power, vy: -20 - Math.random() * 40 * power,
+        r: 3 + Math.random() * 4
+      });
+    }
+  }
+  function updateDust(dt) {
+    dustAcc = !onGround ? 0 : dustAcc + dt * 16 * Math.abs(speed); // 腾空时不扬尘
+    while (dustAcc >= 1) {
+      dustAcc -= 1;
+      const p = dust.find(d => d.life <= 0);
+      if (!p) break;
+      Object.assign(p, {
+        life: 1, x: 268 + Math.random() * 14, y: 496 + Math.random() * 5,
+        vx: -BASE_SPEED * speed * (0.35 + Math.random() * 0.3), vy: -12 - Math.random() * 18, r: 2 + Math.random() * 3
+      });
+    }
+    for (const p of dust) {
+      if (p.life <= 0) continue;
+      p.life -= dt * 1.4;
+      p.x += p.vx * dt; p.y += p.vy * dt;
+      const k = Math.max(p.life, 0);
+      p.el.setAttribute("cx", p.x.toFixed(1));
+      p.el.setAttribute("cy", p.y.toFixed(1));
+      p.el.setAttribute("r", (p.r * (1.8 - k)).toFixed(1));
+      p.el.setAttribute("opacity", (k * 0.45).toFixed(2));
+    }
+  }
+
+  // 飞鸟
+  const birds = [...document.querySelectorAll(".birdPos")].map((el, i) => ({ el, off: i * 38, y: 150 + i * 16 }));
+
+  // ---------- 路上的四种障碍：各有各的应付方式 ----------
+  // rock 碾过去 / log 得跳过去 / sand 拖慢你 / ramp 把你弹起来
+  const OB = {
+    rock: { w: 26, h: 26, lift: "cos" },
+    log:  { w: 56, h: 38, lift: null },
+    sand: { w: 78, h: 0,  lift: null },
+    ramp: { w: 50, h: 34, lift: "ramp" },
+  };
+  const OB_ORDER = ["rock", "log", "sand", "ramp"];
+  const obLayer = $("obLayer");
+  function makeOb(type) {
+    const proto = document.getElementById(type + "Proto");
+    const el = proto.cloneNode(true);
+    el.removeAttribute("id");
+    obLayer.appendChild(el);
+    return el;
+  }
+  function obLift(cfg, rx, wheelX) {
+    const d = rx - wheelX;
+    if (Math.abs(d) >= cfg.w) return 0;
+    if (cfg.lift === "cos") return cfg.h * Math.cos(d / cfg.w * Math.PI / 2);
+    return cfg.h * (d + cfg.w) / (2 * cfg.w);        // 跳台：左低右高
+  }
+  const obstacles = OB_ORDER.map((k, i) => ({
+    type: k, el: makeOb(k), wx: 2400 + i * 1500, hit: false,
+  }));
+  let shake = 0;
+
+  // 环境：昼夜 + 雨天，两者都用 0~1 的值平滑过渡
+  let night = 0, nightTarget = 0, rain = 0, rainTarget = 0;
+  const op = (id, v) => $(id).setAttribute("opacity", v.toFixed(3));
+  function applyEnv() {
+    const n = night, r = rain;
+    op("nightSky", n);
+    op("stars", n * (1 - r));
+    op("moon", n * (1 - r * 0.85));
+    op("sun", (1 - n) * (1 - r * 0.85));
+    op("lClouds", (1 - n * 0.7) * (1 - r));
+    op("lStorm", r * (1 - n * 0.4));
+    op("landShade", n * 0.6);
+    op("rainShade", r * 0.3 * (1 - n * 0.5));
+    op("wet", r * 0.22);
+    op("beam", Math.max(n, r * 0.55));
+    op("lamp", Math.max(n, r * 0.6));
+    op("glint", (1 - r * 0.9) * (1 - n * 0.4));
+    op("rain", r);
+    const b = 1 - n * 0.3 - r * 0.12;
+    $("riderWrap").style.filter = b < 0.995 ? `brightness(${b.toFixed(3)})` : "";
+    for (const bd of birds) bd.el.setAttribute("opacity", ((1 - n) * (1 - r)).toFixed(3));
+  }
+  const approach = (v, target, dt) => v + Math.sign(target - v) * Math.min(dt / 1.5, Math.abs(target - v));
+
+  // ---------- 音效（Web Audio 合成，首次用户操作时创建） ----------
+  let soundOn = true, actx = null, noiseBuf = null, rainGain = null;
+  function audio() {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === "suspended") actx.resume();
+      return actx;
+    } catch (_) { return null; }
+  }
+  function tone(type, f0, f1, dur, gain, delay = 0) {
+    const ctx = soundOn && audio();
+    if (!ctx) return;
+    const at = ctx.currentTime + 0.01 + delay;
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f0, at);
+    o.frequency.exponentialRampToValueAtTime(f1, at + dur);
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(gain, at + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    o.connect(g).connect(ctx.destination);
+    o.start(at); o.stop(at + dur + 0.02);
+  }
+  function noise(ctx) {
+    if (!noiseBuf) {
+      noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+      const d = noiseBuf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    return src;
+  }
+  function thunder(delay) {
+    const ctx = soundOn && actx;
+    if (!ctx) return;
+    const at = ctx.currentTime + delay;
+    const src = noise(ctx), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    f.type = "lowpass"; f.frequency.value = 260;
+    g.gain.setValueAtTime(0, at);
+    g.gain.linearRampToValueAtTime(0.7, at + 0.08);
+    g.gain.exponentialRampToValueAtTime(0.001, at + 2.6);
+    src.connect(f).connect(g).connect(ctx.destination);
+    src.start(at); src.stop(at + 2.7);
+  }
+  function ensureRainSound() {
+    const ctx = rainGain ? null : audio();
+    if (!ctx) return;
+    const src = noise(ctx), f = ctx.createBiquadFilter();
+    src.loop = true;
+    f.type = "bandpass"; f.frequency.value = 1600; f.Q.value = 0.5;
+    rainGain = ctx.createGain();
+    rainGain.gain.value = 0;
+    src.connect(f).connect(rainGain).connect(ctx.destination);
+    src.start();
+  }
+
+  // ---------- 起伏地形（登山赛车式） ----------
+  const G = 1500, JUMP_V = 400, GROUND_Y = 498;   // 小兔跳：顶点约 53px，不再是整车上天
+  const BIKE_S = 0.78;                       // 车身缩放：给山坡留出空间
+  const WHEEL_DX = 150 * BIKE_S;             // 轮距的一半
+  const CONTACT_L = 450 - WHEEL_DX, CONTACT_R = 450 + WHEEL_DX;
+  const terrainG = $("terrain");
+  const hillFill = document.createElementNS(NS, "path");
+  const roadBand = document.createElementNS(NS, "path");
+  const roadDash = document.createElementNS(NS, "path");
+  terrainG.appendChild(hillFill); terrainG.appendChild(roadBand); terrainG.appendChild(roadDash);
+  hillFill.setAttribute("fill", "#e6d4b0");
+  roadBand.setAttribute("fill", "none");
+  roadBand.setAttribute("stroke", "#71757c");
+  roadBand.setAttribute("stroke-width", "16");
+  roadBand.setAttribute("stroke-linejoin", "round");
+  roadBand.setAttribute("stroke-linecap", "round");
+  roadDash.setAttribute("fill", "none");
+  roadDash.setAttribute("stroke", "#f2f2ef");
+  roadDash.setAttribute("stroke-width", "4");
+  roadDash.setAttribute("stroke-dasharray", "26 34");
+  roadDash.setAttribute("opacity", ".85");
+  $("lRoad").style.display = "none";
+
+  // ===== 人生的三段路：越往后，路越难 =====
+  const ERA_X = [9500, 19100];                    // 分界（世界坐标，约在第 5 站 / 第 11 站）
+  const ERA_PAL = [
+    { fill: "#e6d4b0", road: "#71757c", tint: "#ffb26b", op: 0.00 },   // 海边缓坡
+    { fill: "#dbcbae", road: "#6b6f76", tint: "#ff9a4d", op: 0.09 },   // 进城的坡道
+    { fill: "#e9eff5", road: "#5f6772", tint: "#7fa8d8", op: 0.20 },   // 山口的断崖
+  ];
+  const smoothstep = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const eraAt = x => (x < ERA_X[0] ? 0 : (x < ERA_X[1] ? 1 : 2));
+  function ampAt(x) {
+    return 0.62 + 0.5 * smoothstep(ERA_X[0] - 800, ERA_X[0] + 800, x)
+                + 0.34 * smoothstep(ERA_X[1] - 800, ERA_X[1] + 800, x);
+  }
+  // 断崖：只在最后一段出现，宽度跳得过去
+  const GAP_BASE = ERA_X[1] + 400, GAP_STEP = 1450, GAP_W = 160;
+  function gapRange(x) {
+    if (x < GAP_BASE) return null;
+    const k = Math.floor((x - GAP_BASE) / GAP_STEP);
+    const c = GAP_BASE + k * GAP_STEP + 620;
+    return (x > c && x < c + GAP_W) ? [c, c + GAP_W] : null;
+  }
+  const inGap = x => gapRange(x) !== null;
+
+  function hillRaw(x) {
+    return Math.sin(x / 310) * 38 + Math.sin(x / 131 + 1.3) * 15 +
+           Math.sin(x / 620 + 0.7) * 22 + Math.sin(x / 71 + 2.1) * 6;
+  }
+  // 站牌附近放缓坡度，方便停靠
+  function groundY(x) {
+    if (inGap(x)) return Infinity;
+    const d = ((x - 1500) % 1600 + 1600) % 1600;
+    const near = Math.min(d, 1600 - d);
+    const damp = Math.min(1, Math.max(0.22, near / 330));
+    let h = (hillRaw(x) * ampAt(x) + 42) * damp;
+    h = Math.max(-24, Math.min(100, h));
+    return GROUND_Y - h;
+  }
+  const gySafe = x => { const g = groundY(x); return g === Infinity ? 498 : g; };
+
+  // 远景剪影：城市楼群 / 雪山
+  const backG = document.createElementNS(NS, "g");
+  terrainG.parentNode.insertBefore(backG, terrainG);
+  function buildBack(kind) {
+    const g = document.createElementNS(NS, "g");
+    if (kind === "city") {
+      for (let t = 0; t < 2; t++) for (let i = 0; i < 11; i++) {
+        const w = 46 + (i * 37) % 40, h = 60 + (i * 53) % 90;
+        const r = document.createElementNS(NS, "rect");
+        r.setAttribute("x", t * 900 + i * 82); r.setAttribute("y", 470 - h);
+        r.setAttribute("width", w); r.setAttribute("height", h + 50);
+        r.setAttribute("fill", "#b3aa9b");
+        g.appendChild(r);
+      }
+    } else {
+      for (let t = 0; t < 2; t++) for (let i = 0; i < 7; i++) {
+        const bx = t * 900 + i * 150, h = 150 + (i * 71) % 120;
+        const p = document.createElementNS(NS, "path");
+        p.setAttribute("d", `M${bx - 95} 505 L${bx} ${505 - h} L${bx + 95} 505 Z`);
+        p.setAttribute("fill", "#a7bacd");
+        g.appendChild(p);
+        const cap = document.createElementNS(NS, "path");
+        cap.setAttribute("d", `M${bx - 28} ${505 - h * 0.74} L${bx} ${505 - h} L${bx + 28} ${505 - h * 0.74} Q${bx} ${505 - h * 0.62} ${bx - 28} ${505 - h * 0.74} Z`);
+        cap.setAttribute("fill", "#f4f8fc");
+        g.appendChild(cap);
+      }
+    }
+    return g;
+  }
+  const cityG = buildBack("city"), snowG = buildBack("snow");
+  cityG.style.display = "none"; snowG.style.display = "none";
+  backG.appendChild(cityG); backG.appendChild(snowG);
+
+  // 时代切换（颜色平滑过渡）
+  const eraTintEl = $("eraTint");
+  let curEra = -1, tintOp = 0;
+
+  // 人生阶段字幕
+  const ERA_TITLE = [
+    { age: "18 – 28 岁", name: "海边的路" },
+    { age: "29 – 45 岁", name: "进城的坡道" },
+    { age: "46 – 60 岁", name: "山口的断崖" },
+  ];
+  const eraBanner = $("era-banner");
+  let eraBannerT = null;
+  function showEraBanner(e) {
+    if (!eraBanner) return;
+    eraBanner.querySelector("b").textContent = ERA_TITLE[e].age;
+    eraBanner.querySelector("span").textContent = ERA_TITLE[e].name;
+    eraBanner.classList.add("on");
+    // 窄屏上字幕会压住开场的操作提示，先把提示让开，字幕淡出后再还回来
+    const narrow = window.matchMedia("(max-width: 700px)").matches;
+    if (narrow && driveTip && !tipGone) driveTip.style.opacity = "0";
+    clearTimeout(eraBannerT);
+    eraBannerT = setTimeout(() => {
+      eraBanner.classList.remove("on");
+      if (narrow && driveTip && !tipGone) driveTip.style.opacity = "";
+    }, 3000);
+  }
+  const lTreesEl = $("lTrees");
+  lTreesEl.style.transition = "opacity 1.2s";
+  hillFill.style.transition = "fill 1s linear";
+  roadBand.style.transition = "stroke 1s linear";
+  function applyEra(e) {
+    if (e === curEra) return;
+    const first = curEra === -1;
+    curEra = e;
+    if (!first) showEraBanner(e);
+    hillFill.style.fill = ERA_PAL[e].fill;
+    roadBand.style.stroke = ERA_PAL[e].road;
+    eraTintEl.setAttribute("fill", ERA_PAL[e].tint);
+    cityG.style.display = e === 1 ? "" : "none";
+    snowG.style.display = e === 2 ? "" : "none";
+    lTreesEl.style.opacity = e === 2 ? 0.25 : (e === 1 ? 0.7 : 1);
+  }
+
+  // 车身状态
+  let bikeY = (groundY(450 - WHEEL_DX) + groundY(450 + WHEEL_DX)) / 2, bikeVY = 0, prevGY = null;
+  let tiltDeg = 0, tiltRate = 0, onGround = true, dy = 0, gapEntryY = null;
+
+  let jumpLock = 0;                 // 落地后的短暂冷却，防止连跳“飘”过去
+  let logCool = 0;                  // 撞倒木后的冷却，避免同一帧反复弹
+  function jump() {
+    if (!running || !onGround || jumpLock > 0) return;
+    // 没骑起来就抬不动车：必须先有速度
+    if (Math.abs(speed) < 0.45) {
+      say("得先蹬起来才跳得动");
+      tone("sine", 200, 140, 0.1, 0.04);
+      return;
+    }
+    bikeVY = -JUMP_V;
+    tiltRate = -60;                 // 轻轻抬一下前轮（再大就会自己转翻）
+    onGround = false;
+    jumpLock = 0.34;
+    tone("triangle", 320, 760, 0.16, 0.07);
+  }
+
+  // 画地形：整个世界宽度一次重算，断崖处断开
+  const pitFill = document.createElementNS(NS, "path");
+  pitFill.setAttribute("fill", "#2b3038");
+  pitFill.setAttribute("opacity", ".92");
+  terrainG.insertBefore(pitFill, roadBand);
+  const cliffEdge = document.createElementNS(NS, "path");
+  cliffEdge.setAttribute("fill", "none");
+  cliffEdge.setAttribute("stroke", "#8d7a58");
+  cliffEdge.setAttribute("stroke-width", "3");
+  terrainG.appendChild(cliffEdge);
+
+  function drawTerrain(shift) {
+    const STEP = 14, PIT = 330;
+    const pts = [];
+    for (let sx = -30; sx <= 930; sx += STEP) {
+      const g = groundY(shift + sx);
+      pts.push({ x: sx, y: g === Infinity ? null : g });
+    }
+    let fill = "";
+    for (let i = 0; i < pts.length; i++) {
+      const y = pts[i].y === null ? GROUND_Y + PIT : pts[i].y;
+      fill += (i ? "L" : "M") + pts[i].x + " " + y.toFixed(1);
+    }
+    hillFill.setAttribute("d", fill + "L930 620L-30 620Z");
+
+    let road = "", open = false, cliff = "";
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i];
+      if (p.y === null) {
+        if (open && i > 0) cliff += `M${p.x} ${pts[i - 1].y.toFixed(1)}L${p.x} ${GROUND_Y + PIT}`;
+        open = false;
+        continue;
+      }
+      if (!open && i > 0 && pts[i - 1].y === null) cliff += `M${p.x} ${GROUND_Y + PIT}L${p.x} ${p.y.toFixed(1)}`;
+      road += (open ? "L" : "M") + p.x + " " + p.y.toFixed(1);
+      open = true;
+    }
+    roadBand.setAttribute("d", road);
+    roadDash.setAttribute("d", road);
+    cliffEdge.setAttribute("d", cliff);
+
+    // 断崖画成深坑
+    let pit = "";
+    for (let i = 0; i < pts.length; i++) {
+      if (pts[i].y !== null) continue;
+      let j = i;
+      while (j < pts.length && pts[j].y === null) j++;
+      const x0 = pts[i].x, x1 = (j < pts.length ? pts[j].x : 930);
+      const left = i > 0 ? pts[i - 1].y : 500;
+      const right = j < pts.length ? pts[j].y : 500;
+      const top = Math.max(left, right) - 4;
+      pit += `M${x0} ${top.toFixed(1)}L${x1} ${top.toFixed(1)}L${x1} ${GROUND_Y + PIT}L${x0} ${GROUND_Y + PIT}Z`;
+      i = j;
+    }
+    pitFill.setAttribute("d", pit);
+  }
+
+  // ---------- 空中的鱼 ----------
+  const treatsG = $("treats");
+  const COLORS = ["#6fb3d9", "#f28c6b", "#9b8ce0", "#5fc2a6"];
+  const treats = [];
+  let nextTreat = 350;
+  let score = 0, best = 0;
+  try { best = parseInt(localStorage.getItem("pelican-best"), 10) || 0; } catch (_) {}
+  const scoreEl = $("score");
+  const showScore = () => { scoreEl.textContent = `接到鱼 ${score} 条 · 最高 ${best}`; };
+  showScore();
+  function spawnTreat() {
+    const gold = Math.random() < 0.12;
+    const el = document.createElementNS(NS, "use");
+    el.setAttribute("href", "#fishT");
+    el.setAttribute("fill", gold ? "#f5c542" : COLORS[Math.floor(Math.random() * COLORS.length)]);
+    treatsG.appendChild(el);
+    treats.push({ el, wx: dist + 960, h: 298 + Math.random() * 46, ph: Math.random() * 6.28, gold });
+  }
+  const plus = { life: 0, x: 0, y: 0 };
+  const plusEl = $("plusOne");
+  const cheers = ["好吃！", "接住啦~", "美味~", "再来一条！"];
+  function catchTreat(t, x, y) {
+    const pts = t.gold ? 3 : 1;
+    score += pts;
+    stamina = Math.min(staminaMax, stamina + (t.gold ? 34 : 13));   // 吃鱼回体力
+    if (score > best) {
+      best = score;
+      try { localStorage.setItem("pelican-best", String(best)); } catch (_) {}
+    }
+    showScore();
+    Object.assign(plus, { life: 1, x, y });
+    plusEl.textContent = `+${pts}`;
+    const pouch = $("pouch");
+    pouch.classList.remove("gulp");
+    void pouch.getBoundingClientRect();
+    pouch.classList.add("gulp");
+    tone("sine", 620, 240, 0.14, 0.12);
+    if (t.gold) { tone("sine", 1320, 1320, 0.25, 0.06, 0.08); tone("sine", 1760, 1760, 0.3, 0.05, 0.16); }
+    if (t.gold) say("金色的鱼！");
+  }
+
+  // ---------- 雨滴与水花 ----------
+  const drops = Array.from({ length: 110 }, () => {
+    const l = document.createElementNS(NS, "line");
+    $("rain").appendChild(l);
+    return { el: l, x: Math.random() * 1100, y: Math.random() * 560, v: 650 + Math.random() * 250,
+             len: 12 + Math.random() * 10, gy: 500 + Math.random() * 56 };
+  });
+  const splashes = Array.from({ length: 24 }, () => {
+    const e = document.createElementNS(NS, "ellipse");
+    e.setAttribute("rx", 0); e.setAttribute("ry", 0);
+    $("splashes").appendChild(e);
+    return { el: e, life: 0, x: 0, y: 0 };
+  });
+  function updateRain(dt) {
+    const vx = -(120 + BASE_SPEED * speed * 0.6);
+    for (const d of drops) {
+      const k = d.v / 700;
+      d.x += vx * k * dt;
+      d.y += d.v * dt;
+      if (d.y > d.gy) {
+        const s = Math.random() < 0.35 && splashes.find(p => p.life <= 0);
+        if (s) Object.assign(s, { life: 1, x: d.x, y: d.gy });
+        d.y = -20 - Math.random() * 80;
+        d.x = Math.random() * 1150;
+      }
+      d.el.setAttribute("x1", d.x.toFixed(1)); d.el.setAttribute("y1", d.y.toFixed(1));
+      d.el.setAttribute("x2", (d.x - vx * k / d.v * d.len).toFixed(1)); d.el.setAttribute("y2", (d.y - d.len).toFixed(1));
+    }
+    for (const s of splashes) {
+      if (s.life <= 0) continue;
+      s.life -= dt / 0.3;
+      const k = Math.max(s.life, 0), rx = 1 + (1 - k) * 7;
+      s.el.setAttribute("cx", s.x.toFixed(1)); s.el.setAttribute("cy", s.y.toFixed(1));
+      s.el.setAttribute("rx", rx.toFixed(1)); s.el.setAttribute("ry", (rx * 0.35).toFixed(1));
+      s.el.setAttribute("opacity", (k * rain).toFixed(2));
+    }
+  }
+
+  // ---------- 闪电 ----------
+  let lightTimer = 4, flash = 0;
+  const bolt = $("bolt");
+  function strike() {
+    let x = 80 + Math.random() * 740, y = 40;
+    let d = `M${x.toFixed(0)} ${y}`;
+    while (y < 250) {
+      x += (Math.random() - 0.5) * 50; y += 18 + Math.random() * 22;
+      d += ` L${x.toFixed(0)} ${y.toFixed(0)}`;
+    }
+    bolt.setAttribute("d", d);
+    flash = 1;
+    thunder(0.3 + Math.random() * 0.5);
+    if (Math.random() < 0.5) say("哇，打雷了！");
+  }
+
+  // 里程：设定 1px ≈ 2cm
+  const odo = $("odo");
+  let odoTimer = 0;
+
+  // ---------- 驾驶状态：不再自动前进，全靠你蹬 ----------
+  let running = true;                       // 可骑行（到站 / 暂停时为 false）
+  let speed = 0, speedCap = 2.1, dist = 0, time = 0, last = performance.now();
+  const FRICTION = 1.0, BRAKE = 4.2;
+  let ACCEL = 1.8;
+  let stamina = 100, staminaMax = 100, exhausted = false;
+  let vehicle = null;
+  const input = { pedal: false, brake: false };
+
+  // 操控层 DOM
+  const stamFill = $("stam-fill"), kmhEl = $("kmh"), driveTip = $("drive-tip");
+  const speedLines = $("speedlines"), pedalBtn = $("pedalBtn"), vigEl = $("vignette");
+  const SL_COUNT = 9;
+  for (let i = 0; i < SL_COUNT; i++) {
+    const l = document.createElement("i");
+    l.style.top = (8 + i * 10.5) + "%";
+    l.style.animationDelay = (-i * 0.11).toFixed(2) + "s";
+    l.style.opacity = (0.35 + (i % 3) * 0.22).toFixed(2);
+    speedLines.appendChild(l);
+  }
+  let hudTimer = 0, tipGone = false;
+
+  function drive(dt) {
+    const pedaling = input.pedal && !exhausted;
+    if (pedaling) {
+      // 体力越足蹬得越猛，见底了只能慢慢挪
+      const power = stamina > 55 ? 1 : (stamina > 22 ? 0.72 : 0.45);
+      speed += ACCEL * power * dt;
+      stamina -= (7 + speed * 5) * dt;
+      if (stamina <= 0) {
+        stamina = 0; exhausted = true; say("呼…蹬不动了");
+        tone("sawtooth", 240, 120, 0.3, 0.05);
+        if (window.Ride && window.Ride.onFail) window.Ride.onFail("tired");
+      }
+      if (!tipGone) { tipGone = true; driveTip.style.opacity = 0; }
+    } else {
+      // 不蹬就滑行，同时回体力；刹车回得更快，还能倒车
+      stamina = Math.min(staminaMax, stamina + (input.brake ? 24 : 13) * dt);
+      if (exhausted && stamina > 30) { exhausted = false; }
+      if (input.brake) speed -= BRAKE * dt;
+      else if (speed > 0) speed = Math.max(0, speed - FRICTION * dt);
+      else speed = Math.min(0, speed + FRICTION * dt);
+    }
+    if (stamina > staminaMax) stamina = staminaMax;
+    speed = Math.max(-0.45, Math.min(speedCap, speed));
+    // 体力见底时自动收油
+    if (exhausted && input.pedal && speed > 0) speed = Math.min(speed, 0.5);
+  }
+
+
+  function frame(now) {
+    const dt = Math.min(now - last, 50) / 1000;
+    last = now;
+    time += dt;
+    if (running) { drive(dt); dist += BASE_SPEED * speed * dt; updateDust(dt); }
+    else { if (stamina < 100) stamina = Math.min(100, stamina + 18 * dt); }
+
+    // 昼夜 / 雨天平滑过渡
+    if (night !== nightTarget || rain !== rainTarget) {
+      night = approach(night, nightTarget, dt);
+      rain = approach(rain, rainTarget, dt);
+      applyEnv();
+    }
+
+    if (running) {
+      // 雨
+      if (rain > 0.01) updateRain(dt);
+      if (rain > 0.8) {
+        lightTimer -= dt;
+        if (lightTimer <= 0) { strike(); lightTimer = 5 + Math.random() * 7; }
+      }
+      // 生成空中的鱼
+      if (dist >= nextTreat) { spawnTreat(); nextTreat = dist + 420 + Math.random() * 520; }
+    }
+    if (rainGain) rainGain.gain.value = soundOn && running ? rain * 0.07 : 0;
+    if (flash > 0) {
+      flash = Math.max(0, flash - dt * 2.5);
+      op("flash", flash * flash * 0.6);
+      op("bolt", flash > 0.6 ? 1 : flash / 0.6);
+    }
+
+    // ===== 地形跟随 + 车身姿态（登山赛车式） =====
+    drawTerrain(dist);
+    // 阶段切换：地形、色调、远景随之变化
+    applyEra(eraAt(dist + 450));
+    const wantOp = ERA_PAL[curEra].op;
+    tintOp += (wantOp - tintOp) * Math.min(1, dt * 1.6);
+    eraTintEl.setAttribute("opacity", tintOp.toFixed(3));
+    backG.setAttribute("transform", `translate(${-((dist * 0.35) % 900).toFixed(1)} 0)`);
+
+    // 障碍物的“坡包”：石头是圆顶、跳台是斜面，轮子压上去就被抬高
+    let liftR = 0, liftF = 0, hitOb = null, hitRx = 0, onSand = false;
+    for (const o of obstacles) {
+      const rx = o.wx - dist;
+      if (rx < -90 || rx > 990) continue;
+      const cfg = OB[o.type];
+      if (cfg.lift) {
+        const lr = obLift(cfg, rx, CONTACT_L), lf = obLift(cfg, rx, CONTACT_R);
+        if (lr > liftR) liftR = lr;
+        if (lf > liftF) liftF = lf;
+      }
+      // 统一按车身中点判“接触”，否则检测在轮子上、判定在车身上，两边永远对不上
+      if (!hitOb && Math.abs(rx - 450) < cfg.w + 60) { hitOb = o; hitRx = rx; }
+      if (o.type === "sand" && Math.abs(rx - 450) < cfg.w) onSand = true;
+    }
+
+    let gyR = groundY(dist + CONTACT_L), gyF = groundY(dist + CONTACT_R);
+    const gyC = groundY(dist + 450);
+    const inGapNow = gyC === Infinity;               // 车身中点悬空 = 正在过断崖
+    const support = !inGapNow;
+    if (!isFinite(gyR)) gyR = support ? gyC : GROUND_Y;
+    if (!isFinite(gyF)) gyF = support ? gyC : GROUND_Y;
+    if (support) { gyR -= liftR; gyF -= liftF; }
+    const gyMid = support ? (gyR + gyF) / 2 : Infinity;
+    const slopeDeg = support
+      ? Math.asin(Math.max(-1, Math.min(1, (gyF - gyR) / (2 * WHEEL_DX)))) * 180 / Math.PI
+      : tiltDeg;
+    const slope = support ? (gyF - gyR) / (2 * WHEEL_DX) : 0;     // >0 下坡
+    if (inGapNow) { if (gapEntryY === null) gapEntryY = bikeY; } else gapEntryY = null;
+
+    if (jumpLock > 0) jumpLock = Math.max(0, jumpLock - dt);
+    if (logCool > 0) logCool = Math.max(0, logCool - dt);
+    if (running) {
+      // 坡度影响车速：上坡拖慢，下坡冲快
+      speed += slope * 1.5 * dt;
+      speed = Math.max(-0.45, Math.min(speedCap, speed));
+
+      const groundVy = (!support || prevGY === null) ? 0 : (gyMid - prevGY) / Math.max(dt, 1e-4);
+      if (support) prevGY = gyMid;
+
+      bikeVY += G * dt;
+      bikeY += bikeVY * dt;
+
+      // 在断崖上：掉得够深就算没过去
+      if (inGapNow) {
+        if (bikeY - gapEntryY > 34) { fallIntoGap(); return; }
+      }
+
+      if (support && bikeY >= gyMid) {               // 落到地面
+        if (!onGround) {
+          const impact = bikeVY;
+          if (Math.abs(tiltDeg) > 76) {              // 翻车
+            stamina = Math.max(0, stamina - 16);
+            speed *= 0.22; shake = 1; tiltDeg = 0; tiltRate = 0;
+            say("翻车啦！"); tone("square", 110, 60, 0.3, 0.14);
+            burstDust(450, gyMid, 12, 1.5);
+            if (window.Ride && window.Ride.onFail) window.Ride.onFail("flip");
+          } else if (impact > 760) {                 // 硬着陆
+            speed *= 0.7; stamina = Math.max(0, stamina - 5); shake = 0.8;
+            say("咚！落地有点重"); tone("sine", 120, 70, 0.18, 0.1);
+            burstDust(450, gyMid, 8, 1.0);
+          }
+        }
+        bikeY = gyMid;
+        bikeVY = Math.min(0, Math.max(-620, groundVy));
+        onGround = true;
+        tiltDeg = slopeDeg;
+        tiltRate = 0;
+      } else {                                       // 腾空
+        onGround = false;
+        // 空中微调姿态：力气很小，按着蹬也不会自己转翻
+        if (input.pedal) tiltRate -= 95 * dt;        // 空中蹬＝略抬头
+        if (input.brake) tiltRate += 95 * dt;        // 空中刹＝略低头
+        tiltRate = Math.max(-130, Math.min(130, tiltRate));
+        tiltDeg += tiltRate * dt;
+        tiltRate *= 0.97;   // 空中角速度衰减快一点，落地姿态更稳
+        tiltDeg = Math.max(-200, Math.min(200, tiltDeg));
+      }
+    }
+    dy = bikeY - GROUND_Y;                            // 相对基线的位移（负=抬高）
+
+    // 摆位置（出画面就换一种类型重新出现）
+    for (const o of obstacles) {
+      let rx = o.wx - dist;
+      if (rx < -160) {
+        let nx = dist + 1500 + Math.random() * 900;
+        if (inGap(nx + 450)) nx += 300;               // 别把障碍丢进断崖里
+        o.wx = nx; o.hit = false; rx = nx - dist;
+        const others = OB_ORDER.filter(k => k !== o.type);
+        const nextType = others[Math.floor(Math.random() * others.length)];
+        if (nextType !== o.type) {
+          o.el.remove();
+          o.type = nextType;
+          o.el = makeOb(nextType);
+        }
+      }
+      o.el.setAttribute("transform", `translate(${rx.toFixed(1)} ${(groundY(o.wx) - GROUND_Y).toFixed(1)})`);
+      if (rx < -40) o.hit = false;                    // 甩到身后才重置，避免同一块石头连着扣
+    }
+
+    // 踩在软沙里：不撞，但蹬不动，只能慢慢爬出去
+    if (onSand) {
+      speed = Math.min(speed, 0.95);
+      speed *= Math.max(0, 1 - 1.6 * dt);
+      if (Math.random() < dt * 22) burstDust(430, gyMid, 1, 0.5);
+    }
+
+    if (hitOb) {
+      if (hitOb.type === "rock" && !hitOb.hit && Math.abs(speed) > 0.15) {
+        hitOb.hit = true;
+        if (Math.abs(speed) > 2.3) {                  // 太快，直接绊翻
+          speed *= 0.3; shake = 1; stamina = Math.max(0, stamina - 12);
+          say("太快了，石头把车绊翻了！"); tone("square", 120, 60, 0.3, 0.14);
+          if (window.Ride && window.Ride.onFail) window.Ride.onFail("rock");
+        } else {                                      // 碾过去：掉点速度，车身自己爬上去
+          speed *= 0.86;
+          stamina = Math.max(0, stamina - 3);
+          shake = Math.max(shake, 0.45);
+          burstDust(hitRx, gyMid, 5, 0.8);
+          tone("square", 190, 120, 0.1, 0.06);
+        }
+      } else if (hitOb.type === "log") {
+        const cfg = OB.log;
+        const high = support ? (bikeY < gyMid - cfg.h + 14) : true;   // 跳得比自己高半截就算过
+        // 按车身中点算：只要车身在木头这段范围内且不够高，就撞上
+        const touching = Math.abs(hitRx - 450) < 44;
+        if (!high && touching && logCool <= 0) {
+          if (Math.abs(speed) > 2.2) {                // 高速撞倒木 → 摔
+            speed *= 0.25; shake = 1; stamina = Math.max(0, stamina - 12);
+            say("被倒木绊翻了！"); tone("square", 120, 60, 0.3, 0.14);
+            burstDust(450, gyMid, 12, 1.4);
+            if (window.Ride && window.Ride.onFail) window.Ride.onFail("log");
+          } else {                                    // 顶住，被弹回来一点
+            speed = 0;
+            dist = Math.max(0, dist - 95);            // 退开，留出够用的助跑距离
+            let gr2 = groundY(dist + CONTACT_L), gf2 = groundY(dist + CONTACT_R);
+            if (!isFinite(gr2)) gr2 = GROUND_Y;
+            if (!isFinite(gf2)) gf2 = GROUND_Y;
+            bikeY = (gr2 + gf2) / 2; bikeVY = 0; onGround = true; prevGY = bikeY;
+            stamina = Math.max(0, stamina - 8); shake = 1; logCool = 0.5;
+            say("撞上倒木了，得跳过去"); tone("square", 150, 90, 0.2, 0.12);
+            burstDust(450, gyMid, 8, 1.0);
+          }
+        }
+      }
+    }
+    if (shake > 0) shake = Math.max(0, shake - dt * 3.2);
+    const jx = shake > 0 ? (Math.random() - 0.5) * shake * 7 : 0;
+    const bump = `translate(${jx.toFixed(2)} ${dy.toFixed(2)}) ` +
+                 `translate(450 498) scale(${BIKE_S}) translate(-450 -498) ` +
+                 `rotate(${tiltDeg.toFixed(2)} 450 420)`;
+    $("riderWrap").setAttribute("transform", bump);
+    $("beam").setAttribute("transform", bump);
+
+    // 影子跟着地形走，腾空时缩小变淡
+    const alt = Math.max(0, gyMid - bikeY);
+    const sk = 1 - Math.min(alt / 220, 0.55);
+    const sh = $("shadow");
+    sh.setAttribute("rx", (240 * BIKE_S * sk).toFixed(1));
+    sh.setAttribute("cy", (gyMid + 7).toFixed(1));
+    sh.setAttribute("opacity", (0.22 * sk).toFixed(3));
+
+    // 空中的鱼：随世界后退，嘴部区域碰到就吃掉（高度跟着地形走）
+    for (let i = treats.length - 1; i >= 0; i--) {
+      const t = treats[i];
+      const x = t.wx - dist;
+      const y = groundY(t.wx) - t.h + Math.sin(time * 3 + t.ph) * 6;
+      const hit = x > 538 && x < 652 && y > 198 + dy && y < 288 + dy;
+      if (hit || x < -60) {
+        if (hit) catchTreat(t, x, y);
+        t.el.remove();
+        treats.splice(i, 1);
+        continue;
+      }
+      t.el.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(Math.sin(time * 4 + t.ph) * 8).toFixed(1)})`);
+    }
+    if (plus.life > 0) {
+      plus.life -= dt * 1.2;
+      plusEl.setAttribute("x", plus.x.toFixed(1));
+      plusEl.setAttribute("y", (plus.y - (1 - plus.life) * 40).toFixed(1));
+      op("plusOne", Math.max(plus.life, 0));
+    }
+
+    // 飞鸟从左向右慢慢飞过
+    for (const b of birds) {
+      const x = ((time * 45 + b.off) % 1300) - 200;
+      b.el.setAttribute("transform", `translate(${x.toFixed(1)} ${(b.y + Math.sin(time * 1.5 + b.off) * 6).toFixed(1)})`);
+    }
+
+    odoTimer -= dt;
+    if (odoTimer <= 0) {
+      odoTimer = 0.2;
+      const kmh = running ? BASE_SPEED * speed * 0.02 * 3.6 : 0;
+      const np = window.__nextStopPx;
+      odo.textContent = (typeof np === "number" ? `距下一站 ${Math.round(np * 0.5)} m · ` : "里程 ") +
+                        `${kmh.toFixed(0)} km/h`;
+    }
+
+    // 体力条 / 速度表 / 风线
+    hudTimer -= dt;
+    if (hudTimer <= 0) {
+      hudTimer = 0.1;
+      stamFill.style.width = Math.max(0, Math.min(100, stamina / staminaMax * 100)).toFixed(1) + '%';
+      const sr = stamina / staminaMax; stamFill.style.background = sr < 0.22 ? '#c0492f' : (sr < 0.5 ? '#c9902f' : '#2f5d50');
+      kmhEl.textContent = Math.round((running ? speed : 0) * BASE_SPEED * 0.02 * 3.6) + ' km/h';
+      const sp = Math.max(0, Math.min(1, (speed - 0.7) / Math.max(0.35, speedCap - 0.7)));
+      speedLines.style.opacity = (sp * 0.85).toFixed(2);
+      if (vigEl) vigEl.style.opacity = (sp * 0.9).toFixed(2);
+      pedalBtn.classList.toggle("on", !!input.pedal && !exhausted);
+    }
+
+    const wheel = dist / WHEEL_R;          // 车轮角度（弧度）
+    const crank = wheel / GEAR;            // 曲柄角度
+    const deg = wheel * 180 / Math.PI;
+
+    $("rearSpokes").setAttribute("transform", `rotate(${deg} 300 420)`);
+    $("frontSpokes").setAttribute("transform", `rotate(${deg} 600 420)`);
+    $("chainring").setAttribute("transform", `rotate(${crank * 180 / Math.PI} 440 430)`);
+    $("chain").setAttribute("stroke-dashoffset", -crank * 21);
+
+    leg("far", crank + Math.PI, -6);
+    leg("near", crank, 0);
+
+    // 头部随蹬踏轻轻点动，整车随路面微微颠簸
+    const nod = Math.sin(crank * 2) * 2.5;
+    $("head").setAttribute("transform", `rotate(${nod} 470 235)`);
+    $("pelican").setAttribute("transform", `translate(0 ${Math.abs(Math.sin(crank)) * 1.5})`);
+    $("rider").setAttribute("transform", `translate(0 ${Math.sin(time * 23) * 0.6 * speed})`);
+    $("fish").setAttribute("transform", `rotate(${Math.sin(time * 9) * 4} 312 312)`);
+
+    for (const { el, f } of layers) {
+      el.setAttribute("transform", `translate(${-((dist * f) % 900)} 0)`);
+    }
+    if (window.Ride && window.Ride.onFrame) window.Ride.onFrame(dist, dt);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  const btn = $("toggle");
+  const sync = () => {
+    btn.textContent = running ? "暂停" : "继续";
+    btn.setAttribute("aria-pressed", String(!running));
+    svg.classList.toggle("paused", !running);
+  };
+  const togglePause = () => { if (window.__lifeOpen) return; running = !running; sync(); };
+  btn.addEventListener("click", togglePause);
+  $("speed").addEventListener("input", e => {
+    speedCap = parseFloat(e.target.value);
+    svg.style.setProperty("--spd", speedCap);
+  });
+  sync();
+
+  // 昼夜切换
+  const dn = $("dayNight");
+  const toggleNight = () => {
+    nightTarget = nightTarget ? 0 : 1;
+    dn.textContent = nightTarget ? "切到白天" : "切到夜晚";
+    dn.setAttribute("aria-pressed", String(!!nightTarget));
+  };
+  dn.addEventListener("click", toggleNight);
+
+  // 对话气泡
+  const bubble = $("bubble"), bubbleText = $("bubbleText");
+  let bubbleTimer;
+  function say(text) {
+    bubbleText.textContent = text;
+    bubble.classList.add("show");
+    clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => bubble.classList.remove("show"), 1400);
+  }
+
+  const soundBtn = $("sound");
+  soundBtn.addEventListener("click", () => {
+    soundOn = !soundOn;
+    soundBtn.textContent = `声音：${soundOn ? "开" : "关"}`;
+    soundBtn.setAttribute("aria-pressed", String(soundOn));
+  });
+
+  // 雨天切换
+  const rainBtn = $("rainBtn");
+  const toggleRain = () => {
+    rainTarget = rainTarget ? 0 : 1;
+    rainBtn.textContent = rainTarget ? "放晴" : "下雨";
+    rainBtn.setAttribute("aria-pressed", String(!!rainTarget));
+    if (rainTarget) { ensureRainSound(); lightTimer = 3; say("下雨啦，冲呀~"); }
+  };
+  rainBtn.addEventListener("click", toggleRain);
+
+  // 跳跃：按钮、点击画面、↑ 键
+  $("jumpBtn").addEventListener("click", jump);
+  $("jumpBtn2").addEventListener("click", jump);
+  svg.addEventListener("pointerdown", e => {
+    if (e.target.closest("#bell")) return;
+    jump();
+  });
+
+  // 按住蹬车 / 刹车（鼠标、触摸通用）
+  function holdBtn(btn, key) {
+    const on = e => { e.preventDefault(); input[key] = true; try { btn.setPointerCapture(e.pointerId); } catch (_) {} };
+    const off = () => { input[key] = false; };
+    btn.addEventListener("pointerdown", on);
+    btn.addEventListener("pointerup", off);
+    btn.addEventListener("pointercancel", off);
+    btn.addEventListener("pointerleave", off);
+    btn.addEventListener("contextmenu", e => e.preventDefault());
+  }
+  holdBtn(pedalBtn, "pedal");
+
+  function ding(at) {
+    for (const [freq, gain] of [[2637, 0.18], [3951, 0.08], [5274, 0.04]]) {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = "sine"; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, at);
+      g.gain.linearRampToValueAtTime(gain, at + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, at + 0.6);
+      o.connect(g).connect(actx.destination);
+      o.start(at); o.stop(at + 0.65);
+    }
+  }
+  const lines = ["叮铃铃~", "让一让~", "去钓鱼咯！", "风好舒服~"];
+  let lineIdx = 0;
+  const bell = $("bell");
+  function ringBell() {
+    bell.classList.remove("ring");
+    void bell.getBoundingClientRect(); // 重新触发 CSS 动画
+    bell.classList.add("ring");
+    say(nightTarget ? "晚上好~" : lines[lineIdx++ % lines.length]);
+    if (!soundOn || !audio()) return;
+    const t0 = actx.currentTime + 0.01;
+    ding(t0); ding(t0 + 0.18);
+  }
+  bell.addEventListener("click", ringBell);
+  bell.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); ringBell(); }
+  });
+
+  // 快捷键（焦点在按钮或输入框上时不拦截空格）
+  document.addEventListener("keydown", e => {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    const tag = e.target.tagName;
+    const k = e.key.toLowerCase();
+    if (k === "arrowright" || k === "d") { e.preventDefault(); input.pedal = true; return; }
+    if (k === "arrowleft" || k === "a") { e.preventDefault(); input.brake = true; return; }
+    if (k === " " && tag !== "BUTTON" && tag !== "INPUT") { e.preventDefault(); if (!window.__lifePromptOpen) ringBell(); }
+    else if ((k === "arrowup" || k === "w") && tag !== "INPUT") { e.preventDefault(); jump(); }
+    else if (k === "p") togglePause();
+    else if (k === "n") toggleNight();
+    else if (k === "r") toggleRain();
+  });
+  document.addEventListener("keyup", e => {
+    const k = e.key.toLowerCase();
+    if (k === "arrowright" || k === "d") input.pedal = false;
+    if (k === "arrowleft" || k === "a") input.brake = false;
+  });
+  window.addEventListener("blur", () => { input.pedal = false; input.brake = false; });
+
+  function fallIntoGap() {
+    const cx = dist + 450;
+    const g = gapRange(cx);
+    const left = g ? g[0] : cx - 200;
+    dist = left - 640;
+    let gr = groundY(dist + CONTACT_L), gf = groundY(dist + CONTACT_R);
+    if (!isFinite(gr)) gr = GROUND_Y;
+    if (!isFinite(gf)) gf = GROUND_Y;
+    bikeY = (gr + gf) / 2; bikeVY = 0; onGround = true; prevGY = bikeY;
+    tiltDeg = 0; tiltRate = 0; speed = 0; shake = 1;
+    say("掉下去了…退回来重来");
+    tone("square", 200, 60, 0.5, 0.12);
+    if (window.Ride && window.Ride.onFail) window.Ride.onFail("cliff");
+  }
+
+  // 让车身立刻贴合当前地面（到站 / 恢复骑行时用）
+  function snapToGround() {
+    let gr = groundY(dist + CONTACT_L), gf = groundY(dist + CONTACT_R);
+    if (!isFinite(gr)) gr = GROUND_Y;
+    if (!isFinite(gf)) gf = GROUND_Y;
+    bikeY = (gr + gf) / 2; bikeVY = 0; onGround = true; prevGY = bikeY;
+    tiltDeg = Math.asin(Math.max(-1, Math.min(1, (gf - gr) / (2 * WHEEL_DX)))) * 180 / Math.PI;
+    tiltRate = 0;
+  }
+
+  // 暴露给「人生关卡」系统（骑行作为探索中枢）
+  window.Ride = {
+    pause: () => { running = false; input.pedal = false; input.brake = false; sync(); },
+    resume: () => { running = true; speed = 0; snapToGround(); sync(); },
+    riding: () => running,
+    getDist: () => dist,
+    setDist: v => { dist = v; },
+    snapToGround: snapToGround,
+    getSpeed: () => speed,
+    setSpeed: v => { speed = v; },
+    getBikeY: () => bikeY,
+    getObstacles: () => obstacles.map(o => ({ wx: o.wx, type: o.type })),
+    // 调试：把车恢复成满体力、贴地、静止（自动化测试用）
+    debugReset: () => {
+      stamina = staminaMax; exhausted = false; speed = 0; bikeVY = 0;
+      bikeY = gySafe(dist + 450); bikeVY = 0; onGround = true; prevGY = bikeY;
+      tiltDeg = 0; tiltRate = 0; jumpLock = 0; logCool = 0; gapEntryY = null;
+    },
+    // 调试：重排障碍（自动化测试用）
+    debugSetObstacles: list => {
+      obstacles.length = 0;
+      obLayer.innerHTML = "";
+      list.forEach(it => obstacles.push({ type: it.type, el: makeOb(it.type), wx: it.wx, hit: false }));
+    },
+    // 调试用：把车按到某个离地高度（自动化测试验证“车轮高过石头”这一条）
+    debugSetAir: h => {
+      bikeY = gySafe(dist + 450) - h;
+      bikeVY = 0; onGround = false; gapEntryY = null;
+    },
+    getApexBase: () => (isFinite(dist + CONTACT_L) ? groundY(dist + 450) : GROUND_Y),
+    setVehicle: v => {
+      vehicle = v;
+      speedCap = v.cap; ACCEL = v.accel;
+      staminaMax = v.stam; stamina = v.stam;
+      const fg = $("frameG"); if (fg) fg.setAttribute("stroke", v.frame);
+      document.querySelectorAll("#riderWrap .tire").forEach(c => c.setAttribute("stroke", v.tire));
+      document.querySelectorAll("#riderWrap .rim").forEach(c => c.setAttribute("stroke", v.rim));
+      const bg = $("basketG"); if (bg) bg.style.display = v.basket ? "" : "none";
+      const sp = $("speed"); if (sp) sp.value = v.cap;
+    },
+    getVehicle: () => vehicle,
+    getEra: () => eraAt(dist + 450),
+    showEra: () => showEraBanner(curEra < 0 ? 0 : curEra),
+    getStamina: () => stamina,
+    groundY: gySafe,
+    onGround: () => onGround,
+    inGap: inGap,
+    say: say,
+    tone: tone,
+  };
+})();
+</script>
+
+<!-- ============ 人生关卡系统：把 14 关融入骑行 ============ -->
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const SVGNS = "http://www.w3.org/2000/svg";
+  const STAT_KEYS = ['health', 'time', 'money', 'mind'];
+  const MOODS = ['mind', 'health', 'health', 'money', 'time', 'money', 'time', 'mind', 'money', 'money', 'mind', 'health', 'mind', 'health'];
+  const CN_IDX = ['甲', '乙', '丙'];
+  const LIFE_ERAS = [
+    { ids: [0, 1, 2, 3, 4], stage: 0 },
+    { ids: [5, 6, 7, 8, 9, 10], stage: 1 },
+    { ids: [11, 12, 13], stage: 2 },
+  ];
+  /* 出身不同，车也不同：每一项都直接影响手感 */
+  const VEHICLES = {
+    county: { name: '二手山地车', frame: '#2f7fd1', rim: '#c4c9cf', tire: '#26282b',
+              cap: 2.1,  accel: 1.8,  stam: 100, basket: true,
+              tag: '不快不慢，什么路都能骑' },
+    skill:  { name: '加固载货车', frame: '#41865a', rim: '#b9c2a8', tire: '#24261f',
+              cap: 1.95, accel: 1.7,  stam: 132, basket: true,
+              tag: '沉，蹬不快，但特别耐造' },
+    repeat: { name: '旧通勤车',   frame: '#8a7f6b', rim: '#c9c4b8', tire: '#28272a',
+              cap: 2.0,  accel: 1.75, stam: 86,  basket: true,
+              tag: '省力，可你的力气本来就不多' },
+    city:   { name: '碳纤公路车', frame: '#d8a63c', rim: '#f0d06a', tire: '#2a2a2c',
+              cap: 2.45, accel: 2.2,  stam: 78,  basket: false,
+              tag: '轻快得像飞，但也最不经摔' },
+  };
+  const K = 'cp-pelican-v1';
+  const TYPE_SPEED = 22;
+
+  const clamp = v => Math.max(0, Math.min(100, v));
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, m => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  const pad2 = n => String(n).padStart(2, '0');
+
+  /* ---------- 状态 ---------- */
+  let state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 },
+                picks: [], done: [], stageSeen: [] };
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(K));
+      if (s && s.origin) {
+        state = Object.assign(state, s);
+        if (!state.stageSeen) state.stageSeen = [];
+      }
+    } catch (_) {}
+  }
+  function save() { try { localStorage.setItem(K, JSON.stringify(state)); } catch (_) {} }
+
+  /* ---------- 里程碑（路边的关卡站）---------- */
+  const SPACING = 1600, START = 1500, RIDER_WX = 452;
+  const msLayer = $('milestones');
+  const milestones = CHAPTERS.map((c, i) => ({ id: i, worldX: START + i * SPACING, done: false, el: null }));
+  let stationActive = -1;     // 当前停靠的站 id（章节开启时保持）
+  let promptShowing = false, currentStation = null, codexWasRiding = false;
+
+  function buildSign(m) {
+    const c = STAT_META[MOODS[m.id]].color;
+    const g = document.createElementNS(SVGNS, 'g');
+    g.setAttribute('class', 'sign');
+    const ring = document.createElementNS(SVGNS, 'circle');
+    ring.setAttribute('class', 'ring'); ring.setAttribute('cx', '0'); ring.setAttribute('cy', '416');
+    ring.setAttribute('r', '70'); ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', '#f5c542');
+    ring.setAttribute('stroke-width', '4'); ring.setAttribute('opacity', '0'); ring.style.transition = 'opacity .3s';
+    g.appendChild(ring);
+    const post = document.createElementNS(SVGNS, 'rect');
+    post.setAttribute('x', '-3'); post.setAttribute('y', '452'); post.setAttribute('width', '6'); post.setAttribute('height', '50');
+    post.setAttribute('fill', '#7d6a4a'); g.appendChild(post);
+    const board = document.createElementNS(SVGNS, 'rect');
+    board.setAttribute('class', 'board'); board.setAttribute('x', '-56'); board.setAttribute('y', '356');
+    board.setAttribute('width', '112'); board.setAttribute('height', '78'); board.setAttribute('rx', '12');
+    board.setAttribute('fill', '#fbf8f2'); board.setAttribute('stroke', c); board.setAttribute('stroke-width', '3');
+    g.appendChild(board);
+    const num = document.createElementNS(SVGNS, 'text');
+    num.setAttribute('text-anchor', 'middle'); num.setAttribute('x', '0'); num.setAttribute('y', '396');
+    num.setAttribute('font-size', '26'); num.setAttribute('font-weight', '800'); num.setAttribute('fill', c);
+    num.textContent = pad2(m.id + 1); g.appendChild(num);
+    const age = document.createElementNS(SVGNS, 'text');
+    age.setAttribute('text-anchor', 'middle'); age.setAttribute('x', '0'); age.setAttribute('y', '414');
+    age.setAttribute('font-size', '11'); age.setAttribute('fill', '#5d564c'); age.textContent = CHAPTERS[m.id].age + '岁';
+    g.appendChild(age);
+    const title = document.createElementNS(SVGNS, 'text');
+    title.setAttribute('text-anchor', 'middle'); title.setAttribute('x', '0'); title.setAttribute('y', '432');
+    title.setAttribute('font-size', '11'); title.setAttribute('fill', '#3a3530');
+    title.textContent = CHAPTERS[m.id].title.slice(0, 7); g.appendChild(title);
+    m.el = g; msLayer.appendChild(g);
+  }
+
+  function updateMilestones() {
+    const d = Ride.getDist();
+    const rider = d + RIDER_WX;
+    milestones.forEach(m => {
+      const sx = m.worldX - d + 300;   // 站牌画在触发点前方，避免被车身挡住
+      if (sx < -170 || sx > 1180) { m.el.style.display = 'none'; return; }
+      m.el.style.display = '';
+      const gy = Ride.groundY ? Ride.groundY(m.worldX) : 498;
+      m.el.setAttribute('transform', `translate(${sx.toFixed(1)} ${(gy - 498).toFixed(1)})`);
+      m.el.classList.toggle('done', m.done);
+      m.el.classList.toggle('active', stationActive === m.id);
+    });
+    const next = milestones.find(x => x.worldX > rider - 80);
+    window.__nextStopPx = next ? Math.max(0, next.worldX - rider) : 0;
+
+    // 站牌只是路标，不再拦路弹卡
+    // 骑到路的尽头还没学完，就绕回海边接着骑
+    if (d > 25200) {
+      Ride.setDist(0);
+      if (Ride.snapToGround) Ride.snapToGround();
+      if (Ride.say) Ride.say("绕回海边，接着骑");
+    }
+  }
+
+  /* ---------- 摔了一跤，才给一条道理 ---------- */
+  let lastFailAt = 0, lastKind = "rock";
+  const WHY = {
+    rock: "石头没跳过去，车把一歪——这一幕，你以前也遇过。",
+    flip: "坡顶冲太猛，整个人翻了出去。躺在地上，反而看清了一些事。",
+    tired: "腿蹬不动了，只能停下来。有些账，也只有停下来才算得清。",
+    cliff: "断崖没跳过去，连人带车摔在下面。有些坎绕不开，只能提前攒够速度。",
+    log: "倒木横在路上，没跳过去。有些东西挡在面前，不是靠快就能冲开的。",
+    test: "停下来，想一想。",
+  };
+  // 随机抽一条还没悟过的道理：优先落在你正走着的这一段人生里
+  let lastLessonId = -1;
+  function pickLesson() {
+    const left = CHAPTERS.filter(c => state.done.indexOf(c.id) < 0);
+    if (!left.length) return null;
+    const stage = Ride.getEra ? Ride.getEra() : 0;
+    const era = LIFE_ERAS.find(e => e.stage === stage) || LIFE_ERAS[0];
+    const inEra = left.filter(c => era.ids.indexOf(c.id) >= 0);
+    let pool = (inEra.length && Math.random() < 0.78) ? inEra : left;
+    if (pool.length > 1 && lastLessonId >= 0) {              // 别连着两次同一条
+      const noRepeat = pool.filter(c => c.id !== lastLessonId);
+      if (noRepeat.length) pool = noRepeat;
+    }
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    lastLessonId = pick.id;
+    return pick;
+  }
+
+  function onFail(kind) {
+    if (window.__lifeOpen) return;
+    if (performance.now() - lastFailAt < 2600) return;      // 别连着弹
+    const next = pickLesson();
+    if (!next) return;                                      // 该学的都学过了
+    lastFailAt = performance.now();
+    lastKind = kind || "rock";
+    stationActive = next.id;
+    Ride.pause();
+    openStation({ id: next.id });
+  }
+  Ride.onFail = onFail;
+  window.__lifeFail = function (kind) { lastFailAt = 0; onFail(kind || "test"); };
+
+  /* ---------- 覆盖层工具 ---------- */
+  function showOverlay(id) { $(id).classList.remove('hidden'); }
+  function hideOverlay(id) { $(id).classList.add('hidden'); }
+  function setOpen(b) { window.__lifeOpen = b; }
+
+  function hidePrompt() {
+    promptShowing = false; currentStation = null;
+    $('life-prompt').classList.add('hidden');
+    window.__lifePromptOpen = false;
+  }
+
+  /* ---------- HUD ---------- */
+  function updateHud() {
+    $('lhud-origin').textContent = state.origin ? originName() + (vehicleName ? ' · ' + vehicleName : '') : '未选出身';
+    const box = $('lhud-stats');
+    if (!box.dataset.built) {
+      box.innerHTML = STAT_KEYS.map(k =>
+        '<span class="lhud-chip"><b style="color:' + STAT_META[k].color + '">' + STAT_META[k].name +
+        '</b><i data-v="' + k + '">0</i></span>').join('');
+      box.dataset.built = '1';
+    }
+    STAT_KEYS.forEach(k => { const el = box.querySelector('[data-v="' + k + '"]'); if (el) el.textContent = state.stats[k]; });
+    $('lhud-prog').textContent = '已领悟 ' + state.done.length + ' / ' + CHAPTERS.length;
+  }
+  const originName = () => { const o = ORIGINS.find(x => x.id === state.origin); return o ? o.name : '未知起点'; };
+
+  let appliedVehicle = null, vehicleName = '';
+  function applyVehicle() {
+    if (!state.origin) return;
+    if (appliedVehicle === state.origin) return;
+    appliedVehicle = state.origin;
+    const v = VEHICLES[state.origin] || VEHICLES.county;
+    vehicleName = v.name;
+    if (Ride.setVehicle) Ride.setVehicle(v);
+    updateHud();
+  }
+
+  /* ---------- 出身 ---------- */
+  function buildOrigin() {
+    const list = $('origin-list'); list.innerHTML = '';
+    ORIGINS.forEach(o => {
+      const el = document.createElement('div');
+      el.className = 'origin-item';
+      el.innerHTML =
+        '<div class="oi-name">' + escapeHtml(o.name) + '</div>' +
+        '<div class="oi-tag">' + escapeHtml(o.tag) + '</div>' +
+        '<div class="oi-stats">' + STAT_KEYS.map(k =>
+          '<span style="background:' + STAT_META[k].color + '">' + STAT_META[k].name + ' ' + o.stats[k] + '</span>').join('') + '</div>' +
+        '<div class="oi-note">' + escapeHtml(o.note) + '</div>' +
+        (VEHICLES[o.id] ? '<div class="oi-bike">车 · ' + escapeHtml(VEHICLES[o.id].name) +
+          ' · ' + escapeHtml(VEHICLES[o.id].tag) + '</div>' : '');
+      el.onclick = () => pickOrigin(o);
+      list.appendChild(el);
+    });
+  }
+  function pickOrigin(o) {
+    state.origin = o.id;
+    state.stats = Object.assign({}, o.stats);
+    save();
+    applyVehicle();
+    updateHud();
+    hideOverlay('life-origin');
+    startRiding();
+    if (Ride.say) Ride.say('骑上你的' + (VEHICLES[o.id] ? VEHICLES[o.id].name : '车') + '出发~');
+  }
+
+  function startRiding() {
+    applyVehicle();
+    // 等「出发」气泡说完，再把人生阶段的字幕放出来，避免两层文字叠在一起
+    setTimeout(() => { if (Ride.showEra) Ride.showEra(); }, 1500);
+    ['life-origin', 'life-chapter', 'life-insight', 'life-stage', 'life-result', 'life-codex'].forEach(hideOverlay);
+    setOpen(false);
+    hidePrompt();
+    Ride.resume();
+  }
+
+  /* ---------- 章节流程 ---------- */
+  let view = { chapter: null, m: null, lineIdx: 0, choiceIdx: -1, net: 0, typing: null, readOnly: false, returnTo: null };
+
+  function openStation(m) {
+    hidePrompt();
+    const ms = milestones[m.id] || m;
+    view = { chapter: CHAPTERS[m.id], m: ms, lineIdx: 0, choiceIdx: -1, net: 0, typing: null, readOnly: false, returnTo: null };
+    $('lc-num').textContent = pad2(m.id + 1);
+    $('lc-age').textContent = view.chapter.age + ' 岁';
+    $('lc-place').textContent = view.chapter.place;
+    $('lc-title').textContent = view.chapter.title;
+    $('lc-chap').textContent = view.chapter.chapter;
+    $('lc-why').textContent = WHY[lastKind] || WHY.test;
+    showOnly('gate');
+    showOverlay('life-chapter'); setOpen(true);
+  }
+  function showOnly(section) {
+    ['gate', 'story', 'choices', 'outcome'].forEach(s => {
+      const el = $('lc-' + s); if (el) el.classList.toggle('hidden', s !== section);
+    });
+  }
+
+  function startStory() { if (!view.chapter) return; showOnly('story'); view.lineIdx = 0; renderLines(); }
+  function stopTyping() { if (view.typing) { clearInterval(view.typing); view.typing = null; } }
+  function renderLines() {
+    if (!view.chapter) return;
+    const box = $('lc-lines'); box.innerHTML = '';
+    const lines = view.chapter.lines;
+    for (let i = 0; i < view.lineIdx; i++) {
+      const p = document.createElement('p'); p.className = 'ln shown'; p.textContent = lines[i]; box.appendChild(p);
+    }
+    if (view.lineIdx >= lines.length) { box.scrollTop = box.scrollHeight; showChoices(); return; }
+    const p = document.createElement('p'); p.className = 'ln cur';
+    const span = document.createElement('span'); p.appendChild(span); box.appendChild(p);
+    const text = lines[view.lineIdx]; let i = 0;
+    stopTyping();
+    view.typing = setInterval(() => {
+      i++; span.textContent = text.slice(0, i);
+      if (i >= text.length) stopTyping();
+    }, TYPE_SPEED);
+    box.scrollTop = box.scrollHeight;
+  }
+  function finishLineNow() {
+    if (!view.typing) return false;
+    stopTyping();
+    const box = $('lc-lines'); const p = box.querySelector('.ln.cur');
+    if (p) { const sp = p.querySelector('span'); const full = view.chapter.lines[view.lineIdx]; if (sp) sp.textContent = full; }
+    return true;
+  }
+  function advance() {
+    if (!view.chapter) return;
+    if ($('lc-choices').classList.contains('hidden') === false) return;
+    if (finishLineNow()) return;
+    view.lineIdx++;
+    if (view.lineIdx > view.chapter.lines.length) return;
+    renderLines();
+  }
+  function showChoices() {
+    $('lc-foot').style.display = 'none';
+    const box = $('lc-choices'); box.innerHTML = '';
+    view.chapter.choices.forEach((ch, i) => {
+      const b = document.createElement('button');
+      b.className = 'choice';
+      b.innerHTML = '<span class="ci">' + CN_IDX[i] + '</span>' + escapeHtml(ch.text);
+      b.onclick = () => pick(i);
+      box.appendChild(b);
+    });
+    showOnly('choices');
+  }
+  function pick(i) {
+    stopTyping();
+    const ch = view.chapter.choices[i]; view.choiceIdx = i;
+    const delta = {};
+    STAT_KEYS.forEach(k => {
+      const d = ch.effects[k] || 0; if (!d) return;
+      const before = state.stats[k];
+      state.stats[k] = clamp(before + d);
+      delta[k] = state.stats[k] - before;
+    });
+    view.net = STAT_KEYS.reduce((s, k) => s + (delta[k] || 0), 0);
+    if (Ride.tone) Ride.tone(view.net >= 0 ? 'sine' : 'sine', view.net >= 0 ? 520 : 320,
+                              view.net >= 0 ? 780 : 150, 0.15, 0.08);
+    $('lc-outcome-text').textContent = ch.outcome;
+    const chips = STAT_KEYS.filter(k => delta[k]).map(k =>
+      '<span class="od-chip ' + (delta[k] > 0 ? 'up' : 'down') + '">' + STAT_META[k].name + ' ' +
+      (delta[k] > 0 ? '+' : '') + delta[k] + '</span>').join('');
+    $('lc-delta').innerHTML = chips || '<span class="od-chip">几乎没变</span>';
+    showOnly('outcome'); updateHud();
+  }
+
+  function openInsight() {
+    const ins = view.chapter.insight;
+    $('ins-quote').textContent = '「' + ins.quote + '」';
+    $('ins-src').textContent = ins.source;
+    $('ins-data').textContent = ins.data;
+    $('ins-moral').textContent = ins.moral;
+    const rows = view.chapter.choices.map((ch, i) => {
+      const n = STAT_KEYS.reduce((s, k) => s + (ch.effects[k] || 0), 0);
+      const t = ch.text.length > 20 ? ch.text.slice(0, 20) + '…' : ch.text;
+      return '<div class="alt-row' + (i === view.choiceIdx ? ' me' : '') + '"><span class="alt-t">' +
+        CN_IDX[i] + ' · ' + escapeHtml(t) + '</span><span class="alt-n ' + (n > 0 ? 'up' : (n < 0 ? 'down' : '')) +
+        '">' + (n > 0 ? '+' : '') + n + '</span></div>';
+    }).join('');
+    $('ins-alt').innerHTML = '<div class="k">另 一 条 路 的 账 单</div>' + rows;
+    showOverlay('life-insight'); setOpen(true);
+  }
+  function closeInsight() { hideOverlay('life-insight'); }
+
+  function commitChoice() {
+    const m = view.m, c = view.chapter, i = view.choiceIdx;
+    const net = STAT_KEYS.reduce((s, k) => s + (c.choices[i].effects[k] || 0), 0);
+    state.picks = state.picks.filter(p => p.id !== c.id);
+    state.picks.push({ id: c.id, choice: i, text: c.choices[i].text, net: net });
+    if (!state.done.includes(c.id)) state.done.push(c.id);
+    m.done = true; save(); updateHud();
+
+    let eraDone = null;
+    LIFE_ERAS.forEach(e => {
+      if (state.stageSeen.indexOf(e.stage) >= 0) return;
+      if (e.ids.every(id => state.done.indexOf(id) >= 0)) eraDone = e.stage;
+    });
+    stationActive = -1;
+    hideOverlay('life-chapter');
+    if (eraDone !== null) { state.stageSeen.push(eraDone); save(); showStage(eraDone); return; }
+    if (state.done.length >= CHAPTERS.length) { renderResult(); showOverlay('life-result'); setOpen(true); return; }
+    setOpen(false); Ride.resume();
+  }
+
+  /* ---------- 阶段对账单 ---------- */
+  function showStage(eraIndex) {
+    const era = LIFE_ERAS.find(e => e.stage === eraIndex);
+    const stg = STAGES[eraIndex];
+    const rows = state.picks.filter(p => era.ids.indexOf(p.id) >= 0).sort((a, b) => a.id - b.id);
+    const net = rows.reduce((s, p) => s + p.net, 0);
+    const lv = net > 8 ? 'good' : (net < -8 ? 'bad' : 'mid');
+    $('st-title').textContent = stg.title;
+    $('st-sub').textContent = stg.sub + ' · 这一段共 ' + rows.length + ' 个选择';
+    $('st-summary').textContent = stg.lines[lv];
+    $('st-body').innerHTML = rows.map(p => {
+      const c = CHAPTERS[p.id];
+      return '<div class="st-row ' + (p.net > 0 ? 'good' : (p.net < 0 ? 'bad' : '')) + '">' +
+        '<span class="st-age">' + c.age + '岁</span><span class="st-pick">' + escapeHtml(c.title) +
+        '</span><span class="st-net">' + (p.net > 0 ? '+' : '') + p.net + '</span></div>';
+    }).join('');
+    showOverlay('life-stage'); setOpen(true);
+  }
+
+  /* ---------- 结算 ---------- */
+  function portraitOf(st) {
+    let hi = STAT_KEYS[0], lo = STAT_KEYS[0];
+    STAT_KEYS.forEach(k => { if (st[k] > st[hi]) hi = k; if (st[k] < st[lo]) lo = k; });
+    return PORTRAITS[hi + '-' + lo] || { name: '一路算过来的人', desc: '你把每一笔都算过，也为此付出过代价。' };
+  }
+  function radarSvg(st) {
+    const W = 320, H = 250, cx = W / 2, cy = H / 2 + 4, R = 82;
+    const axes = [
+      { k: 'health', dx: 0, dy: -1, lx: 0, ly: -22 },
+      { k: 'time', dx: 1, dy: 0, lx: 17, ly: 5 },
+      { k: 'money', dx: 0, dy: 1, lx: 0, ly: 25 },
+      { k: 'mind', dx: -1, dy: 0, lx: -17, ly: 5 },
+    ];
+    const pt = (a, r) => [cx + a.dx * R * r, cy + a.dy * R * r];
+    let g = '';
+    [0.25, 0.5, 0.75, 1].forEach(r => {
+      const p = axes.map(a => pt(a, r).map(n => n.toFixed(1)).join(',')).join(' ');
+      g += '<polygon points="' + p + '" fill="none" stroke="#e6dfd1" stroke-width="1"/>';
+    });
+    axes.forEach(a => { const q = pt(a, 1); g += '<line x1="' + cx + '" y1="' + cy + '" x2="' + q[0].toFixed(1) + '" y2="' + q[1].toFixed(1) + '" stroke="#e6dfd1" stroke-width="1"/>'; });
+    const poly = axes.map(a => pt(a, clamp(st[a.k]) / 100).map(n => n.toFixed(1)).join(' ')).join(' ');
+    g += '<polygon points="' + poly + '" fill="rgba(47,93,80,.16)" stroke="#2f5d50" stroke-width="2" stroke-linejoin="round"/>';
+    axes.forEach(a => {
+      const q = pt(a, clamp(st[a.k]) / 100);
+      g += '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="4" fill="' + STAT_META[a.k].color + '" stroke="#fff" stroke-width="2"/>';
+      const l = pt(a, 1);
+      g += '<text x="' + (l[0] + a.lx) + '" y="' + (l[1] + a.ly + 4) + '" font-size="13" fill="#5d564c" text-anchor="middle" font-family="sans-serif">' + STAT_META[a.k].name + ' ' + st[a.k] + '</text>';
+    });
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" style="max-width:' + W + 'px;display:block;margin:0 auto">' + g + '</svg>';
+  }
+  function renderResult() {
+    const st = state.stats;
+    const total = STAT_KEYS.reduce((s, k) => s + st[k], 0);
+    const tier = RESULT_TIERS.find(t => total >= t.min) || RESULT_TIERS[RESULT_TIERS.length - 1];
+    $('r-grade').textContent = tier.grade;
+    $('r-title').textContent = tier.title;
+    $('r-desc').textContent = tier.desc;
+    $('r-radar').innerHTML = radarSvg(st);
+    const pt = portraitOf(st);
+    $('pt-name').textContent = pt.name;
+    $('pt-desc').textContent = '起点：' + originName() + '。' + pt.desc;
+    $('ledger').innerHTML = STAT_KEYS.map(k =>
+      '<div class="ledger-row"><span class="lk">' + STAT_META[k].full + '</span>' +
+      '<span class="lb"><span class="lf" data-l="' + k + '" style="background:' + STAT_META[k].color + '"></span></span>' +
+      '<span class="lv">' + st[k] + '</span></div>').join('');
+    setTimeout(() => STAT_KEYS.forEach((k, i) => setTimeout(() => {
+      const el = $('ledger').querySelector('[data-l="' + k + '"]'); if (el) el.style.width = clamp(st[k]) + '%';
+    }, i * 130)), 160);
+    let low = STAT_KEYS[0];
+    STAT_KEYS.forEach(k => { if (st[k] < st[low]) low = k; });
+    const tip = LOWEST_TIPS[low];
+    $('tip-title').textContent = tip.title;
+    $('tip-list').innerHTML = tip.tips.map(t => '<li>' + escapeHtml(t) + '</li>').join('');
+    const rows = state.picks.slice().sort((a, b) => a.id - b.id);
+    $('path-list').innerHTML = rows.map(p => {
+      const c = CHAPTERS[p.id];
+      return '<div class="path-row ' + (p.net > 0 ? 'good' : (p.net < 0 ? 'bad' : '')) + '">' +
+        '<span class="path-age">' + c.age + '</span><span class="path-pick">' + escapeHtml(p.text) +
+        '</span><span class="path-age">' + (p.net > 0 ? '+' : '') + p.net + '</span></div>';
+    }).join('');
+  }
+
+  /* ---------- 启示录 ---------- */
+  function renderCodex() {
+    const list = $('codex-list'); list.innerHTML = '';
+    CHAPTERS.forEach(c => {
+      const unlocked = state.done.indexOf(c.id) >= 0;
+      const el = document.createElement('div');
+      el.className = 'codex-item' + (unlocked ? ' done' : ' locked');
+      el.innerHTML =
+        '<div class="cx-top"><span>' + pad2(c.id + 1) + ' · ' + c.age + '岁</span><span>' + (unlocked ? '已领悟' : '未领悟') + '</span></div>' +
+        '<div class="cx-title">' + escapeHtml(c.title) + '</div>' +
+        '<div class="cx-quote">「' + escapeHtml(c.insight.quote) + '」</div>';
+      if (unlocked) el.onclick = () => { view = { chapter: c, readOnly: true, returnTo: 'codex' }; openInsight(); };
+      list.appendChild(el);
+    });
+  }
+
+  /* ---------- 事件绑定 ---------- */
+  $('lc-start').onclick = startStory;
+  $('lc-story').onclick = advance;
+  $('lc-insight').onclick = openInsight;
+  $('ins-continue').onclick = () => {
+    closeInsight();
+    if (view.readOnly) {
+      if (view.returnTo === 'codex') { renderCodex(); showOverlay('life-codex'); }
+      setOpen(true); return;
+    }
+    commitChoice();
+  };
+  $('st-go').onclick = () => {
+    hideOverlay('life-stage');
+    if (state.done.length >= CHAPTERS.length) { renderResult(); showOverlay('life-result'); setOpen(true); }
+    else { setOpen(false); Ride.resume(); }
+  };
+  $('r-restart').onclick = () => {
+    try { localStorage.removeItem(K); } catch (_) {}
+    state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 }, picks: [], done: [], stageSeen: [] };
+    milestones.forEach(m => m.done = false);
+    Ride.setDist(0);
+    hideOverlay('life-result');
+    buildOrigin(); showOverlay('life-origin'); setOpen(true);
+    updateHud();
+  };
+  $('lhud-codex').onclick = () => {
+    if (!state.origin) return;
+    codexWasRiding = Ride.riding();
+    if (codexWasRiding) Ride.pause();
+    renderCodex(); showOverlay('life-codex'); setOpen(true);
+  };
+  $('codex-close').onclick = () => {
+    hideOverlay('life-codex');
+    setOpen(false);
+    if (codexWasRiding) Ride.resume();
+  };
+  $('lhud-reset').onclick = () => {
+    try { localStorage.removeItem(K); } catch (_) {}
+    state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 }, picks: [], done: [], stageSeen: [] };
+    milestones.forEach(m => m.done = false);
+    Ride.setDist(0);
+    ['life-chapter', 'life-insight', 'life-stage', 'life-result', 'life-codex'].forEach(hideOverlay);
+    hidePrompt();
+    buildOrigin(); showOverlay('life-origin'); setOpen(true); updateHud();
+  };
+  /* 站牌只是路标，不再点击进入；章节只由「摔了一跤」触发 */
+
+  /* ---------- 启动 ---------- */
+  milestones.forEach(buildSign);
+  load();
+  milestones.forEach(m => { m.done = state.done.indexOf(m.id) >= 0; });
+  updateHud();
+  Ride.onFrame = updateMilestones;
+  if (state.origin && state.done.length >= CHAPTERS.length) {
+    renderResult(); showOverlay('life-result'); setOpen(true);
+  } else if (state.origin) {
+    startRiding();
+  } else {
+    Ride.pause(); buildOrigin(); showOverlay('life-origin'); setOpen(true);
+  }
+})();
+</script>
+</body>
+</html>

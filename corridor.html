@@ -1,0 +1,3582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>性价比人生 · 一场 14 关的人生模拟</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%0A%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%232f5d50%22%2F%3E%0A%3Cellipse%20cx%3D%2230%22%20cy%3D%2233%22%20rx%3D%2215%22%20ry%3D%2210%22%20fill%3D%22%23f3efe6%22%2F%3E%0A%3Cpath%20d%3D%22M44%2033l13-9v18z%22%20fill%3D%22%23f3efe6%22%2F%3E%0A%3Ccircle%20cx%3D%2223%22%20cy%3D%2230%22%20r%3D%222.3%22%20fill%3D%22%231d3a32%22%2F%3E%0A%3C%2Fsvg%3E">
+<meta name="theme-color" content="#2f5d50">
+<meta property="og:title" content="性价比人生 · 鹈鹕骑车">
+<meta property="og:description" content="骑上你的车，从 18 岁骑到 60 岁。摔了、翻了、蹬不动了，才会懂一条道理。">
+<meta property="og:type" content="website">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="鹈鹕骑车">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="description" content="基于《高性价比人生指南》全书 34 节内容改编的剧情选择游戏：从 18 岁到 60 岁，一关一关活明白。">
+<style>
+/* ============================================================
+ * 《性价比人生》样式
+ * 浅色 · 暖米 · 纸质感 · 精装书排版
+ * ============================================================ */
+
+:root {
+  --bg: #f5f2ec;
+  --bg-deep: #ebe5d9;
+  --card: #ffffff;
+  --ink: #2b2723;
+  --ink-2: #5d564c;
+  --ink-3: #948c7e;
+  --line: #e6dfd1;
+  --line-2: #d5c9b6;
+  --brand: #2f5d50;
+  --brand-2: #24483e;
+  --brand-soft: #eaf1ed;
+  --accent: #b8623b;
+  --accent-soft: #fbeae1;
+  --health: #c0504d;
+  --time: #4a7fa5;
+  --money: #b8892b;
+  --mind: #5a8a5f;
+  --shadow: 0 1px 3px rgba(70, 58, 40, .05), 0 6px 20px rgba(70, 58, 40, .06);
+  --shadow-lg: 0 8px 24px rgba(70, 58, 40, .12), 0 24px 64px rgba(70, 58, 40, .14);
+  --serif: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "SimSun", Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse at 12% 8%, rgba(47, 93, 80, .07), transparent 46%),
+    radial-gradient(ellipse at 88% 82%, rgba(184, 98, 59, .07), transparent 46%);
+  background-attachment: fixed;
+}
+/* 纸张噪点 */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: var(--noise);
+  pointer-events: none;
+  z-index: 1;
+}
+
+#app { max-width: 720px; margin: 0 auto; padding: 0 20px 80px; position: relative; z-index: 2; }
+
+.screen { display: none; animation: fadeUp .5s cubic-bezier(.22,.7,.3,1) both; }
+.screen.active { display: block; }
+/* 封面自带逐项登场，不再叠一层整页位移 */
+#screen-title.screen.active { animation: none; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------- 通用 ---------- */
+.muted { color: var(--ink-3); }
+.center { text-align: center; }
+
+.btn {
+  font-family: var(--sans);
+  font-size: 15px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  color: var(--ink);
+  padding: 11px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: .2s cubic-bezier(.22,.7,.3,1);
+  letter-spacing: .03em;
+  box-shadow: 0 1px 2px rgba(70,58,40,.05);
+}
+.btn:hover { border-color: var(--brand); color: var(--brand); transform: translateY(-1px); box-shadow: var(--shadow); }
+.btn:active { transform: translateY(0); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+.btn.primary:hover { background: var(--brand-2); color: #fff; }
+.btn.ghost { background: transparent; box-shadow: none; }
+
+.icon-btn {
+  flex: none;
+  width: 28px; height: 28px;
+  border: 1px solid var(--line-2);
+  background: var(--card);
+  border-radius: 50%;
+  color: var(--ink-3);
+  font-size: 13px; line-height: 1;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: .2s;
+}
+.icon-btn:hover { border-color: var(--brand); color: var(--brand); }
+.icon-btn.off { opacity: .38; }
+.icon-btn.on { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+
+/* ---------- 标题页 ---------- */
+#screen-title { padding-top: 11vh; }
+
+.title-mark {
+  font-size: 11px;
+  letter-spacing: .36em;
+  color: var(--accent);
+  margin-bottom: 20px;
+}
+.title-main {
+  font-family: var(--serif);
+  font-size: 62px;
+  line-height: 1.05;
+  margin: 0 0 4px;
+  letter-spacing: .06em;
+  font-weight: 700;
+}
+.title-rule {
+  width: 60px; height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  margin: 26px 0 22px;
+}
+.title-sub {
+  font-family: var(--serif);
+  font-size: 17.5px;
+  color: var(--ink-2);
+  line-height: 2.05;
+  margin: 0;
+  letter-spacing: .02em;
+}
+.title-desc {
+  font-size: 14px;
+  line-height: 2.05;
+  color: var(--ink-3);
+  max-width: 540px;
+  margin: 26px 0 0;
+}
+.title-stats { display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap; }
+.ts-item {
+  flex: 1 1 128px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 15px 16px 14px;
+  box-shadow: var(--shadow);
+}
+.ts-name { font-family: var(--serif); font-size: 15px; font-weight: 700; letter-spacing: .14em; margin-bottom: 10px; }
+.ts-bar { height: 5px; background: var(--bg-deep); border-radius: 3px; overflow: hidden; }
+.ts-fill { height: 100%; width: 60%; border-radius: 3px; }
+.ts-desc { font-size: 11px; color: var(--ink-3); margin-top: 9px; line-height: 1.65; }
+
+.title-actions { margin-top: 38px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.title-foot { margin-top: 44px; font-size: 11.5px; color: var(--ink-3); line-height: 1.95; }
+
+/* ---------- HUD ---------- */
+.hud {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(245, 242, 236, .9);
+  backdrop-filter: blur(10px);
+  padding: 13px 0 11px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 26px;
+}
+.hud-row { display: flex; align-items: center; gap: 10px; }
+.hud-chapter {
+  flex: 1;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  font-size: 12.5px; color: var(--ink-3); letter-spacing: .05em;
+  min-width: 0;
+}
+.hud-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 11px; }
+
+.stat { position: relative; }
+.stat-top {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 11px; color: var(--ink-2); margin-bottom: 6px;
+}
+.stat-name { letter-spacing: .05em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stat-val { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 13px; margin-left: 4px; }
+.stat-bar { height: 6px; border-radius: 3px; background: rgba(43, 39, 35, .09); overflow: hidden; }
+.stat-fill {
+  height: 100%; border-radius: 3px; width: 60%;
+  transition: width .75s cubic-bezier(.22,.7,.3,1), background .3s;
+}
+.stat.danger .stat-val, .stat.danger .stat-name { color: var(--health); }
+.stat.danger .stat-val { animation: pulseRed 1.3s ease-in-out infinite; }
+@keyframes pulseRed { 0%,100% { opacity: 1 } 50% { opacity: .4 } }
+
+.float-num {
+  position: absolute; right: 0; top: -3px;
+  font-size: 12.5px; font-weight: 700;
+  opacity: 0; pointer-events: none;
+}
+.float-num.show { animation: floatUp 1.5s cubic-bezier(.22,.7,.3,1) forwards; }
+@keyframes floatUp {
+  0%   { opacity: 0; transform: translateY(8px) scale(.9); }
+  20%  { opacity: 1; transform: translateY(-3px) scale(1.06); }
+  70%  { opacity: 1; transform: translateY(-14px) scale(1); }
+  100% { opacity: 0; transform: translateY(-26px) scale(.95); }
+}
+
+/* ---------- 关卡闸门 ---------- */
+.gate {
+  position: relative; text-align: center;
+  min-height: 74vh; padding: 4vh 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.gate::before {
+  content: attr(data-n);
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -62%);
+  font-family: var(--serif); font-size: 210px; line-height: 1; font-weight: 700;
+  color: var(--brand); opacity: .04; pointer-events: none; letter-spacing: -.02em;
+}
+.gate > * { position: relative; z-index: 1; }
+.gate-label { font-size: 11.5px; letter-spacing: .34em; color: var(--accent); margin-bottom: 18px; }
+.gate-title {
+  font-family: var(--serif); font-size: 38px; margin: 0 0 16px;
+  letter-spacing: .07em; font-weight: 700;
+}
+.gate-meta { font-size: 13px; color: var(--ink-3); line-height: 2.1; }
+.gate-meta b { color: var(--ink-2); font-weight: 500; }
+
+/* ---------- 剧情 ---------- */
+.stage {
+  background: var(--card);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.stage-place {
+  padding: 15px 24px; font-size: 12px; color: var(--ink-3);
+  border-bottom: 1px solid var(--line); letter-spacing: .06em;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  background: linear-gradient(180deg, #fdfcfa, #fff);
+}
+.stage-body { padding: 32px 30px 24px; min-height: 262px; }
+
+.line {
+  font-family: var(--serif);
+  font-size: 17.5px;
+  line-height: 2.1;
+  color: var(--ink);
+  margin: 0 0 20px;
+  letter-spacing: .015em;
+  transition: color .4s;
+}
+.line.past { color: var(--ink-2); }
+.line.now {
+  border-left: 2px solid var(--accent);
+  padding-left: 15px;
+  margin-left: -17px;
+  color: var(--ink);
+}
+.cursor {
+  display: inline-block; width: 2px; height: 17px; background: var(--accent);
+  vertical-align: -2px; margin-left: 4px; animation: blink .85s steps(1) infinite;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.stage-foot {
+  padding: 0 28px 24px;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+}
+.hint { font-size: 11.5px; color: var(--ink-3); letter-spacing: .04em; }
+.dots { display: flex; gap: 5px; align-items: center; }
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--line-2); transition: .3s cubic-bezier(.22,.7,.3,1); }
+.dot.on { background: var(--accent); transform: scale(1.35); }
+
+/* ---------- 选项 ---------- */
+.choices { margin-top: 20px; display: flex; flex-direction: column; gap: 11px; }
+.choice {
+  position: relative;
+  width: 100%; text-align: left; font-family: var(--sans); font-size: 15px; line-height: 1.75;
+  padding: 17px 20px 17px 18px;
+  border: 1px solid var(--line-2); border-radius: 13px;
+  background: var(--card); color: var(--ink); cursor: pointer;
+  transition: .2s cubic-bezier(.22,.7,.3,1);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  animation: choiceIn .4s cubic-bezier(.22,.7,.3,1) both;
+}
+.choice:nth-child(1) { animation-delay: .02s; }
+.choice:nth-child(2) { animation-delay: .09s; }
+.choice:nth-child(3) { animation-delay: .16s; }
+@keyframes choiceIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.choice::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: var(--brand); transform: scaleY(0); transform-origin: center;
+  transition: transform .22s cubic-bezier(.22,.7,.3,1);
+}
+.choice:hover { border-color: var(--brand); transform: translateX(4px); }
+.choice:hover::before { transform: scaleY(1); }
+.choice-idx {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 6px;
+  background: var(--accent-soft); color: var(--accent);
+  font-size: 12px; font-weight: 700; margin-right: 11px; vertical-align: 3px;
+}
+.choice-key {
+  float: right; margin: 2px 0 0 10px;
+  font-size: 10.5px; line-height: 16px; color: var(--ink-3);
+  border: 1px solid var(--line-2); border-radius: 4px; padding: 0 5px;
+}
+
+/* ---------- 后果 ---------- */
+.outcome {
+  background: var(--card); border-radius: 18px; box-shadow: var(--shadow);
+  padding: 28px 30px; margin-top: 20px;
+  border: 1px solid var(--line); border-left: 3px solid var(--accent);
+  animation: fadeUp .5s cubic-bezier(.22,.7,.3,1) both;
+}
+.outcome-head { font-size: 11px; letter-spacing: .28em; color: var(--accent); margin-bottom: 15px; }
+.outcome-text { font-family: var(--serif); font-size: 16.5px; line-height: 2.05; color: var(--ink); }
+.outcome-delta { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.od-chip {
+  font-size: 12px; padding: 4px 11px; border-radius: 999px;
+  background: var(--bg-deep); color: var(--ink-2); font-variant-numeric: tabular-nums;
+}
+.od-chip.up { background: var(--brand-soft); color: var(--brand); }
+.od-chip.down { background: #fbe9e8; color: #a8413e; }
+
+/* ---------- 启示卡（模态） ---------- */
+.mask {
+  position: fixed; inset: 0; background: rgba(43, 39, 35, .46);
+  display: none; align-items: center; justify-content: center; padding: 24px; z-index: 60;
+  backdrop-filter: blur(3px);
+}
+.mask.show { display: flex; animation: fadeIn .28s ease both; }
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+.insight {
+  background: var(--card); border-radius: 20px; box-shadow: var(--shadow-lg);
+  max-width: 580px; width: 100%; max-height: 88vh; overflow-y: auto;
+  padding: 36px 34px 28px;
+  animation: popIn .42s cubic-bezier(.22,.7,.3,1) both;
+}
+@keyframes popIn { from { opacity: 0; transform: translateY(22px) scale(.97); } to { opacity: 1; transform: none; } }
+
+.insight-tag {
+  display: inline-block; font-size: 10.5px; letter-spacing: .24em; color: var(--accent);
+  border: 1px solid var(--accent); border-radius: 999px; padding: 4px 13px; margin-bottom: 22px;
+}
+.insight-quote {
+  font-family: var(--serif); font-size: 21.5px; line-height: 1.8; margin: 0 0 12px;
+  letter-spacing: .02em; font-weight: 700;
+}
+.insight-src { font-size: 11.5px; color: var(--ink-3); margin-bottom: 24px; line-height: 1.8; }
+.insight-div { height: 1px; background: var(--line); margin: 20px 0; }
+.insight-block { margin-bottom: 4px; }
+.insight-block .k {
+  font-size: 10.5px; letter-spacing: .22em; color: var(--brand); margin-bottom: 9px;
+}
+.insight-block .v { font-size: 14px; line-height: 2; color: var(--ink-2); }
+.insight-moral {
+  background: var(--brand-soft); border-radius: 14px; padding: 20px 22px;
+  font-family: var(--serif); font-size: 16.5px; line-height: 1.95; color: var(--brand);
+  letter-spacing: .02em; position: relative;
+}
+.insight-moral::before {
+  content: '\201C'; position: absolute; left: 8px; top: 4px;
+  font-size: 40px; color: rgba(47,93,80,.14); font-family: var(--serif); line-height: 1;
+}
+.insight-alt {
+  margin-top: 16px; border: 1px dashed var(--line-2); border-radius: 14px; padding: 16px 20px 14px;
+}
+.insight-alt .k { font-size: 10.5px; letter-spacing: .2em; color: var(--ink-3); margin-bottom: 10px; }
+.alt-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+  font-size: 13.5px; line-height: 1.85; padding: 5px 8px; color: var(--ink-2);
+  border-radius: 8px;
+}
+.alt-row.me { background: rgba(184, 98, 59, .08); color: var(--ink); font-weight: 600; }
+.alt-row .alt-t { flex: 1; }
+.alt-row .alt-n { font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 12.5px; color: var(--ink-3); }
+.alt-row .alt-n.up { color: #2f7d5f; }
+.alt-row .alt-n.down { color: #b0473f; }
+.insight-actions { margin-top: 26px; display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ---------- 地图 ---------- */
+.map-head { padding: 38px 0 24px; }
+.map-title { font-family: var(--serif); font-size: 32px; margin: 0 0 10px; letter-spacing: .06em; font-weight: 700; }
+.map-sub { font-size: 13.5px; color: var(--ink-3); line-height: 1.95; }
+
+.timeline { position: relative; padding-left: 36px; margin-top: 8px; }
+.timeline::before {
+  content: ''; position: absolute; left: 10px; top: 14px; bottom: 14px; width: 1px;
+  background: linear-gradient(180deg, transparent, var(--line-2) 6%, var(--line-2) 94%, transparent);
+}
+.tl-era {
+  font-size: 11px; letter-spacing: .26em; color: var(--ink-3);
+  margin: 22px 0 12px; position: relative;
+}
+.tl-era::before {
+  content: ''; position: absolute; left: -30px; top: 50%;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--bg);
+  border: 1px solid var(--line-2); transform: translateY(-50%);
+}
+.tl-item {
+  position: relative; background: var(--card); border: 1px solid var(--line);
+  border-radius: 14px; padding: 15px 20px; margin-bottom: 10px; cursor: pointer;
+  transition: .2s cubic-bezier(.22,.7,.3,1);
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 1px 2px rgba(70,58,40,.04);
+}
+.tl-item:hover { border-color: var(--brand); transform: translateX(4px); box-shadow: var(--shadow); }
+.tl-item.locked { opacity: .45; cursor: not-allowed; }
+.tl-item.locked:hover { border-color: var(--line); transform: none; box-shadow: none; }
+.tl-item.current { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.tl-dot {
+  position: absolute; left: -31px; top: 50%; transform: translateY(-50%);
+  width: 10px; height: 10px; border-radius: 50%; background: var(--bg-deep);
+  border: 2px solid var(--line-2); transition: .2s;
+}
+.tl-item.done .tl-dot { background: var(--brand); border-color: var(--brand); }
+.tl-item.current .tl-dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.tl-age { font-size: 12.5px; color: var(--ink-3); min-width: 36px; font-variant-numeric: tabular-nums; }
+.tl-mid { flex: 1; min-width: 0; }
+.tl-name { font-family: var(--serif); font-size: 16.5px; margin-bottom: 4px; letter-spacing: .02em; }
+.tl-chap { font-size: 11.5px; color: var(--ink-3); }
+.tl-right { font-size: 12px; color: var(--ink-3); white-space: nowrap; text-align: right; }
+.tl-item.done .tl-right { color: var(--brand); }
+.tl-score { display: block; font-size: 11px; color: var(--ink-3); font-variant-numeric: tabular-nums; margin-top: 2px; }
+
+/* ---------- 启示录 ---------- */
+.codex-list { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.codex-item {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+  padding: 22px 24px; box-shadow: var(--shadow);
+}
+.codex-q { font-family: var(--serif); font-size: 17px; line-height: 1.85; margin-bottom: 9px; font-weight: 700; }
+.codex-src { font-size: 11.5px; color: var(--ink-3); margin-bottom: 14px; }
+.codex-m {
+  font-size: 13.5px; line-height: 1.95; color: var(--brand);
+  background: var(--brand-soft); border-radius: 12px; padding: 14px 16px;
+}
+.codex-item.locked { opacity: .42; }
+.codex-item.locked .codex-q { color: var(--ink-3); letter-spacing: .3em; }
+
+/* ---------- 结算 ---------- */
+.result-head { text-align: center; padding: 7vh 0 30px; }
+.result-grade {
+  font-family: var(--serif); font-size: 88px; line-height: 1; color: var(--accent);
+  margin-bottom: 16px; font-weight: 700;
+  animation: gradeIn .7s cubic-bezier(.22,.7,.3,1) both;
+}
+@keyframes gradeIn { from { opacity: 0; transform: scale(.7); } to { opacity: 1; transform: none; } }
+.result-title { font-family: var(--serif); font-size: 29px; margin-bottom: 14px; letter-spacing: .08em; font-weight: 700; }
+.result-desc {
+  font-size: 14.5px; color: var(--ink-2); line-height: 2.05;
+  max-width: 500px; margin: 0 auto; text-wrap: balance;
+}
+
+.radar-wrap { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 26px 24px 20px; margin-bottom: 16px; }
+.radar-title { font-size: 11px; letter-spacing: .28em; color: var(--ink-3); margin-bottom: 16px; text-align: center; }
+
+.ledger { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 26px 28px; margin-bottom: 16px; }
+.ledger-row { display: flex; align-items: center; gap: 14px; padding: 10px 0; font-size: 14px; }
+.ledger-row .lk { width: 96px; color: var(--ink-2); font-size: 13px; }
+.ledger-row .lb { flex: 1; height: 7px; background: var(--bg-deep); border-radius: 4px; overflow: hidden; }
+.ledger-row .lf { display: block; height: 100%; border-radius: 4px; width: 0; transition: width 1.1s cubic-bezier(.22,.7,.3,1); }
+.ledger-row .lv { width: 40px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+
+.tip-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+  box-shadow: var(--shadow); padding: 26px 28px; margin-bottom: 16px;
+  border-left: 3px solid var(--brand);
+}
+.tip-title { font-family: var(--serif); font-size: 18px; margin-bottom: 16px; color: var(--brand); font-weight: 700; }
+.tip-list { margin: 0; padding-left: 18px; }
+.tip-list li { font-size: 14px; line-height: 1.95; color: var(--ink-2); margin-bottom: 9px; }
+
+.path-list { background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); padding: 24px 26px; margin-bottom: 22px; }
+.path-row { display: flex; gap: 14px; font-size: 13.5px; line-height: 1.85; padding: 9px 0; border-bottom: 1px dashed var(--line); }
+.path-row:last-child { border-bottom: none; }
+.path-age { color: var(--ink-3); min-width: 34px; font-variant-numeric: tabular-nums; }
+.path-pick { color: var(--ink-2); flex: 1; }
+.path-row.good .path-pick { color: var(--brand); }
+.path-row.bad .path-pick { color: var(--accent); }
+
+.result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+
+/* ---------- 顶部小导航 ---------- */
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 18px 0 6px; font-size: 12.5px; color: var(--ink-3); }
+.topbar .nav-btn { cursor: pointer; transition: .2s; }
+.topbar .nav-btn:hover { color: var(--brand); }
+
+/* ---------- 出身选择 ---------- */
+.origin-list { display: flex; flex-direction: column; gap: 12px; margin-top: 6px; }
+.origin-item {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+  padding: 20px 22px; box-shadow: var(--shadow); cursor: pointer;
+  transition: .2s cubic-bezier(.22,.7,.3,1);
+}
+.origin-item:hover { border-color: var(--brand); transform: translateX(4px); box-shadow: var(--shadow); }
+.oi-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+.oi-name { font-family: var(--serif); font-size: 19px; font-weight: 700; letter-spacing: .03em; }
+.oi-tag { font-size: 11.5px; color: var(--accent); white-space: nowrap; }
+.oi-line { font-size: 13.5px; line-height: 1.95; color: var(--ink-2); margin-bottom: 14px; }
+.oi-stats { display: flex; gap: 7px; flex-wrap: wrap; }
+.oi-s {
+  font-size: 11.5px; color: var(--ink-2);
+  background: var(--bg); border-radius: 7px; padding: 4px 10px;
+}
+.oi-s b { font-variant-numeric: tabular-nums; font-weight: 700; margin-left: 4px; }
+.oi-note {
+  margin-top: 13px; font-size: 12.5px; color: var(--brand);
+  background: var(--brand-soft); border-radius: 10px; padding: 11px 14px; line-height: 1.8;
+}
+
+/* ---------- 关卡图标 ---------- */
+.gate-icon {
+  width: 82px; height: 82px; padding: 17px;
+  margin: 0 auto 24px;
+  color: var(--brand);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; justify-content: center;
+}
+.gate-icon svg { width: 100%; height: 100%; display: block; overflow: visible; }
+
+/* ---------- 阶段对账单 ---------- */
+.stage-head { text-align: center; padding: 7vh 0 28px; }
+.st-summary {
+  font-family: var(--serif); font-size: 16.5px; line-height: 2;
+  color: var(--brand); background: var(--brand-soft);
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 18px; text-align: left;
+}
+.st-row {
+  display: flex; align-items: baseline; gap: 14px;
+  font-size: 13.5px; line-height: 1.85; padding: 9px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.st-row:last-child { border-bottom: none; }
+.st-age { color: var(--ink-3); min-width: 34px; font-variant-numeric: tabular-nums; }
+.st-pick { flex: 1; color: var(--ink-2); }
+.st-row.good .st-pick { color: var(--brand); }
+.st-row.bad .st-pick { color: var(--accent); }
+.st-net { font-variant-numeric: tabular-nums; font-weight: 700; min-width: 30px; text-align: right; }
+
+/* ---------- 结局画像 ---------- */
+.portrait {
+  text-align: center; background: var(--card); border: 1px solid var(--line);
+  border-radius: 18px; box-shadow: var(--shadow); padding: 28px 26px; margin-bottom: 16px;
+  border-top: 3px solid var(--accent);
+}
+.pt-label { font-size: 10.5px; letter-spacing: .28em; color: var(--ink-3); margin-bottom: 14px; }
+.pt-name {
+  font-family: var(--serif); font-size: 25px; font-weight: 700;
+  color: var(--accent); margin-bottom: 13px; letter-spacing: .05em;
+}
+.pt-desc { font-size: 14px; line-height: 2; color: var(--ink-2); max-width: 460px; margin: 0 auto; }
+.pt-origin {
+  margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line);
+  font-size: 12px; color: var(--ink-3); line-height: 1.8;
+}
+
+/* ============================================================
+ * 动画
+ * ============================================================ */
+
+/* ---- 场景氛围层（每关一个色调，缓慢呼吸） ---- */
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: 0;
+  pointer-events: none; opacity: 0;
+  transition: opacity 1.1s ease;
+  background: radial-gradient(ellipse at 78% 8%, rgba(90, 138, 95, .13), transparent 52%);
+}
+body.mood-health::after { opacity: 1; background: radial-gradient(ellipse at 78% 8%, rgba(192, 80, 77, .13), transparent 52%); }
+body.mood-time::after   { opacity: 1; background: radial-gradient(ellipse at 78% 8%, rgba(74, 127, 165, .13), transparent 52%); }
+body.mood-money::after  { opacity: 1; background: radial-gradient(ellipse at 78% 8%, rgba(184, 137, 43, .14), transparent 52%); }
+body.mood-mind::after   { opacity: 1; background: radial-gradient(ellipse at 78% 8%, rgba(90, 138, 95, .13), transparent 52%); }
+body.mood-health::after, body.mood-time::after,
+body.mood-money::after, body.mood-mind::after {
+  animation: breathe 9s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
+
+/* ---- 关卡闸门 ---- */
+.gate::before { animation: numIn .85s cubic-bezier(.22,.7,.3,1) both; }
+@keyframes numIn {
+  from { opacity: 0; transform: translate(-50%, -62%) scale(1.55); letter-spacing: .1em; }
+  to   { opacity: .04; transform: translate(-50%, -62%) scale(1); letter-spacing: -.02em; }
+}
+.gate-title span {
+  display: inline-block;
+  animation: rise .55s cubic-bezier(.22,.7,.3,1) both;
+}
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+.gate-label { animation: rise .5s cubic-bezier(.22,.7,.3,1) .1s both; }
+.gate-meta  { animation: rise .5s cubic-bezier(.22,.7,.3,1) .5s both; }
+
+/* 图标逐笔绘制 */
+@keyframes iconDraw { to { stroke-dashoffset: 0; } }
+
+/* ---- 剧情行滑入 ---- */
+.line.enter { animation: lineIn .55s cubic-bezier(.22,.7,.3,1) both; }
+@keyframes lineIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* ---- 选择反馈粒子 ---- */
+.outcome { position: relative; overflow: hidden; }
+.spark {
+  position: absolute; bottom: 14px; width: 5px; height: 5px; border-radius: 50%;
+  pointer-events: none; opacity: 0;
+}
+.spark.up   { background: var(--mind); box-shadow: 0 0 8px rgba(90,138,95,.7); animation: sparkUp 1.25s ease-out forwards; }
+.spark.down { background: #b0473f; box-shadow: 0 0 8px rgba(176,71,63,.7); animation: sparkDown 1.25s ease-out forwards; }
+@keyframes sparkUp {
+  0%   { opacity: 0; transform: translateY(0) scale(.4); }
+  25%  { opacity: 1; transform: translateY(-18px) scale(1); }
+  100% { opacity: 0; transform: translateY(-90px) scale(.5); }
+}
+@keyframes sparkDown {
+  0%   { opacity: 0; transform: translateY(-40px) scale(.4); }
+  25%  { opacity: 1; transform: translateY(-20px) scale(1); }
+  100% { opacity: 0; transform: translateY(10px) scale(.5); }
+}
+
+/* ---- 启示卡分段浮现 ---- */
+.mask.show .insight > * { animation: insIn .55s cubic-bezier(.22,.7,.3,1) both; }
+.mask.show .insight > *:nth-child(1) { animation-delay: .06s; }
+.mask.show .insight > *:nth-child(2) { animation-delay: .14s; }
+.mask.show .insight > *:nth-child(3) { animation-delay: .20s; }
+.mask.show .insight > *:nth-child(4) { animation-delay: .26s; }
+.mask.show .insight > *:nth-child(5) { animation-delay: .32s; }
+.mask.show .insight > *:nth-child(6) { animation-delay: .38s; }
+.mask.show .insight > *:nth-child(7) { animation-delay: .44s; }
+.mask.show .insight > *:nth-child(8) { animation-delay: .50s; }
+@keyframes insIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: none; } }
+
+/* ---- 雷达图展开 ---- */
+#radar svg polygon:last-of-type {
+  transform-box: view-box; transform-origin: center;
+  animation: radarIn 1s cubic-bezier(.22,.7,.3,1) .25s both;
+}
+@keyframes radarIn { from { opacity: 0; transform: scale(.15); } to { opacity: 1; transform: scale(1); } }
+#radar svg circle { animation: dotPop .45s cubic-bezier(.22,.7,.3,1) .9s both; transform-box: fill-box; transform-origin: center; }
+@keyframes dotPop { from { transform: scale(0); } to { transform: scale(1); } }
+
+/* ---- 时间轴节点依次展开 ---- */
+.tl-item, .tl-era { animation: tlIn .5s cubic-bezier(.22,.7,.3,1) both; }
+@keyframes tlIn { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+.tl-item:hover { animation: none; }
+
+/* ---- 出身卡依次展开 ---- */
+.origin-item { animation: tlIn .5s cubic-bezier(.22,.7,.3,1) both; }
+
+/* ---- 按钮涟漪 ---- */
+.btn { position: relative; overflow: hidden; }
+.origin-item { position: relative; overflow: hidden; }
+.ripple {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  background: rgba(47, 93, 80, .16);
+  transform: scale(0); opacity: .9;
+  animation: ripple .62s cubic-bezier(.22,.7,.3,1) forwards;
+}
+@keyframes ripple { to { transform: scale(11); opacity: 0; } }
+
+/* ---- 资源条脉冲 ---- */
+.stat-fill.pulse { animation: barPulse .8s cubic-bezier(.22,.7,.3,1); }
+@keyframes barPulse {
+  0%   { filter: brightness(1); }
+  35%  { filter: brightness(1.5) saturate(1.3); }
+  100% { filter: brightness(1); }
+}
+
+/* ---- 封面标题 ---- */
+.title-main { animation: rise .8s cubic-bezier(.22,.7,.3,1) .05s both; }
+.title-rule { animation: ruleGrow .9s cubic-bezier(.22,.7,.3,1) .35s both; transform-origin: left; }
+@keyframes ruleGrow { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
+.title-sub  { animation: rise .7s cubic-bezier(.22,.7,.3,1) .45s both; }
+.title-desc { animation: rise .7s cubic-bezier(.22,.7,.3,1) .58s both; }
+.title-stats .ts-item { animation: rise .6s cubic-bezier(.22,.7,.3,1) both; }
+.title-stats .ts-item:nth-child(1) { animation-delay: .68s; }
+.title-stats .ts-item:nth-child(2) { animation-delay: .76s; }
+.title-stats .ts-item:nth-child(3) { animation-delay: .84s; }
+.title-stats .ts-item:nth-child(4) { animation-delay: .92s; }
+.title-actions { animation: rise .7s cubic-bezier(.22,.7,.3,1) 1s both; }
+.title-mark { animation: rise .7s cubic-bezier(.22,.7,.3,1) both; }
+
+/* ============================================================
+ * 互动关卡
+ * ============================================================ */
+.ix {
+  background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+  box-shadow: var(--shadow); padding: 24px 26px;
+  animation: fadeUp .45s cubic-bezier(.22,.7,.3,1) both;
+}
+.ix-intro { font-size: 13.5px; line-height: 1.9; color: var(--ink-3); }
+.ix-k {
+  font-size: 11.5px; letter-spacing: .18em; color: var(--ink-3);
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+}
+.ix-kk { letter-spacing: 0; }
+
+.ix-scene {
+  font-family: var(--serif); font-size: 17px; line-height: 2;
+  margin: 14px 0 6px;
+}
+.ix-timer {
+  height: 4px; background: var(--bg-deep); border-radius: 2px;
+  overflow: hidden; margin: 18px 0 4px;
+}
+.ix-timer span {
+  display: block; height: 100%; width: 100%; background: var(--accent);
+  transform-origin: left; animation: timerOut linear forwards;
+}
+@keyframes timerOut { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.ix-hint { text-align: center; font-size: 11.5px; color: var(--ink-3); margin-top: 12px; }
+
+.ix-btns { display: flex; gap: 12px; justify-content: center; margin-top: 22px; }
+
+.ix-fb {
+  font-family: var(--serif); font-size: 16.5px; line-height: 2;
+  padding: 20px 22px; border-radius: 14px;
+  background: var(--bg); border-left: 3px solid var(--ink-3);
+}
+.ix-fb.ok { background: var(--brand-soft); border-left-color: var(--brand); color: var(--brand); }
+.ix-fb.no { background: #fbe9e8; border-left-color: #b0473f; color: #8d3a36; }
+
+/* 柜台卡片 */
+.ix-card {
+  background: var(--bg); border: 1px solid var(--line); border-radius: 14px;
+  padding: 20px 22px; margin: 16px 0;
+}
+.ix-name { font-family: var(--serif); font-size: 19px; font-weight: 700; margin-bottom: 6px; }
+.ix-price { font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.ix-tag {
+  float: right; font-size: 11.5px; padding: 3px 11px; border-radius: 999px;
+  font-family: var(--sans); font-weight: 700; letter-spacing: .04em;
+}
+.ix-tag.good { background: var(--brand-soft); color: var(--brand); }
+.ix-tag.bad { background: #fbe9e8; color: #a8413e; }
+.ix-why { font-size: 13.5px; line-height: 1.95; color: var(--ink-2); margin-top: 12px; }
+.ix-judge { margin-top: 14px; font-size: 13px; font-weight: 700; }
+.ix-judge.ok { color: var(--brand); }
+.ix-judge.no { color: #b0473f; }
+
+/* 表单 */
+.ix-field { margin: 20px 0; }
+.ix-lab {
+  font-size: 13px; color: var(--ink-2); margin-bottom: 11px;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+}
+.ix-val { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 700; font-size: 14px; }
+.ix-desc { font-size: 11.5px; color: var(--ink-3); margin-top: 9px; }
+.ix-input {
+  width: 74px; border: 1px solid var(--line-2); border-radius: 6px;
+  padding: 3px 8px; font-size: 13px; font-family: var(--sans);
+  color: var(--ink); background: var(--card); text-align: right;
+}
+.ix-range {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 6px; border-radius: 3px;
+  background: var(--bg-deep); outline: none;
+}
+.ix-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--brand); border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(70, 58, 40, .22); cursor: grab;
+}
+.ix-range::-moz-range-thumb {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--brand); border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(70, 58, 40, .22); cursor: grab; border-width: 3px;
+}
+
+/* 读数 */
+.ix-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 18px 0; }
+.ix-cell { background: var(--bg); border-radius: 12px; padding: 14px 6px; text-align: center; }
+.ix-big {
+  font-family: var(--serif); font-size: 26px; font-weight: 700;
+  color: var(--brand); font-variant-numeric: tabular-nums; line-height: 1.2;
+}
+.ix-unit { font-size: 11px; color: var(--ink-3); margin-top: 5px; line-height: 1.45; }
+
+.ix-bar {
+  height: 22px; background: var(--bg-deep); border-radius: 6px;
+  overflow: hidden; margin-bottom: 16px;
+}
+.ix-bar span {
+  display: block; height: 100%; min-width: 36px; border-radius: 6px;
+  background: var(--brand); color: #fff; font-size: 12px;
+  line-height: 22px; text-align: right; padding-right: 10px;
+  font-variant-numeric: tabular-nums;
+  transition: width .35s cubic-bezier(.22,.7,.3,1);
+}
+.ix-bar.alt span { background: var(--accent); }
+
+.ix-ro {
+  height: 6px; background: var(--bg-deep); border-radius: 3px;
+  overflow: hidden; margin-top: 10px;
+}
+.ix-ro span {
+  display: block; height: 100%; width: 0; border-radius: 3px;
+  background: var(--line-2);
+  transition: width .35s cubic-bezier(.22,.7,.3,1);
+}
+
+.ix-cmp { border-top: 1px dashed var(--line); padding-top: 18px; }
+.ix-flip {
+  font-size: 12px; color: var(--accent); margin-top: 4px;
+  opacity: 0; transition: opacity .45s;
+}
+
+/* ============================================================
+ * 探索回廊
+ * ============================================================ */
+#screen-explore { padding: 0; margin: 0 -20px -80px; }
+#screen-explore.screen.active { animation: none; }
+
+.ex-hud {
+  position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: rgba(245, 242, 236, .92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.ex-hud-left { flex: none; }
+.ex-count {
+  font-size: 12.5px; font-weight: 700; letter-spacing: .04em;
+  color: var(--brand); white-space: nowrap;
+}
+.ex-stats { flex: 1; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.ex-chip {
+  display: inline-flex; align-items: baseline; gap: 5px;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 999px; padding: 4px 12px;
+  font-size: 12px; line-height: 1;
+}
+.ex-chip-n { font-family: var(--serif); font-weight: 700; }
+.ex-chip-v { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ink-2); }
+.ex-hud-right { flex: none; display: flex; gap: 7px; }
+
+.ex-stage-wrap {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 56px);
+  min-height: 420px;
+  overflow: hidden;
+  background: #e9e1d2;
+}
+#explore-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+.door-prompt {
+  position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%);
+  background: rgba(43, 39, 35, .9); color: #fff;
+  font-size: 13px; padding: 9px 18px; border-radius: 999px;
+  letter-spacing: .03em; pointer-events: none; white-space: nowrap;
+  opacity: 0; transition: opacity .25s, transform .2s; z-index: 5;
+  box-shadow: var(--shadow);
+}
+.door-prompt.locked { background: rgba(120, 100, 70, .92); }
+
+.ex-hint {
+  position: absolute; left: 14px; bottom: 14px;
+  font-size: 11px; color: rgba(60, 50, 35, .55); letter-spacing: .02em;
+  pointer-events: none; z-index: 4;
+}
+
+/* 触屏摇杆 */
+.joystick {
+  position: absolute; right: 18px; bottom: 18px;
+  width: 104px; height: 104px; border-radius: 50%;
+  background: rgba(255, 255, 255, .4); border: 1px solid rgba(120, 100, 70, .35);
+  display: none; z-index: 6; touch-action: none;
+}
+.joystick.show { display: block; }
+.joystick .stick {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--brand); box-shadow: 0 2px 8px rgba(70, 58, 40, .3);
+  transition: transform .04s linear;
+}
+
+/* 场景切换渐隐 */
+.fade {
+  position: fixed; inset: 0; background: #1c1813;
+  opacity: 0; pointer-events: none; z-index: 80;
+  transition: opacity .38s ease;
+}
+.fade.show { opacity: 1; pointer-events: all; }
+
+/* ---- 响应式 ---- */
+@media (max-width: 560px) {
+  #app { padding: 0 16px 60px; }
+  .title-main { font-size: 44px; }
+  .title-sub { font-size: 16px; }
+  .gate-title { font-size: 29px; }
+  .gate::before { font-size: 120px; }
+  .stage-body { padding: 26px 21px 20px; min-height: 250px; }
+  .line { font-size: 16.5px; line-height: 2; }
+  .line.now { padding-left: 13px; margin-left: -15px; }
+  .insight { padding: 28px 22px 22px; }
+  .insight-quote { font-size: 19px; }
+  .hud-stats { gap: 8px; }
+  .result-grade { font-size: 68px; }
+  .ledger-row .lk { width: 74px; font-size: 12px; }
+  .choice { font-size: 14.5px; padding: 15px 16px; }
+  .choice-key { display: none; }
+  .oi-name { font-size: 17px; }
+  .origin-item { padding: 17px 18px; }
+  .pt-name { font-size: 21px; }
+  .gate-icon { width: 68px; height: 68px; padding: 14px; margin-bottom: 18px; }
+  #screen-explore { margin: 0 -16px -60px; }
+  .ix { padding: 20px 18px; }
+  .ix-big { font-size: 22px; }
+  .ix-grid { gap: 7px; }
+  .ix-unit { font-size: 10px; }
+  .ix-btns { flex-direction: column; }
+  .ix-name { font-size: 17px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ 标题页 ============ -->
+  <section id="screen-title" class="screen active">
+    <div class="title-mark">一 场 人 生 模 拟</div>
+    <h1 class="title-main">性价比人生</h1>
+    <div class="title-rule"></div>
+    <p class="title-sub">
+      你手里只有四样本钱：命、时间、钱、心力。<br>
+      你控制一个小人，推开一扇扇门，走进十四段人生。<br>
+      每一扇门后的答案，都写在《高性价比人生指南》里。
+    </p>
+    <div class="title-stats" id="title-stats"></div>
+    <p class="title-desc">
+      这本书不讲大道理，它算账。它把"要不要熬夜""要不要买保健品""要不要辞职创业"这些事，
+      折算成能被数据检验的成本与收益。这个游戏把其中最有代表性的十四幕搬进剧情——
+      你做选择，故事给你后果，然后翻开那一页原文。
+    </p>
+    <div class="title-actions">
+      <button class="btn primary" id="btn-start">开始人生</button>
+      <button class="btn" id="btn-continue" style="display:none">继续上次</button>
+      <button class="btn ghost" id="btn-codex-title">启示录</button>
+    </div>
+    <div class="title-foot">
+      内容来源：《高性价比人生指南》全书 34 节 · 765 条 · 每条附证据等级与文献<br>
+      cdyforever.github.io/how-to-live-better/
+    </div>
+  </section>
+
+  <!-- ============ 地图页 ============ -->
+  <section id="screen-map" class="screen">
+    <div class="topbar">
+      <span class="nav-btn" id="nav-home">← 封面</span>
+      <span class="nav-btn" id="nav-codex">启示录</span>
+    </div>
+    <div class="map-head">
+      <h2 class="map-title">人生时间轴</h2>
+      <p class="map-sub">已走过的关卡会点亮。点开任意一关，可以重读那一页启示。<br>
+        进度 <span id="map-progress" style="color:var(--brand);font-weight:600">0 / 14</span></p>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div style="margin-top:26px; display:flex; gap:12px; flex-wrap:wrap">
+      <button class="btn primary" id="btn-go">继续下一关</button>
+      <button class="btn ghost" id="btn-reset">重新开始</button>
+    </div>
+  </section>
+
+  <!-- ============ 出身选择 ============ -->
+  <section id="screen-origin" class="screen">
+    <div class="topbar">
+      <span class="nav-btn" id="origin-back">← 封面</span>
+      <span class="muted">第 0 步</span>
+    </div>
+    <div class="map-head">
+      <h2 class="map-title">你从哪儿出发</h2>
+      <p class="map-sub">十八岁那年，你手里那四样本钱，是从这些地方长出来的。<br>
+        出身不决定结局，但它决定你前几关的活法。</p>
+    </div>
+    <div class="origin-list" id="origin-list"></div>
+    <div style="margin-top:22px; font-size:11.5px; color:var(--ink-3); line-height:1.9">
+      四条路参照第 23 节「学什么技能划算」与第 31 节「十八岁之后有哪几条路」。
+    </div>
+  </section>
+
+  <!-- ============ 探索回廊 ============ -->
+  <section id="screen-explore" class="screen">
+    <div class="ex-hud">
+      <div class="ex-hud-left">
+        <span class="ex-count" id="ex-count">已推开 0 / 13</span>
+      </div>
+      <div class="ex-stats" id="ex-stats"></div>
+      <div class="ex-hud-right">
+        <button class="icon-btn" id="ex-speed" title="文字速度">▶</button>
+        <button class="icon-btn" id="ex-sfx" title="音效开关">♪</button>
+        <button class="icon-btn" id="ex-map" title="人生进度">≡</button>
+        <button class="icon-btn" id="ex-codex" title="启示录">✦</button>
+        <a class="icon-btn" href="index.html" title="去骑车" style="text-decoration:none;display:flex;align-items:center;justify-content:center">⇄</a>
+      </div>
+    </div>
+    <div class="ex-stage-wrap">
+      <canvas id="explore-canvas"></canvas>
+      <div class="door-prompt" id="door-prompt"></div>
+      <div class="ex-hint">WASD / 方向键 移动 · 走近门按 E 或点击进入</div>
+      <div class="joystick" id="joystick"><div class="stick" id="stick"></div></div>
+    </div>
+  </section>
+
+  <!-- ============ 游戏页 ============ -->
+  <section id="screen-play" class="screen">
+    <div class="hud">
+      <div class="hud-row">
+        <span class="hud-chapter" id="hud-chapter"></span>
+        <button class="icon-btn" id="btn-speed" title="文字速度">▶</button>
+        <button class="icon-btn" id="btn-sfx" title="音效开关">♪</button>
+      </div>
+      <div class="hud-stats" id="hud-stats"></div>
+    </div>
+
+    <!-- 关卡闸门 -->
+    <div id="gate" class="gate" style="display:none">
+      <div class="gate-icon" id="gate-icon"></div>
+      <div class="gate-label" id="gate-label"></div>
+      <h2 class="gate-title" id="gate-title"></h2>
+      <div class="gate-meta" id="gate-meta"></div>
+      <div style="margin-top:30px">
+        <button class="btn primary" id="btn-gate">进入这一关</button>
+      </div>
+    </div>
+
+    <!-- 剧情舞台 -->
+    <div id="stage" class="stage" style="display:none">
+      <div class="stage-place">
+        <span id="stage-place"></span>
+        <span id="stage-age" class="muted"></span>
+      </div>
+      <div class="stage-body" id="stage-body"></div>
+      <div class="stage-foot" id="stage-foot">
+        <span class="hint" id="stage-hint">点击任意处继续</span>
+        <div class="dots" id="line-dots"></div>
+        <button class="btn" id="btn-next">继续 →</button>
+      </div>
+    </div>
+
+    <div id="choices" class="choices" style="display:none"></div>
+    <div id="outcome" class="outcome" style="display:none">
+      <div class="outcome-head">后 果</div>
+      <div class="outcome-text" id="outcome-text"></div>
+      <div style="margin-top:22px">
+        <button class="btn primary" id="btn-insight">翻开这一页 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 阶段对账单 ============ -->
+  <section id="screen-stage" class="screen">
+    <div class="stage-head">
+      <div class="gate-label" id="st-label">阶 段 对 账</div>
+      <h2 class="gate-title" id="st-title"></h2>
+      <div class="gate-meta" id="st-sub"></div>
+    </div>
+    <div class="ledger" id="st-card"></div>
+    <div class="result-actions" style="margin-top:24px">
+      <button class="btn primary" id="btn-stage-go">继续 →</button>
+    </div>
+  </section>
+
+  <!-- ============ 启示录 ============ -->
+  <section id="screen-codex" class="screen">
+    <div class="topbar">
+      <span class="nav-btn" id="nav-back">← 返回</span>
+      <span id="codex-count" class="muted"></span>
+    </div>
+    <div class="map-head">
+      <h2 class="map-title">启示录</h2>
+      <p class="map-sub">你读过的每一页都会收在这里。没走到的关卡，先留着。</p>
+    </div>
+    <div class="codex-list" id="codex-list"></div>
+  </section>
+
+  <!-- ============ 结算 ============ -->
+  <section id="screen-result" class="screen">
+    <div class="result-head">
+      <div class="result-grade" id="r-grade"></div>
+      <div class="result-title" id="r-title"></div>
+      <p class="result-desc" id="r-desc"></p>
+    </div>
+    <div class="portrait">
+      <div class="pt-label">你 成 了 这 样 的 人</div>
+      <div class="pt-name" id="pt-name"></div>
+      <div class="pt-desc" id="pt-desc"></div>
+      <div class="pt-origin" id="pt-origin"></div>
+    </div>
+    <div class="radar-wrap">
+      <div class="radar-title">人 生 结 算 单</div>
+      <div id="radar"></div>
+    </div>
+    <div class="ledger" id="ledger"></div>
+    <div class="tip-card" id="tip-card">
+      <div class="tip-title" id="tip-title"></div>
+      <ul class="tip-list" id="tip-list"></ul>
+    </div>
+    <div class="path-list">
+      <div class="radar-title" style="margin-bottom:14px">你 走 过 的 路</div>
+      <div id="path-list"></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn primary" id="btn-again">再活一次</button>
+      <button class="btn" id="btn-share">保存结算卡</button>
+      <button class="btn" id="btn-to-codex">看启示录</button>
+      <button class="btn ghost" id="btn-source">读原书</button>
+    </div>
+    <canvas id="share-canvas" style="display:none"></canvas>
+    <div style="text-align:center; margin-top:30px; font-size:12px; color:var(--ink-3); line-height:1.9">
+      本作全部数据引自《高性价比人生指南》，每条均标注原文出处与证据等级。<br>
+      游戏化处理仅为便于理解，不构成医疗、法律或投资建议。
+    </div>
+  </section>
+
+</div>
+
+<!-- 启示卡模态 -->
+<div class="mask" id="mask">
+  <div class="insight">
+    <div class="insight-tag">指 南 原 文</div>
+    <p class="insight-quote" id="i-quote"></p>
+    <div class="insight-src" id="i-src"></div>
+    <div class="insight-block">
+      <div class="k">证 据 与 数 据</div>
+      <div class="v" id="i-data"></div>
+    </div>
+    <div class="insight-div"></div>
+    <div class="insight-moral" id="i-moral"></div>
+    <div class="insight-alt" id="i-alt" style="display:none"></div>
+    <div class="insight-actions">
+      <button class="btn primary" id="btn-insight-close">收下这一课</button>
+    </div>
+  </div>
+</div>
+
+<!-- 场景切换渐隐层 -->
+<div class="fade" id="fade"></div>
+
+<script>
+/* ============================================================
+ * 《性价比人生》剧情数据
+ * 全部内容取自《高性价比人生指南》全书 34 节 765 条
+ * https://cdyforever.github.io/how-to-live-better/
+ * ============================================================ */
+
+const STAT_META = {
+  health: { name: '命', full: '命 · 身体本钱', color: '#c0504d' },
+  time:   { name: '时', full: '时 · 可支配时间', color: '#4a7fa5' },
+  money:  { name: '钱', full: '钱 · 抗风险余量', color: '#b8892b' },
+  mind:   { name: '心', full: '心 · 心力与关系', color: '#5a8a5f' },
+};
+
+const CHAPTERS = [
+
+  /* ---------------- 序章 ---------------- */
+  {
+    id: 0,
+    age: 18,
+    label: '序章',
+    title: '零点十分',
+    place: '城中村出租屋 · 凌晨 0:10',
+    chapter: '第 3 节 · 不要浪费精力',
+    lines: [
+      '屏幕右上角跳成 00:10 的时候，你已经躺下两个小时了。',
+      '你对自己说过七次"最后一个"。进度条没有尽头，它也不需要尽头——它只需要你再抬一次拇指。',
+      '全国有无数人和你一样，平均要到 0:10 才入睡。你并不孤单。但"大家都在熬"从来不是一剂药，它只是一张免罪符。',
+      '明天早上八点，你要交人生第一份方案。',
+    ],
+    choices: [
+      {
+        text: '「真的最后一个。」把亮度调到最低，继续刷',
+        effects: { health: -6, time: -8, mind: -4 },
+        outcome: '你睡着的时候是 1:40。第二天会议室里，你听不清主管问的是什么。你以为你偷到了一小时，其实那是向明天的自己借的——利息比你想的高。',
+      },
+      {
+        text: '把手机反扣到客厅充电，床头灯调到最暗',
+        effects: { health: 6, time: 6, mind: 5 },
+        outcome: '你没有立刻睡着，黑暗里那二十分钟很难熬。然后你听见自己的呼吸慢下来。第二天你比闹钟早醒四分钟——那种"白赚了"的感觉，你已经很久没体会过了。',
+      },
+      {
+        text: '开着「夜间模式」继续刷，暖黄色总该好点',
+        effects: { health: -3, time: -5, mind: -2 },
+        outcome: '屏幕变黄了，你的兴奋没变黄。至于夜间模式到底管多大用，那项研究压根没测。',
+      },
+    ],
+    insight: {
+      quote: '到点就睡，不为游戏、短视频、色情内容熬夜',
+      source: '第 3 节「不要浪费精力」· 第 9 条 · B 级 · 性价比高',
+      data: '2025 年中国人夜间平均睡眠 6.97 小时，平均入睡时间 0:10。睡前用便携设备的人，睡不够的可能性约是不用的 2.17 倍，白天犯困约 2.72 倍。设备只是放在卧室里、并不使用，数字也差不多——所以最省事的办法是手机不进卧室。',
+      moral: '熬夜不是在偷时间，是在借命。而睡眠是唯一一笔你赖不掉、也没法分期还的债。',
+    },
+  },
+
+  /* ---------------- 第一关 ---------------- */
+  {
+    id: 1,
+    age: 19,
+    label: '第一关',
+    title: '副驾上的那声「咔哒」',
+    place: '深夜高架 · 朋友的车后排',
+    chapter: '第 1 节 · 不要早死',
+    lines: [
+      '朋友喝了酒，但他说"就两瓶啤酒，清醒得很"。他坚持要开，你坐在后排。',
+      '你摸到那根安全带，它被谁塞进了座椅缝里，冰凉、积灰、显然很久没被人拉出来过。',
+      '朋友从后视镜里瞥你一眼："后排系什么，交警又不查后排。"',
+      '车速 78。窗外是连成一条线的橙色路灯。',
+    ],
+    choices: [
+      {
+        text: '把带子拉出来扣上，顺手提醒副驾也系',
+        effects: { health: 8, mind: 3 },
+        outcome: '"咔哒"一声很轻。朋友笑你小题大做，但还是伸手把副驾的也扣上了。有些规矩，你替别人多说一句，它就成立了。',
+      },
+      {
+        text: '后排不用系，反正交警不查',
+        effects: { health: -10, mind: -2 },
+        outcome: '你把手缩了回来。你赌的是"今天不出事"。这个赌，赢的时候什么都没发生，输的时候也什么都不用再发生了。',
+      },
+      {
+        text: '自己系上，但不提醒别人',
+        effects: { health: 5, mind: -2 },
+        outcome: '你保住了自己那一份。副驾那位全程没系。你后来常常想起这件事——不是因为后悔，是因为你发现自己当时其实可以开口。',
+      },
+    ],
+    insight: {
+      quote: '系安全带，前排后排都系',
+      source: '第 1 节「不要早死」· 第 1 条',
+      data: '坐轿车前排系上安全带，出车祸时被撞死的概率降四成多；坐轻型卡车前排的降六成。美国 2022 年死在车里的人里，能查到系没系带的，有一半没系。',
+      moral: '人生的账本里，"活着"是前面那个 1，其余都是后面的 0。性价比的第一课不是省钱，是把那个 1 保住。',
+    },
+  },
+
+  /* ---------------- 第二关 ---------------- */
+  {
+    id: 2,
+    age: 21,
+    label: '第二关',
+    title: '一根烟的账',
+    place: '写字楼天台 · 加班间隙',
+    chapter: '第 2 节 · 不要慢慢死',
+    lines: [
+      '天台上永远有人抽烟，也永远有人在递烟。',
+      '这是这个月第三次有人递给你。烟在这个地方不是烟，是社交货币——是"我跟你是一伙的"，是"我理解你有多累"。',
+      '你其实不喜欢那个味道。但你也不喜欢被排除在天台之外。',
+      '递烟的同事说："来一根，提神。"',
+    ],
+    choices: [
+      {
+        text: '接过来点上',
+        effects: { health: -8, money: -4, mind: 2 },
+        outcome: '你咳了两声，大家都笑了，你顺利地成为了天台的一员。这根烟的账，要等到很久以后，用一种你完全看不见的方式，一笔一笔还。',
+      },
+      {
+        text: '「我戒了。」其实你从没抽过，但这次是真的不接',
+        effects: { health: 6, mind: 4 },
+        outcome: '天台安静了半秒，然后话题滑到了别的方向。你发现"融入"这件事，其实有比烟更低价的入场券——比如认真听人把一句话说完。',
+      },
+      {
+        text: '接过来，夹在手里不点',
+        effects: { health: -2, mind: -3 },
+        outcome: '你既没有拿到那点快感，也没有保住那点诚实。中间地带最贵的地方在于：它两头收费。',
+      },
+    ],
+    interact: {
+      type: 'streak',
+      intro: '同一根烟，会递三次，一次比一次难拒。每次只有 5 秒，不选，就等于接了。',
+      seconds: 5,
+      rounds: [
+        { scene: '烟盒推到你面前，他还在等你的回答。' },
+        { scene: '项目被砍。老板站你旁边自己点上一根，顺手把烟盒递过来。' },
+        { scene: '父亲住院，你在走廊坐了一整夜。隔壁床的家属递过来一根：「抽口吧，能好受点。」' },
+      ],
+      yes: '接', no: '不接',
+      feedback: {
+        yes: '你接了。这一次不难受，难受的是它变成了默认选项。',
+        no:  '你没接。你发现拒绝其实只要一句话，难的是把这句话说三次。',
+        timeout: '你没来得及选——顺从了默认的那一个。',
+      },
+    },
+    insight: {
+      quote: '戒烟，越早越好',
+      source: '第 2 节「不要慢慢死」· 第 1 条',
+      data: '吸烟的人平均比不吸烟的人少活十年以上。40 岁前戒掉，能把接着吸烟带来的死亡风险抹掉九成左右。戒得越早，捡回来的越多。',
+      moral: '早死是一声巨响，慢慢死是一笔分期付款——后者更像"生活"，所以更容易被忽略。',
+    },
+  },
+
+  /* ---------------- 第三关 ---------------- */
+  {
+    id: 3,
+    age: 23,
+    label: '第三关',
+    title: '玻璃柜台里的「调理」',
+    place: '老家县城 · 保健品店',
+    chapter: '第 6 节 · 反面清单',
+    lines: [
+      '过年前一天，母亲说带你去看个"好东西"。',
+      '店员比你还会叫人——她喊你母亲"妈"，喊得比你自然。玻璃柜台里摆着几盒金灿灿的东西，一盒 1980。',
+      '"阿姨吃了睡得香，"店员指着墙上的锦旗，"隔壁王阿姨买了三疗程。"',
+      '母亲没说话，但她看你的眼神里有一句话：孩子出息了，也该给妈买点什么了。',
+    ],
+    choices: [
+      {
+        text: '买。一年也就这一次',
+        effects: { money: -10, mind: 3 },
+        outcome: '母亲很高兴，把盒子放在客厅最显眼的位置。你买对了心意，买错了东西。而这两件事，本来是可以分开的。',
+      },
+      {
+        text: '当场拆穿，说这是骗人的，拉着母亲走',
+        effects: { money: 4, mind: -7 },
+        outcome: '你赢了道理。回家路上你们一句话没说。有些胜利要在很久以后才能兑现成亲近，而有些，永远兑不了。',
+      },
+      {
+        text: '不买这盒，改成带她去做一次体检，再买台血压计',
+        effects: { money: -2, health: 9, mind: 7 },
+        outcome: '体检单上有一个从没人注意过的箭头。你把它变成了第二年的一件小事，而不是第五年的一件大事。母亲后来还是把那台血压计摆在了客厅最显眼的位置。',
+      },
+    ],
+    interact: {
+      type: 'appraise',
+      intro: '柜台上摆着六样东西。每一样你都要当场决定：这钱掏不掏？',
+      items: [
+        { name: '进口复合维生素', price: 680, useful: false, why: '为了长寿或防心血管病吃复合维生素——一样样查过，都没看出管用。' },
+        { name: '电子血压计', price: 299, useful: true, why: '量血压，高了就吃药降到达标。这是真能改结局的那种钱。' },
+        { name: '排毒酵素', price: 880, useful: false, why: '排毒、清肠、酵素、碱性水这类产品——不要买。' },
+        { name: '粪便隐血检测（结直肠癌筛查）', price: 120, useful: true, why: '45 到 50 岁起做结直肠癌筛查，属于那几项有证据的。' },
+        { name: '氨糖软骨素', price: 520, useful: false, why: '不要指望氨糖/软骨素治膝关节炎。' },
+        { name: '戒烟药（伐尼克兰）', price: 460, useful: true, why: '戒烟别光靠忍，先去拿药，成功率能翻一倍多。' },
+      ],
+    },
+    insight: {
+      quote: '不要花大钱买保健品、膏方、滋补品来「调理身体」',
+      source: '第 6 节「反面清单」· 第 10 条',
+      data: '多维、鱼油、维 D 这些常见成分，在本节前六条里已逐一查过，都没看出管用。包装上那句"保健食品不是药物，不能代替药物治疗疾病"，是监管部门规定必须印的。这笔钱要是买给父母、提着上门的，那份心意没有问题，只是东西选错了。',
+      moral: '把心意和证据分开：心意一定要给，但别让它搭错车。孝顺的性价比，取决于你买的是安慰，还是真有用的那一次检查。',
+    },
+  },
+
+  /* ---------------- 第四关 ---------------- */
+  {
+    id: 4,
+    age: 25,
+    label: '第四关',
+    title: '通勤的两个半小时',
+    place: '两份录用通知之间',
+    chapter: '第 4 节 · 不要浪费时间',
+    lines: [
+      '两份 offer 摆在你面前。',
+      'A：月薪多 2000，公司在城东，单程通勤 75 分钟，两趟地铁加一趟公交。',
+      'B：月薪少 2000，骑车 12 分钟，路上会经过一个有梧桐树的路口。',
+      '你掏出计算器：2000 × 12 = 24000。一年两万四。这笔账看起来很清楚。',
+      '但你漏算了另外一笔：每天 150 分钟，一年 250 个工作日，是 625 个小时——整整 26 天。',
+    ],
+    choices: [
+      {
+        text: '选 A，钱是真的，累可以克服',
+        effects: { money: 9, time: -11, mind: -6 },
+        outcome: '半年后你已经能在地铁上睡着了，站着都能睡。那 2000 块变成了房租、变成了外卖、变成了周末用来恢复的一整天。你从来没有真正拿到它。',
+      },
+      {
+        text: '选 B，把省下的时间用来睡觉和学东西',
+        effects: { money: -4, time: 11, mind: 7 },
+        outcome: '你每天多出来的两个多小时，先是被用来睡觉，后来被你拿来学一门手艺。三年后，那门手艺带来的收入差，第一次超过了 2000。',
+      },
+      {
+        text: '选 A，通勤时间拿来听课，时间就不会浪费',
+        effects: { money: 7, time: -6, mind: -3 },
+        outcome: '你在地铁上确实听了课，但那是在人贴着人的早高峰里。你听完了 70%，记住了 30%，并且每天到家时都已经是另一个人了。',
+      },
+    ],
+    interact: {
+      type: 'commute',
+      intro: '拖动滑块，选一个你打算接受的单程通勤时长。填上时薪，看看它一年到底抽走你多少。',
+      min: 5, max: 120, step: 5, default: 45,
+      hourlyDefault: 60,
+    },
+    insight: {
+      quote: '选住处时把通勤时长放在前面，缩短单程通勤',
+      source: '第 4 节「不要浪费时间」· 第 18 条',
+      data: '德国的跟踪数据里，通勤越长的人，自己觉得过得越不好；这笔损失并没有在工资或者住房上被补回来。单程少 30 分钟，一周就省出 5 小时。',
+      moral: '工资单上的钱是显性的，通勤扣掉的时间是隐性的。人生的账要两边都记：你卖出去的时间，得按你的时薪算回来才算划算。',
+    },
+  },
+
+  /* ---------------- 第五关 ---------------- */
+  {
+    id: 5,
+    age: 26,
+    label: '第五关',
+    title: '八万块的奶茶店',
+    place: '朋友租下的铺面 · 还没装修',
+    chapter: '第 12 节 · 创业与做生意',
+    lines: [
+      '大学同学拉你合伙开奶茶店，说这是个"风口"，加盟费都谈好了。',
+      '"你出八万，占三成。"他眼睛发亮，"我算过了，一年回本。"',
+      '你卡里一共十万。另外五万，是父母攒了三年、准备给你应急的钱。',
+      '铺面还是毛坯，墙上写着上一个租户留下的四个字：旺铺转让。',
+    ],
+    choices: [
+      {
+        text: '全押上，再找亲戚借五万凑满',
+        effects: { money: -16, mind: -9 },
+        outcome: '店开起来了，也倒在了第八个月。你不但赔光了自己的，还欠了亲戚的钱。最难受的不是数字，是你从此不敢接家里电话。',
+      },
+      {
+        text: '只出亏得起的那一万五，并且把出资、分钱、退出写成书面协议',
+        effects: { money: -3, mind: 8, time: 4 },
+        outcome: '店倒了，你损失了一万五，还有一段需要修复的友情——但那份协议让这段友情至少还能修复。你明白了：亏得起的钱叫投资，亏不起的钱叫赌命。',
+      },
+      {
+        text: '不出钱，周末来帮忙，按小时算工钱',
+        effects: { money: 3, time: -5, mind: 3 },
+        outcome: '你看见了整个开店的真实流程，也看见了它是怎么死的。这份经验后来帮你在自己的项目里避开了三个坑——而你为此付出的，只是几个周末。',
+      },
+    ],
+    insight: {
+      quote: '只拿亏得起的钱创业，不动家底、不借钱开张',
+      source: '第 12 节「创业与做生意：别把家底赔进去」· 第 1 条',
+      data: '同节还提醒：不给公司贷款签个人担保，配偶更不要跟着签；开张前选对主体，个体户和合伙人赔到底，有限公司才"有限"；几个人合伙开店，要把出资、分钱、谁说了算、怎么退出写成书面协议。',
+      moral: '判断一笔投入划不划算，先问的不是"能赚多少"，而是"亏光之后我还能不能正常活下去"。能回答这个问题的钱，才叫本钱。',
+    },
+  },
+
+  /* ---------------- 第六关 ---------------- */
+  {
+    id: 6,
+    age: 27,
+    label: '第六关',
+    title: '凌晨三点的需求变更',
+    place: '工位 · 项目第 8 个月',
+    chapter: '第 4 节 · 不要浪费时间',
+    lines: [
+      '这个项目你已经做了八个月。合同金额不大，客户换了三任对接人，需求改了十一版。',
+      '第三任对接人今晚发来消息："整体方向要调一下，不过前面的逻辑可以复用。"',
+      '你盯着屏幕。八个月的代码、八个月的周末、八个月里推掉的所有聚会，全都堆在那个"可以复用"后面。',
+      '继续做下去，还要四个月。现在停手，八个月就白干了。',
+    ],
+    choices: [
+      {
+        text: '继续。都投了八个月了，现在停等于全白费',
+        effects: { time: -12, mind: -11 },
+        outcome: '你又做了四个月。项目最后还是没上线。你亏的不是八个月，是十二个月——后面那四个月，是被前面那八个月推着走的。',
+      },
+      {
+        text: '只看"还要投多少"和"还能拿回多少"，谈一次退出',
+        effects: { time: 11, mind: 8, money: 3 },
+        outcome: '你算了一页纸：往后还要四个月人力，能收回的尾款是其中的三成。你拿着这页纸去谈，客户同意按阶段结清。你用半页纸，换回了四个月。',
+      },
+      {
+        text: '硬扛着做完，做完就不想这事了',
+        effects: { time: -7, mind: -7, money: 2 },
+        outcome: '你做完了，钱也结了。但你这一年的记忆，只剩下凌晨三点的工位。有些"完成"，代价是把自己耗空。',
+      },
+    ],
+    insight: {
+      quote: '决定是否继续时，只看未来投入和未来回报，不看已投入多少',
+      source: '第 4 节「不要浪费时间」· 第 3 条',
+      data: '已经投进去的钱和时间，会让人更想接着干下去。98 组数据合起来算，这个倾向稳定存在。所以判断要不要继续，只算往后还要投多少、还能拿回多少。已经花掉的那些，不要算进去。',
+      moral: '沉没成本不是成本，它只是一段你不能重来的记忆。真正划算的决定，永远只由"接下来"决定。',
+    },
+  },
+
+  /* ---------------- 第七关 ---------------- */
+  {
+    id: 7,
+    age: 28,
+    label: '第七关',
+    title: '购物车里的自己',
+    place: '年终奖到账的那一晚',
+    chapter: '第 6 节 · 反面清单',
+    lines: [
+      '三万块年终奖到账。手机震了一下。',
+      '同一天，隔壁工位的同事提了新车，钥匙放在桌上，角度很讲究。',
+      '你的购物车里躺着那几样放了半年的东西：一块表、一台相机、一把很贵的椅子。你其实分不清你是真的想要它们，还是想要"拥有它们之后的那个自己"。',
+      '结算按钮是橙色的，很大。',
+    ],
+    choices: [
+      {
+        text: '全买。辛苦一年，该犒劳自己',
+        effects: { money: -11, mind: 3 },
+        outcome: '拆快递的那个晚上确实很快乐。这种快乐持续了大概十一天。第十二天，你看见同事换了更贵的车钥匙，那股快乐就悄悄过期了。',
+      },
+      {
+        text: '不买这些，拿这笔钱去一趟一直想去的地方，或者学一门课',
+        effects: { money: -6, mind: 11, time: 4 },
+        outcome: '三年后你还能完整讲出那趟路上的某一天。研究发现，花钱买一段经历比买东西更让人快乐——因为东西会被习惯，经历会被反复讲。',
+      },
+      {
+        text: '什么都不买，全部存起来',
+        effects: { money: 10, mind: -3 },
+        outcome: '账户数字变大了，你却有点空。省钱本身不是目的，把钱换回你真正想要的东西才是。纯粹的克制，也是一种浪费。',
+      },
+    ],
+    interact: {
+      type: 'budget',
+      intro: '三万块就在这里。两个滑块，自己分——剩下那份自动进「存起来」。',
+      total: 30000,
+      buckets: [
+        { key: 'buy',   name: '买东西', desc: '表、相机、那把很贵的椅子', now: 1.00, later: 0.25 },
+        { key: 'exp',   name: '买经历', desc: '一趟路、一门课、一次出门', now: 0.90, later: 0.95 },
+        { key: 'save',  name: '存起来', desc: '不动，留在账户里', now: 0.30, later: 0.70 },
+      ],
+    },
+    insight: {
+      quote: '不要指望买东西改善心情或身份感',
+      source: '第 6 节「反面清单」· 第 23 条',
+      data: '把钱和物质看得越重的人，自己觉得越不幸福（关联很弱）。另有研究发现，花钱买一段经历比买东西更让人快乐。同节第 24 条：拿收入一样的人来比，邻居挣得越多，这个人报告的幸福感越低——为了搬进一个人人都比你宽裕的地方而多花的钱，买到的是把自己往下挪一档。',
+      moral: '消费能买到商品，买不到身份。想要"被看见"是一种真实的饥饿，但货架上的东西填不饱它。',
+    },
+  },
+
+  /* ---------------- 第八关 ---------------- */
+  {
+    id: 8,
+    age: 29,
+    label: '第八关',
+    title: '三万块的「包就业」',
+    place: '手机屏幕上的招生广告',
+    chapter: '第 23 节 · 学什么技能划算',
+    lines: [
+      '"六个月，零基础转行，毕业即就业，平均起薪 18K。"',
+      '学费三万。课程顾问发来十几张学员入职截图，还有一句："现在报名，本周还能减 2000。"',
+      '你在行业里干了五年，越来越觉得自己随时可以被换掉。',
+      '三万块，六个月。这笔账该怎么算？',
+    ],
+    choices: [
+      {
+        text: '报。听说工资高，说明行业缺人',
+        effects: { money: -10, time: -7, mind: -3 },
+        outcome: '"网上说工资高"和"这里缺人"是两件事。你后来才去查了当地的紧缺职业目录——你学的那个方向，三年前就不在名单上了。',
+      },
+      {
+        text: '先查三件事：证在不在国家职业资格目录、当地紧缺目录有没有、政府补贴能不能覆盖',
+        effects: { money: 8, time: 5, mind: 7 },
+        outcome: '你花了两个晚上查完。结果是：同样的方向，人社备案的评价机构有政府补贴班，自费部分不到四千。你省下了两万六和两个月的弯路。',
+      },
+      {
+        text: '不学。都这个年纪了，就这样吧',
+        effects: { time: -5, mind: -5 },
+        outcome: '你选择了不动。不动其实也有成本——只是它不开发票，你会误以为它是免费的。',
+      },
+    ],
+    insight: {
+      quote: '先记住基准线：多受一年教育，全球平均的私人回报约为每年 9%',
+      source: '第 23 节「学什么技能划算」· 第 7 条',
+      data: '按全世界平均算，多读一年书，个人收入每年高约 9%，女性的回报一直高于男性（这是正规上学的数，报一个班不能直接套）。拿它当尺子：一个课程要你花 3 万元和半年，就问它带来的收入变化，抵不抵多读一年书。同节提醒：挑技能优先看"要不要动手、要不要现场判断"，这类最难被自动化顶掉。',
+      moral: '所有"投资自己"的广告都该过同一道闸：拿它和多读一年书的 9% 比一比。贵不是问题，贵得没有依据才是。',
+    },
+  },
+
+  /* ---------------- 第九关 ---------------- */
+  {
+    id: 9,
+    age: 30,
+    label: '第九关',
+    title: '三十年的月供',
+    place: '售楼处 · 沙盘前',
+    chapter: '第 15 节 · 租房与买房',
+    lines: [
+      '"这套月供 9800，三十年。"销售把计算器推过来，"您父母那边支持一点首付，压力就不大了。"',
+      '你父母那点钱，是他们攒了一辈子、准备用来看病的钱。',
+      '女朋友（现在是妻子了）没说话，但她看着样板间里那盏灯的眼神，你认识。',
+      '窗外是同一片夜色。你想起了那年那个关于"往上挪一档"的下午。',
+    ],
+    choices: [
+      {
+        text: '掏空两边父母的养老钱，先上车再说',
+        effects: { money: -13, mind: -9, health: -4 },
+        outcome: '你上车了。三年后父亲住院，你们在缴费窗口前算了一遍又一遍。房子让你在这个城市有了坐标，也让你失去了腾挪的余地。',
+      },
+      {
+        text: '继续租，把差价变成现金流和定投，两年后再看',
+        effects: { money: 7, mind: 5, health: 3 },
+        outcome: '你们租住了两年，把省下的钱留成了随时能动的现金。两年后政策变了、收入也变了，你在一个不那么慌的时点重新做了决定——这才是"划算"真正的样子。',
+      },
+      {
+        text: '买小一点、远一点，月供不超过收入三成',
+        effects: { money: -3, mind: 5, health: 2 },
+        outcome: '房子不大，但月供没有掐住你的喉咙。你还能辞职、还能生病、还能说不——这三样东西，比面积值钱。',
+      },
+    ],
+    insight: {
+      quote: '不要为了「在周围人里往上挪一档」多花钱换房、换车、换圈子',
+      source: '第 6 节「反面清单」· 第 24 条',
+      data: '拿收入一样的人来比，邻居挣得越多，这个人报告的幸福感越低；这主要发生在学历和自己相同的邻居身上。所以为了搬进一个人人都比你宽裕的地方而多花的钱，买到的是把自己往下挪一档。第 15 节同时提醒：买房签约前查清有没有查封和抵押，期房定金首付只打进合同写明的预售资金监管账户。',
+      moral: '买房买的是"能承受的生活方式"，不是"别人眼里的位置"。月供真正买走的东西叫选择权，你要算清楚它值不值。',
+    },
+  },
+
+  /* ---------------- 第十关 ---------------- */
+  {
+    id: 10,
+    age: 32,
+    label: '第十关',
+    title: '领证前的三张表',
+    place: '民政局门口的台阶',
+    chapter: '第 10 节 · 恋爱和结婚划不划算',
+    lines: [
+      '你们约好今天领证。身份证揣在口袋里，一纸签字声明，不用户口簿，不收钱，当场发证——简单得有点不像一件事。',
+      '但有三件事你们始终没摊开说：',
+      '一，首付里父母出的那笔，是借还是送？二，婚后的家务和照护，到底怎么分工？三，如果有一天走不下去，退出要付多少？',
+      '"谈钱伤感情。"这句话你从小听到大。',
+    ],
+    choices: [
+      {
+        text: '婚前把这三张表摊开算清楚：出资写清借还是送、家务按"无酬劳动"记账、做一次婚检',
+        effects: { mind: 11, money: 7, health: 4 },
+        outcome: '那个晚上谈得很累，也谈出了你们第一次真正意义上的共识。你们不是因为不信任才算账，是因为想把这段关系当一件长期的事来经营。',
+      },
+      {
+        text: '谈这些太伤感情了，先领证，以后再说',
+        effects: { mind: -5, money: -9 },
+        outcome: '"以后再说"后来都变成了"早知道当初"。模糊不是温柔，模糊只是把账推迟到利息更高的时候再还。',
+      },
+      {
+        text: '只去做婚检，其他两件以后自然会清楚',
+        effects: { mind: 3, health: 4, money: -3 },
+        outcome: '婚检做对了——有重大疾病必须在登记前如实告知，这是法律，也是底线。但另外两笔账，并不会因为你不提就自动结清。',
+      },
+    ],
+    insight: {
+      quote: '父母出资买房，在转账的时候就把是借是送写清楚',
+      source: '第 10 节「恋爱和结婚划不划算」· 第 11 条',
+      data: '同节还给出：时间账按"无酬劳动"算，谈清分工再领证；结婚的钱账先看法律默认规则，再决定要不要书面约定；婚前做一次婚检，有重大疾病必须在登记前如实告诉对方；算退出成本——协议离婚有 30 天冷静期。',
+      moral: '亲密关系里最贵的不是钱，是不清不楚。把账算明白，不是把感情算薄，是把关系放进能长期运行的结构里。',
+    },
+  },
+
+  /* ---------------- 第十一关 ---------------- */
+  {
+    id: 11,
+    age: 40,
+    label: '第十一关',
+    title: '父亲的体检报告',
+    place: '老家 · 父亲的书桌抽屉',
+    chapter: '第 24 节 · 看病怎么少花钱少走弯路',
+    lines: [
+      '你在抽屉最里面翻出那份体检报告，三个箭头朝上，一个朝下。日期是去年十月。',
+      '"没什么事，"父亲说，"县医院看也一样，去省城干嘛，还得找人。"',
+      '他不是不想治，他是怕麻烦你，也怕那一串你没法替他承担的数字。',
+      '你手里有三个选项，和一位正在变老的父亲。',
+    ],
+    choices: [
+      {
+        text: '先去社区医院，按基层逐级转诊往上走，每份病历和影像自己存一份',
+        effects: { health: 11, money: 5, mind: 7, time: 3 },
+        outcome: '同一个统筹地区里，医院级别越低报销比例越高，差约 10 个百分点；逐级转诊上去，住院起付线还接着算。你没有多花冤枉钱，也没有耽误事——你把"孝心"换成了一条正确的路径。',
+      },
+      {
+        text: '直接去省城大医院，找个号贩子买专家号',
+        effects: { health: 7, money: -9, time: -7 },
+        outcome: '你挂上了号，也多花了三千块和两个通宵排队。病看对了，路走弯了。指南里那句"别找号贩子"，你是在事后才读到的。',
+      },
+      {
+        text: '听他的，先不管，等他自己说不舒服再说',
+        effects: { health: -11, mind: -5 },
+        outcome: '两年后那三个箭头变成了住院通知。你后来才知道：很多病不是突然来的，只是突然被发现的。',
+      },
+    ],
+    insight: {
+      quote: '常见病先在社区看，经基层逐级转诊上去；要去大医院，走转诊中心，别找号贩子',
+      source: '第 24 节「看病：怎么少花钱少走弯路」· 第 1、3 条',
+      data: '同一个统筹地区里，级别越低报销比例越高，差距约 10 个百分点。每次看完病，把病历、检查报告和影像自己存一份；对诊疗有疑问就当场要求封存病历。急重的伤病直奔急诊预检分诊台，别去挂号窗口排队；没带钱、没带证件、说不清自己是谁，急诊也必须先救。',
+      moral: '看病这件事上，最贵的往往不是药，是走错的路。信息差本身就是一笔税，而它是可以事先省的。',
+    },
+  },
+
+  /* ---------------- 第十二关 ---------------- */
+  {
+    id: 12,
+    age: 45,
+    label: '第十二关',
+    title: '塌下来的那一年',
+    place: '老家的客厅 · 母亲走后的第 9 天',
+    chapter: '第 29 节 · 遭遇重大打击之后',
+    lines: [
+      '第九天。你已经把该办的都办完了，剩下的都是不该现在办的。',
+      '中介打电话来问老家的房子卖不卖。单位问你要不要调去外地，说是个机会。你弟弟问要不要把母亲的东西都清掉。',
+      '你三天没怎么睡，两天没正经吃饭。你有一种强烈的冲动：赶紧把这些事一次性处理干净，好像处理完了，这件事就过去了。',
+      '窗台上有一盆母亲养的水仙，还活着。',
+    ],
+    choices: [
+      {
+        text: '立刻处理掉所有事：卖房、辞职、清空',
+        effects: { mind: -13, money: -7, health: -5 },
+        outcome: '你在三个月里做完了五个不可逆的决定。半年后你回头看，发现其中有四个，是在你最不清醒的时候替未来的自己签的字。',
+      },
+      {
+        text: '头三个月，所有不可逆的大决定一律往后推；先把三餐、睡觉和慢性病药交给一个固定的人盯着',
+        effects: { mind: 13, health: 6, money: 4 },
+        outcome: '你只做了三件事：按时吃饭、按时睡、每天给那盆水仙换水。等那三个月过去，你再去看那五个决定——有两个已经不需要做了，另外三个你做出了完全不同的选择。',
+      },
+      {
+        text: '谁也不说，一个人扛',
+        effects: { mind: -15, health: -8 },
+        outcome: '你以为沉默是坚强。实际上孤独会把哀伤的时间从几个月拉长到几年。要人陪着说话，可以打 12356——这条号码写在那本书里，写了很多次。',
+      },
+    ],
+    insight: {
+      quote: '变故后的头三个月，凡是不可逆的大决定一律往后推',
+      source: '第 29 节「遭遇重大打击之后」· 第 12 条',
+      data: '同节还写：亲人刚走的那几天别一个人待着，有心脏病、高血压、糖尿病的照常吃药；丧偶后的头半年，把三餐、睡觉、慢性病的药和复查交给一个固定的人盯着；哀伤过了半年还在原地、日子过不下去，去精神科或临床心理科挂号；要人陪着说话打 12356，未成年人打 12355。',
+      moral: '人在最痛的时候，最想做的往往是"赶紧把一切解决掉"。真正的性价比，是在风暴里先什么都不决定——把不可逆的选择，留给清醒的自己。',
+    },
+  },
+
+  /* ---------------- 第十三关（终章） ---------------- */
+  {
+    id: 13,
+    age: 60,
+    label: '终章',
+    title: '结账',
+    place: '六十岁生日 · 同一张书桌',
+    chapter: '第 6 节 · 不要浪费时间',
+    lines: [
+      '六十岁。你坐在同一张书桌前，这台电脑上还存着二十八岁那年的一份方案。',
+      '你翻过那本书。528 条（现在更多了），你践行过的不到三分之一——但就是那三分之一，把你送到了这里。',
+      '如果现在能往回发一条消息，只准一句，你会发给三十岁的自己什么？',
+    ],
+    choices: [
+      {
+        text: '「早点睡。你以为你在省钱省时间，其实你在透支。」',
+        effects: { health: 8, time: 5 },
+        outcome: '你按下发送。你想起了那个 0:10 的夜晚、那根被塞进座椅缝的安全带、那盒 1980 的保健品。原来一整个人生的走向，常常就藏在最不起眼的那几次"算了"和"还是吧"里。',
+      },
+      {
+        text: '「最划算的那些事，几乎都不花钱。」',
+        effects: { money: 8, mind: 6 },
+        outcome: '走路、睡觉、晒太阳、认真刷牙、给家里装个烟雾报警器、把父母拉去体检、在风暴里什么都不决定——这些真正改写曲线的事，没有一件需要你先变有钱。',
+      },
+      {
+        text: '「先别死。别的都好说。」',
+        effects: { health: 10, mind: 4 },
+        outcome: '这是全书第一节的标题，也是最笨、最管用的一条。三十岁的人约九成二能活到六十岁——你现在就坐在这里，是那个九成二的证明。',
+      },
+    ],
+    insight: {
+      quote: '不要因为「人随时会死，早点把钱花完才快乐」就不存钱，三十岁的人约九成能活到六十岁',
+      source: '第 6 节「反面清单」· 第 32 条',
+      data: '按世界卫生组织给中国算的数，三十岁的人约九成二能活到六十岁，一半以上能活到八十岁。年轻人普遍把自己早死的可能估得太高，照这个感觉过日子，存下的钱比该存的少约四分之一。',
+      moral: '高性价比的人生，不是把每一分都花在刀刃上，而是把有限的命、时间、钱、心力，投到那些确实会被时间放大几倍的事情上，然后耐心地活到收获的那天。',
+    },
+  },
+];
+
+/* 结算语：按分数段与最低维度给出 */
+const RESULT_TIERS = [
+  { min: 340, grade: 'S', title: '活得明白', desc: '你把有限的本钱，投在了会被时间放大的地方。这不是运气，是一连串清醒的小决定。' },
+  { min: 300, grade: 'A', title: '相当划算', desc: '大方向没走偏。你踩过坑，但踩完就记住了——这已经是大多数人做不到的事。' },
+  { min: 260, grade: 'B', title: '收支平衡', desc: '你过完了普通的一生，不亏，也不算赚。有几处本可以更划算，它们现在还来得及。' },
+  { min: 220, grade: 'C', title: '有点亏', desc: '你付出的比得到的多。问题通常不在某一件大事，而在那些年被忽略的日常。' },
+  { min: 0,   grade: 'D', title: '被生活收了利息', desc: '你把本钱花在了不会被时间回报的地方。好消息是：这本书可以重读，人生也还长。' },
+];
+
+const LOWEST_TIPS = {
+  health: {
+    title: '最该补的一课：把「活着」排在最前面',
+    tips: [
+      '系安全带、装烟雾报警器、量血压——这三件事的共同点是：做一次，保护很多年。',
+      '每天走到 7000–8000 步，或每周快走 150–300 分钟，性价比高得离谱。',
+      '每晚睡 7 小时左右，作息比时长更重要。',
+    ],
+  },
+  time: {
+    title: '最该补的一课：把时间按你的时薪记账',
+    tips: [
+      '选住处把通勤时长放在前面——单程少 30 分钟，一周省 5 小时。',
+      '决定要不要继续时，只看未来投入和未来回报，不看已投入多少。',
+      '用自己的时薪决定哪些家务可以外包；花钱买时间的人，生活满意度更高。',
+    ],
+  },
+  money: {
+    title: '最该补的一课：守住「亏得起」这条线',
+    tips: [
+      '只拿亏得起的钱创业，不动家底、不借钱开张。',
+      '关掉所有自动续费，改为到期手动续——翻一遍扣款列表用不了 20 分钟。',
+      '三十岁的人约九成二能活到六十岁，别用"随时会死"当不存钱的理由。',
+    ],
+  },
+  mind: {
+    title: '最该补的一课：心力也是一种本钱',
+    tips: [
+      '变故后的头三个月，凡是不可逆的大决定一律往后推。',
+      '花钱买一段经历比买东西更让人快乐。',
+      '关系里最贵的不是钱，是不清不楚；把账算明白，关系才跑得久。',
+    ],
+  },
+};
+
+/* ============================================================
+ * 出身：开局决定你的四样本钱从哪里起步
+ * 依据：第 23 节「学什么技能划算」、第 31 节「十八岁之后有哪几条路」
+ * ============================================================ */
+const ORIGINS = [
+  {
+    id: 'county',
+    name: '县城做题家',
+    tag: '第一次进省城',
+    stats: { health: 62, time: 58, money: 48, mind: 62 },
+    line: '你考上了一所二本。报到那天是你第一次坐高铁，也是你父母第一次出省。他们把你送到宿舍楼下，第二天就回去了。',
+    note: '你最薄的是钱，最整的是时间。这笔账决定了你前几关的活法。',
+  },
+  {
+    id: 'skill',
+    name: '职校出来的手艺人',
+    tag: '手上先有一门活',
+    stats: { health: 58, time: 62, money: 56, mind: 58 },
+    line: '你十六岁就进了实训车间。别人在背公式的时候，你在练手上功夫。老师说，这类活最难被机器顶掉。',
+    note: '你有时间也有手艺，缺的是把技能换成等级的门路。',
+  },
+  {
+    id: 'repeat',
+    name: '复读过一年的人',
+    tag: '多花了一年',
+    stats: { health: 60, time: 54, money: 52, mind: 48 },
+    line: '你在同一个教室里多坐了一年。最后考得不算差，但那一整年的消耗，没有人替你记账。',
+    note: '你的心力起步就比别人低一截，要格外留意它在什么时候见底。',
+  },
+  {
+    id: 'city',
+    name: '家里有底的城市孩子',
+    tag: '有兜底，但不知道要什么',
+    stats: { health: 64, time: 60, money: 72, mind: 52 },
+    line: '你不缺钱，也不缺退路。你缺的是一个必须由你自己回答的问题——家里能给你兜底，但兜不住你不知道要去哪儿。',
+    note: '钱是你最厚的本钱，也是最容易让你误以为不需要算账的东西。',
+  },
+];
+
+/* ============================================================
+ * 阶段对账单：每走完一段，回头看一次
+ * ============================================================ */
+const STAGES = [
+  {
+    afterId: 5,          // 做完第 5 关（index 4）后触发
+    title: '二十几岁的账',
+    sub: '18 岁 → 25 岁',
+    lines: {
+      good: '这一段你赚了。你没有在最便宜的年纪，把最贵的东西花掉。',
+      mid:  '这一段大体持平。你没走大弯路，但也没攒下多少余量。',
+      bad:  '这一段你是净亏的。好消息是：二十五岁的亏损，是全部人生里最好补的一类。',
+    },
+  },
+  {
+    afterId: 10,
+    title: '三十上下的账',
+    sub: '26 岁 → 30 岁',
+    lines: {
+      good: '这一段你赚了。最难的不是赚到，而是在别人都急着往前冲的时候，你守住了"亏得起"那条线。',
+      mid:  '这一段持平。你开始承担别人了，也终于明白了账不能只算自己。',
+      bad:  '这一段你亏得比上一段狠。因为这一段的每个决定，都牵扯到了别人。',
+    },
+  },
+  {
+    afterId: 14,
+    title: '往后的账',
+    sub: '32 岁 → 60 岁',
+    lines: {
+      good: '最后这一段你赚了。最重要的是：你终于学会了在风暴里什么都不决定。',
+      mid:  '最后这一段持平。你把该扛的扛住了，这就已经比大多数人强。',
+      bad:  '最后这一段是亏的。但你还是走到了六十岁——这本身就是那九成二的证明。',
+    },
+  },
+];
+
+/* ============================================================
+ * 结局画像：最强的那一项 + 最弱的那一项，决定你成了什么样的人
+ * ============================================================ */
+const PORTRAITS = {
+  'health-money': { name: '活得久，但一直紧绷', desc: '你把身体保住了，却没有给自己留下多少缓冲。你的风险不在病床上，在每个月底。' },
+  'health-mind':  { name: '硬朗，但有点孤', desc: '你的各项指标都还行，可身边能说话的人越来越少。身体账做得漂亮，关系账一直没开始做。' },
+  'health-time':  { name: '健康，但一直在赶', desc: '你保住了命，却把所有时间都交出去了。你活到了六十岁，但很少有一天是属于自己的。' },
+  'money-health': { name: '攒下了钱，透支了人', desc: '账户是好看的，身体账是欠着的。你赚到的余量，有一部分要在后面这些年还回去。' },
+  'money-mind':   { name: '有余钱，没滋味', desc: '你不慌了，但也不怎么高兴。钱解决了恐惧，解决不了无意义。' },
+  'money-time':   { name: '钱有了，时间没了', desc: '你把自己最不能再生那样东西，换成了最可再生的一样。这笔账，六十岁才看得清。' },
+  'time-health':  { name: '从容，但底子薄', desc: '你把时间安排得很好，唯独没给身体留出位置。从容是本事，但它需要一副能撑住的身子。' },
+  'time-money':   { name: '自由，但手上紧', desc: '你有大把可支配的时间，也没有被钱拖死——只是每一次要用钱的时候，都得重新想一遍。' },
+  'time-mind':    { name: '时间充裕，心里空', desc: '你不忙了，但也不太知道该拿这些时间做什么。空闲本身不会自动变成好日子。' },
+  'mind-health':  { name: '通透，但身体欠账', desc: '你想明白了很多事，唯独没把身体当成其中一件。明白是最难得的，也是最容易晚到的。' },
+  'mind-money':   { name: '心里富足，口袋一般', desc: '你没被生活打垮，关系也还在。只是抗风险的余量一直没攒起来，一次意外就能把这段平衡掀翻。' },
+  'mind-time':    { name: '心是稳的，时间是别人的', desc: '你扛住了几次大的打击，但你的时间几乎从来没有属于过你自己。' },
+};
+
+/* ============================================================
+ * 每关的意象图标（line-art，stroke 使用 currentColor）
+ * ============================================================ */
+const ICONS = [
+  // 0 零点十分：深夜里的手机信息流
+  '<rect x="15" y="5" width="18" height="38" rx="3"/><path d="M19 11h10M19 17h10M19 23h7"/><path d="M21 37h6"/>',
+  // 1 安全带：车 + 斜带
+  '<path d="M7 30V21l7-9h20l7 9v9a3 3 0 0 1-3 3H10a3 3 0 0 1-3-3z"/><circle cx="14" cy="33" r="3.2"/><circle cx="34" cy="33" r="3.2"/><path d="M17 13 31 35"/>',
+  // 2 烟
+  '<rect x="9" y="29" width="22" height="5" rx="2.5"/><path d="M31 31c7-2 7-8 0-11s0-9 5-12"/><circle cx="14" cy="13" r="3.5"/><circle cx="23" cy="9" r="2.2"/>',
+  // 3 保健品：瓶 + 十字
+  '<rect x="16" y="17" width="16" height="23" rx="3"/><path d="M20 17v-4a4 4 0 0 1 8 0v4"/><path d="M24 26v9M19.5 30.5h9"/>',
+  // 4 通勤：时钟 + 路
+  '<circle cx="24" cy="21" r="13"/><path d="M24 12v9l7 5"/><path d="M8 44h32"/>',
+  // 5 奶茶店：铺面
+  '<path d="M9 20 24 8l15 12"/><path d="M13 20v21h22V20"/><rect x="20" y="28" width="8" height="13"/>',
+  // 6 沉没成本：沙漏
+  '<path d="M15 8h18M15 40h18"/><path d="M17 8l7 14 7-14z"/><path d="M17 40l7-14 7 14z"/>',
+  // 7 购物车
+  '<path d="M6 10h6l4 21h20"/><path d="M12 14h28l-3 17"/><circle cx="16" cy="39" r="3"/><circle cx="35" cy="39" r="3"/>',
+  // 8 证书
+  '<rect x="12" y="9" width="24" height="30" rx="2.5"/><path d="M18 17h12M18 23h12M18 29h8"/><circle cx="33" cy="33" r="4.5"/><path d="M33 30.5v5M30.5 33h5"/>',
+  // 9 房子与月供
+  '<path d="M8 22 24 9l16 13"/><path d="M13 21v20h22V21"/><rect x="20" y="28" width="8" height="13"/><path d="M24 9V5"/>',
+  // 10 结婚：双环
+  '<circle cx="18" cy="26" r="11"/><circle cx="30" cy="26" r="11"/>',
+  // 11 体检单
+  '<rect x="14" y="7" width="20" height="34" rx="2.5"/><path d="M19 15h10M19 21h10M19 27h10"/><path d="M24 33v6M21 36h6"/>',
+  // 12 窗台植物
+  '<path d="M15 29h18l-2 13H17z"/><path d="M24 29V14"/><path d="M24 19c-6 0-9-4-9-9 6 0 9 4 9 9z"/><path d="M24 24c6 0 9-4 9-9-6 0-9 4-9 9z"/>',
+  // 13 结账：天平
+  '<path d="M24 8v30"/><path d="M9 42h30"/><path d="M8 16h32"/><path d="M8 16 4 27h8z"/><path d="M40 16l-4 11h8z"/>',
+];
+
+</script>
+<script>
+/* ============================================================
+ * 《性价比人生》游戏引擎
+ * 零依赖 · localStorage 存档 · Web Audio 音效
+ * ============================================================ */
+
+(function () {
+  'use strict';
+
+  // 全局错误捕获（供自动化测试断言）
+  window.__errs = [];
+  window.addEventListener('error', (e) => { window.__errs.push(String(e.message || e.error || 'error')); });
+  window.addEventListener('unhandledrejection', (e) => {
+    const r = e.reason; window.__errs.push('P:' + String((r && r.message) || r));
+  });
+
+  const SAVE_KEY = 'cp-life-v1';
+  const SFX_KEY = 'cp-life-sfx';
+  const INIT = { health: 60, time: 60, money: 60, mind: 60 };
+  let TYPE_SPEED = 26;        // 打字机速度 ms/字（可切换快进）
+  const STAT_KEYS = ['health', 'time', 'money', 'mind'];
+  const CN_IDX = ['甲', '乙', '丙', '丁'];
+  const DANGER = 25;          // 低于此值进入告警
+
+  // 每关的场景氛围色调
+  const MOODS = ['mind', 'health', 'health', 'money', 'time', 'money',
+                 'time', 'money', 'time', 'money', 'mind', 'health', 'mind', 'time'];
+
+  let state = null;           // { level, stats, picks, origin, done, stageSeen }
+  let typing = null;          // 打字机定时器
+  let view = null;            // 当前关卡运行时 { chapter, lineIdx, choiceIdx, readOnly, returnTo }
+  let fast = false;           // 文字快进
+  let chapterReturn = 'map';  // 从哪一屏进入章节：explore / map
+
+  const $ = (id) => document.getElementById(id);
+
+  /* ================= 音效（Web Audio 合成，无外部资源） ================= */
+  const Sfx = {
+    ctx: null,
+    on: true,
+    boot() {
+      try { this.on = localStorage.getItem(SFX_KEY) !== 'off'; } catch (e) { this.on = true; }
+    },
+    ac() {
+      if (!this.ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        this.ctx = new AC();
+      }
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      return this.ctx;
+    },
+    tone(freq, dur, type, vol, delay) {
+      if (!this.on) return;
+      const ac = this.ac(); if (!ac) return;
+      const t0 = ac.currentTime + (delay || 0);
+      const osc = ac.createOscillator();
+      const g = ac.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(vol || 0.04, t0 + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      osc.connect(g); g.connect(ac.destination);
+      osc.start(t0); osc.stop(t0 + dur + 0.02);
+    },
+    click()  { this.tone(660, 0.07, 'triangle', 0.035); },
+    page()   { this.tone(392, 0.13, 'sine', 0.03); },
+    gate()   { this.tone(196, 0.28, 'sine', 0.035); this.tone(294, 0.24, 'sine', 0.022, 0.05); },
+    up()     { this.tone(523, 0.11, 'sine', 0.035); this.tone(784, 0.16, 'sine', 0.028, 0.07); },
+    down()   { this.tone(392, 0.13, 'sine', 0.032); this.tone(294, 0.2, 'sine', 0.026, 0.08); },
+    finish() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.22, 'sine', 0.03, i * 0.11)); },
+  };
+
+  /* ================= 存档 ================= */
+  function load() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return null;
+      const s = JSON.parse(raw);
+      if (!s || typeof s.level !== 'number') return null;
+      if (!s.stats) s.stats = Object.assign({}, INIT);
+      if (!Array.isArray(s.picks)) s.picks = [];
+      if (s.origin === undefined) s.origin = null;
+      if (!Array.isArray(s.done)) s.done = s.picks.length ? s.picks.map(p => p.id) : [];
+      if (!Array.isArray(s.stageSeen)) s.stageSeen = [];
+      return s;
+    } catch (e) { return null; }
+  }
+  function save() {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  function reset() {
+    state = { level: 0, stats: Object.assign({}, INIT), picks: [], origin: null, done: [], stageSeen: [] };
+    save();
+  }
+
+  /* ================= 屏幕切换 ================= */
+  function show(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    $(id).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ================= HUD ================= */
+  function renderHud() {
+    const c = view.chapter;
+    const backLabel = (view.returnTo === 'explore') ? '← 回廊'
+                    : (view.returnTo === 'codex') ? '← 启示录' : '← 时间轴';
+    $('hud-chapter').innerHTML =
+      '<span class="nav-btn" id="nav-quit">' + backLabel + '</span>' +
+      '<span>' + escapeHtml(c.chapter) + '</span>';
+    const q = $('nav-quit');
+    if (q) q.onclick = () => { stopTyping(); goReturn(view.returnTo); };
+
+    const wrap = $('hud-stats');
+    if (!wrap.dataset.built) {
+      wrap.innerHTML = STAT_KEYS.map(k =>
+        '<div class="stat" data-k="' + k + '">' +
+          '<div class="stat-top"><span class="stat-name">' + STAT_META[k].name + '</span>' +
+          '<span class="stat-val" data-v="' + k + '">0</span></div>' +
+          '<div class="stat-bar"><div class="stat-fill" data-f="' + k + '"></div></div>' +
+          '<div class="float-num" data-n="' + k + '"></div>' +
+        '</div>'
+      ).join('');
+      wrap.dataset.built = '1';
+    }
+    syncHud(true);
+  }
+
+  function syncHud(instant, delta) {
+    STAT_KEYS.forEach(k => {
+      const v = state.stats[k];
+      const box = $('hud-stats').querySelector('.stat[data-k="' + k + '"]');
+      box.classList.toggle('danger', v < DANGER);
+      tweenNum($('hud-stats').querySelector('[data-v="' + k + '"]'), v, instant);
+      const fill = $('hud-stats').querySelector('[data-f="' + k + '"]');
+      fill.style.width = clamp(v) + '%';
+      fill.style.background = STAT_META[k].color;
+      if (delta && delta[k]) {
+        fill.classList.remove('pulse');
+        void fill.getBoundingClientRect().width;
+        fill.classList.add('pulse');
+        setTimeout(() => fill.classList.remove('pulse'), 900);
+      }
+    });
+    if (delta) {
+      STAT_KEYS.forEach((k, i) => {
+        const d = delta[k];
+        if (!d) return;
+        const el = $('hud-stats').querySelector('[data-n="' + k + '"]');
+        el.textContent = (d > 0 ? '+' : '') + d;
+        el.style.color = d > 0 ? STAT_META[k].color : '#a8413e';
+        el.classList.remove('show');
+        void el.offsetWidth;
+        setTimeout(() => el.classList.add('show'), i * 110);
+      });
+    }
+  }
+
+  /* 数字滚动 */
+  function tweenNum(el, to, instant) {
+    const from = parseInt(el.textContent, 10) || 0;
+    if (instant || from === to) { el.textContent = to; return; }
+    const t0 = performance.now(), dur = 620;
+    (function step(now) {
+      const p = Math.min(1, (now - t0) / dur);
+      const e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(from + (to - from) * e);
+      if (p < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+
+  function clamp(v) { return Math.max(0, Math.min(100, v)); }
+
+  /* 结局画像 */
+  function portraitOf(st) {
+    let hi = STAT_KEYS[0], lo = STAT_KEYS[0];
+    STAT_KEYS.forEach(k => {
+      if (st[k] > st[hi]) hi = k;
+      if (st[k] < st[lo]) lo = k;
+    });
+    if (hi === lo) {
+      return { name: '四平八稳的人', desc: '四项都差不多，没有明显短板，也没有特别突出的一项。你这一生赢在没有大错——这其实是最难的一种赢法。' };
+    }
+    return PORTRAITS[hi + '-' + lo] || {
+      name: '一路算过来的人',
+      desc: '你把每一笔都算过，也为此付出过代价。到了六十岁，你至少知道自己是怎么走到这里的。',
+    };
+  }
+
+  /* ================= 关卡闸门 ================= */
+  function showGate(id) {
+    const idx = (id === undefined || id === null) ? state.level : id;
+    const c = CHAPTERS[idx];
+    view = { chapter: c, lineIdx: 0, choiceIdx: -1, returnTo: chapterReturn };
+    renderHud();
+    $('gate').setAttribute('data-n', String(c.id + 1).padStart(2, '0'));
+    $('gate-icon').innerHTML = svgIcon(c.id);
+    $('gate-label').textContent = spread(c.label) + ' · ' + c.age + ' 岁';
+    $('gate-title').innerHTML = splitChars(c.title);
+    $('gate-meta').innerHTML =
+      '<b>' + escapeHtml(c.place) + '</b><br>' + escapeHtml(c.chapter);
+    $('gate').style.display = '';
+    $('stage').style.display = 'none';
+    $('choices').style.display = 'none';
+    $('outcome').style.display = 'none';
+    setMood(MOODS[c.id]);
+    show('screen-play');
+    animateIcon();
+    Sfx.gate();
+  }
+
+  // 从回廊走进一扇门：先渐隐，再进入对应章节
+  function enterChapter(id) {
+    chapterReturn = 'explore';
+    fadeTo(() => { Explore.stop(); showGate(id); });
+  }
+
+  /* 人生分三段，每段全部推开后才结算这一段 */
+  const LIFE_ERAS = [
+    { ids: [0, 1, 2, 3, 4],        stage: 0 },
+    { ids: [5, 6, 7, 8, 9, 10],    stage: 1 },
+    { ids: [11, 12, 13],           stage: 2 },
+  ];
+
+  function spread(s) { return s.split('').join(' '); }
+
+  function svgIcon(i) {
+    return '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" ' +
+           'stroke-linecap="round" stroke-linejoin="round">' + (ICONS[i] || '') + '</svg>';
+  }
+
+  /* 标题逐字浮现 */
+  function splitChars(s) {
+    return String(s).split('').map((ch, i) => {
+      const d = (0.30 + i * 0.055).toFixed(2) + 's';
+      const body = ch === ' ' ? '&nbsp;' : escapeHtml(ch);
+      return '<span style="animation-delay:' + d + '">' + body + '</span>';
+    }).join('');
+  }
+
+  /* 图标逐笔绘制 */
+  function animateIcon() {
+    const els = Array.prototype.slice.call($('gate-icon').querySelectorAll('svg > *'));
+    let maxT = 0;
+    els.forEach((el, i) => {
+      let len = 0;
+      try { if (el.getTotalLength) len = el.getTotalLength(); } catch (e) { len = 0; }
+      if (!len) return;
+      el.style.strokeDasharray = len + ' ' + len;
+      el.style.strokeDashoffset = len;
+      el.style.animation = 'none';
+      void el.getBoundingClientRect().width;
+      el.style.animation = 'iconDraw .85s cubic-bezier(.65,0,.35,1) ' +
+                           (i * 0.13).toFixed(2) + 's forwards';
+      maxT = Math.max(maxT, i * 0.13 + 0.85);
+    });
+    // 画完清掉 dash 内联样式，避免残留缺口
+    setTimeout(() => {
+      els.forEach(el => {
+        el.style.strokeDasharray = '';
+        el.style.strokeDashoffset = '';
+        el.style.animation = '';
+      });
+    }, (maxT + 0.12) * 1000);
+  }
+
+  /* 场景氛围 */
+  function setMood(m) {
+    const b = document.body;
+    ['health', 'time', 'money', 'mind'].forEach(k => b.classList.remove('mood-' + k));
+    if (m) b.classList.add('mood-' + m);
+  }
+
+  /* 选择反馈粒子 */
+  function burst(el, positive, n) {
+    if (!el) return;
+    for (let i = 0; i < (n || 7); i++) {
+      const s = document.createElement('span');
+      s.className = 'spark ' + (positive ? 'up' : 'down');
+      s.style.left = (8 + Math.random() * 84).toFixed(1) + '%';
+      s.style.animationDelay = (i * 0.07).toFixed(2) + 's';
+      el.appendChild(s);
+      setTimeout(() => { if (s.parentNode) s.parentNode.removeChild(s); }, 1500 + i * 70);
+    }
+  }
+
+  /* ================= 出身选择 ================= */
+  function renderOrigin() {
+    const box = $('origin-list');
+    box.innerHTML = '';
+    ORIGINS.forEach((o, i) => {
+      const el = document.createElement('div');
+      el.className = 'origin-item';
+      el.style.animationDelay = (0.1 + i * 0.08).toFixed(2) + 's';
+      const st = STAT_KEYS.map(k =>
+        '<span class="oi-s">' + STAT_META[k].name +
+        '<b style="color:' + STAT_META[k].color + '">' + o.stats[k] + '</b></span>'
+      ).join('');
+      el.innerHTML =
+        '<div class="oi-head"><span class="oi-name">' + escapeHtml(o.name) + '</span>' +
+        '<span class="oi-tag">' + escapeHtml(o.tag) + '</span></div>' +
+        '<div class="oi-line">' + escapeHtml(o.line) + '</div>' +
+        '<div class="oi-stats">' + st + '</div>' +
+        '<div class="oi-note">' + escapeHtml(o.note) + '</div>';
+      el.onclick = () => pickOrigin(o);
+      box.appendChild(el);
+    });
+  }
+
+  function pickOrigin(o) {
+    state.origin = o.id;
+    state.stats = Object.assign({}, o.stats);
+    save();
+    Sfx.up();
+    startExplore();
+  }
+
+  function originName() {
+    const o = ORIGINS.find(x => x.id === state.origin);
+    return o ? o.name : '未知起点';
+  }
+
+  /* ================= 阶段对账单 ================= */
+  function stageRange(afterId) {
+    let prev = 0;
+    for (let i = 0; i < STAGES.length; i++) {
+      if (STAGES[i].afterId === afterId) break;
+      prev = STAGES[i].afterId;
+    }
+    return [prev, afterId];
+  }
+
+  function showStage(stageIndex) {
+    const stg = STAGES[stageIndex];
+    const era = LIFE_ERAS.find(e => e.stage === stageIndex) || LIFE_ERAS[0];
+    const rows = state.picks.filter(p => era.ids.indexOf(p.id) >= 0).sort((a, b) => a.id - b.id);
+    const net = rows.reduce((s, p) => s + p.net, 0);
+    const lv = net > 8 ? 'good' : (net < -8 ? 'bad' : 'mid');
+
+    $('st-title').textContent = stg.title;
+    $('st-sub').innerHTML = stg.sub + ' &nbsp;·&nbsp; 这一段共 ' + rows.length + ' 个选择';
+
+    const body = rows.map(p => {
+      const c = CHAPTERS[p.id];
+      return '<div class="st-row ' + (p.net > 0 ? 'good' : (p.net < 0 ? 'bad' : '')) + '">' +
+        '<span class="st-age">' + c.age + '</span>' +
+        '<span class="st-pick">' + escapeHtml(p.text) + '</span>' +
+        '<span class="st-net">' + (p.net > 0 ? '+' : '') + p.net + '</span></div>';
+    }).join('');
+
+    $('st-card').innerHTML =
+      '<div class="st-summary">' + escapeHtml(stg.lines[lv]) +
+      '<br><span style="font-size:13px;color:var(--ink-3)">这一段净收益：' +
+      '<b style="color:' + (net >= 0 ? '#2f5d50' : '#b0473f') + '">' +
+      (net > 0 ? '+' : '') + net + '</b></span></div>' + body;
+
+    Sfx.finish();
+    show('screen-stage');
+  }
+
+  function stageContinue() {
+    if (state.done.length >= CHAPTERS.length) { renderResult(); show('screen-result'); }
+    else startExplore();
+  }
+
+  /* ================= 剧情 ================= */
+  function startStory() {
+    $('gate').style.display = 'none';
+    $('stage').style.display = '';
+    $('stage-place').textContent = view.chapter.place;
+    $('stage-age').textContent = view.chapter.age + ' 岁';
+    view.lineIdx = 0;
+    renderLines();
+    Sfx.page();
+  }
+
+  function renderLines() {
+    const body = $('stage-body');
+    body.innerHTML = '';
+    const lines = view.chapter.lines;
+    for (let i = 0; i < view.lineIdx; i++) {
+      const p = document.createElement('p');
+      p.className = 'line past';
+      p.textContent = lines[i];
+      body.appendChild(p);
+    }
+    renderDots();
+    if (view.lineIdx >= lines.length) { showChoices(); return; }
+
+    const p = document.createElement('p');
+    p.className = 'line now enter';
+    const cur = document.createElement('span');
+    p.appendChild(cur);
+    const caret = document.createElement('span');
+    caret.className = 'cursor';
+    p.appendChild(caret);
+    body.appendChild(p);
+
+    const text = lines[view.lineIdx];
+    let i = 0;
+    stopTyping();
+    typing = setInterval(() => {
+      i++;
+      cur.textContent = text.slice(0, i);
+      if (i >= text.length) {
+        stopTyping();
+        if (caret.parentNode) caret.parentNode.removeChild(caret);
+      }
+    }, TYPE_SPEED);
+
+    $('stage-foot').style.display = '';
+    $('stage-hint').textContent = '点击任意处继续';
+  }
+
+  function renderDots() {
+    const n = view.chapter.lines.length;
+    const box = $('line-dots');
+    box.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      const d = document.createElement('span');
+      d.className = 'dot' + (i <= view.lineIdx ? ' on' : '');
+      box.appendChild(d);
+    }
+  }
+
+  function stopTyping() {
+    if (typing) { clearInterval(typing); typing = null; }
+  }
+
+  function finishLineNow() {
+    const body = $('stage-body');
+    const p = body.lastElementChild;
+    if (!p) return false;
+    const full = view.chapter.lines[view.lineIdx];
+    const span = p.firstElementChild;
+    if (!span || span.textContent.length >= full.length) return false;
+    stopTyping();
+    span.textContent = full;
+    const caret = p.querySelector('.cursor');
+    if (caret) caret.parentNode.removeChild(caret);
+    return true;
+  }
+
+  function advance() {
+    if ($('choices').style.display !== 'none') return;
+    if (finishLineNow()) return;
+    view.lineIdx++;
+    if (view.lineIdx > view.chapter.lines.length) return;
+    if (view.lineIdx === view.chapter.lines.length) { showChoices(); return; }
+    Sfx.click();
+    renderLines();
+  }
+
+  /* ================= 选择 ================= */
+  /* ================= 互动关卡 ================= */
+  let ixTimers = [];
+  function clearIxTimers() {
+    ixTimers.forEach(t => clearTimeout(t));
+    ixTimers = [];
+  }
+  function ixLater(fn, ms) {
+    const t = setTimeout(fn, ms);
+    ixTimers.push(t);
+    return t;
+  }
+
+  /* 给 range 画上已滑过的那一段 */
+  function paintRange(el) {
+    if (!el) return;
+    const mn = +el.min || 0, mx = +el.max || 100, v = +el.value;
+    const p = mx === mn ? 0 : (v - mn) / (mx - mn) * 100;
+    el.style.background = 'linear-gradient(to right, #2f5d50 0%, #2f5d50 ' + p.toFixed(1) +
+      '%, #ebe5d9 ' + p.toFixed(1) + '%, #ebe5d9 100%)';
+  }
+
+  const INTERACTS = { streak: renderStreak, appraise: renderAppraise,
+                      commute: renderCommute, budget: renderBudget };
+
+  function renderInteract(cfg, box, done) {
+    const fn = INTERACTS[cfg.type];
+    if (!fn) { done(0); return; }
+    fn(cfg, box, done);
+  }
+
+  /* 互动一：三次递烟，限时抉择（不选 = 接） */
+  function renderStreak(cfg, box, done) {
+    let i = 0, refused = 0, timer = null, over = false;
+    const n = cfg.rounds.length;
+
+    function finish() {
+      if (over) return;
+      over = true; clearTimeout(timer);
+      done(refused === n ? 1 : (refused === 0 ? 0 : 2));
+    }
+
+    function feedback(kind) {
+      clearTimeout(timer);
+      box.innerHTML =
+        '<div class="ix"><div class="ix-fb ' + (kind === 'no' ? 'ok' : 'no') + '">' +
+        escapeHtml(cfg.feedback[kind]) + '</div></div>';
+      i++;
+      ixLater(() => { i >= n ? finish() : next(); }, 1700);
+    }
+
+    function next() {
+      const r = cfg.rounds[i];
+      box.innerHTML =
+        '<div class="ix">' +
+          '<div class="ix-k">第 ' + (i + 1) + ' / ' + n + ' 次' +
+            '<span class="ix-kk">已拒绝 ' + refused + '</span></div>' +
+          '<div class="ix-scene">' + escapeHtml(r.scene) + '</div>' +
+          '<div class="ix-timer"><span style="animation-duration:' + cfg.seconds + 's"></span></div>' +
+          '<div class="ix-btns">' +
+            '<button class="btn" data-a>' + escapeHtml(cfg.no) + '</button>' +
+            '<button class="btn primary" data-b>' + escapeHtml(cfg.yes) + '</button>' +
+          '</div>' +
+          '<div class="ix-hint">不选，就等于接了</div>' +
+        '</div>';
+      box.querySelector('[data-a]').onclick = () => { if (!over) { refused++; feedback('no'); } };
+      box.querySelector('[data-b]').onclick = () => { if (!over) feedback('yes'); };
+      timer = setTimeout(() => { if (!over) feedback('timeout'); }, cfg.seconds * 1000);
+      ixTimers.push(timer);
+    }
+
+    box.innerHTML = '<div class="ix"><div class="ix-intro">' + escapeHtml(cfg.intro) + '</div></div>';
+    ixLater(next, 900);
+  }
+
+  /* 互动二：柜台前逐件判断买不买 */
+  function renderAppraise(cfg, box, done) {
+    let i = 0, waste = 0, miss = 0, spent = 0;
+    const n = cfg.items.length;
+
+    function finish() {
+      done(waste === 0 ? 2 : (waste <= 2 ? 0 : 1));
+    }
+
+    function next() {
+      if (i >= n) {
+        const head = waste === 0
+          ? '这 ' + spent + ' 元，没有一分是白花的。你买到的全是能改结局的那种东西。'
+          : '你一共花了 ' + spent + ' 元，其中 <b>' + waste + '</b> 样是白花的——这些钱买不到结果。';
+        box.innerHTML =
+          '<div class="ix"><div class="ix-fb ' + (waste === 0 ? 'ok' : 'no') + '">' + head +
+          (miss ? '<br>真正管用的那几样，你漏掉了 <b>' + miss + '</b> 件。'
+                : '<br>该买的，你也一件没落下。') +
+          '</div></div>';
+        ixLater(finish, 2200);
+        return;
+      }
+      const it = cfg.items[i];
+      box.innerHTML =
+        '<div class="ix">' +
+          '<div class="ix-k">第 ' + (i + 1) + ' / ' + n + ' 件' +
+            '<span class="ix-kk">已花 ' + spent + ' 元 · 白花 ' + waste + ' 件</span></div>' +
+          '<div class="ix-card">' +
+            '<div class="ix-name">' + escapeHtml(it.name) + '</div>' +
+            '<div class="ix-price">¥' + it.price + '</div>' +
+          '</div>' +
+          '<div class="ix-btns">' +
+            '<button class="btn" data-no>不买</button>' +
+            '<button class="btn primary" data-yes>买</button>' +
+          '</div>' +
+        '</div>';
+      const judge = (bought) => {
+        const right = bought === it.useful;
+        if (bought) spent += it.price;
+        if (bought && !it.useful) waste++;
+        if (!bought && it.useful) miss++;
+        box.innerHTML =
+          '<div class="ix"><div class="ix-card done">' +
+            '<div class="ix-name">' + escapeHtml(it.name) +
+              '<span class="ix-tag ' + (it.useful ? 'good' : 'bad') + '">' +
+              (it.useful ? '真有用' : '没证据') + '</span></div>' +
+            '<div class="ix-why">' + escapeHtml(it.why) + '</div>' +
+            '<div class="ix-judge ' + (right ? 'ok' : 'no') + '">' +
+              (right ? '你判断对了' : '这次判断错了') + '</div>' +
+          '</div></div>';
+        i++;
+        ixLater(next, 1900);
+      };
+      box.querySelector('[data-yes]').onclick = () => judge(true);
+      box.querySelector('[data-no]').onclick = () => judge(false);
+    }
+
+    box.innerHTML = '<div class="ix"><div class="ix-intro">' + escapeHtml(cfg.intro) + '</div></div>';
+    ixLater(next, 900);
+  }
+
+  /* 互动三：拖滑块算通勤这笔账 */
+  function renderCommute(cfg, box, done) {
+    let mins = cfg.default, hourly = cfg.hourlyDefault;
+    const DAYS = 250;
+
+    function calc() {
+      const h = mins * 2 / 60 * DAYS;
+      const hrs = Math.round(h);            // 与界面上显示的小时数保持一致
+      return {
+        hours: hrs,
+        days: Math.round(hrs / 8 * 10) / 10,
+        cost: Math.round(hrs * hourly),
+        happy: Math.round(100 - (mins - cfg.min) / (cfg.max - cfg.min) * 55),
+      };
+    }
+
+    function paint() {
+      const c = calc();
+      $('ix-hours').textContent = c.hours;
+      $('ix-days').textContent = c.days;
+      $('ix-cost').textContent = c.cost.toLocaleString('zh-CN');
+      $('ix-happy').style.width = c.happy + '%';
+      $('ix-happy').textContent = c.happy;
+      $('ix-mins').textContent = mins;
+    }
+
+    box.innerHTML =
+      '<div class="ix"><div class="ix-intro">' + escapeHtml(cfg.intro) + '</div>' +
+        '<div class="ix-field">' +
+          '<div class="ix-lab">单程通勤<span class="ix-val"><b id="ix-mins">45</b> 分钟</span></div>' +
+          '<input class="ix-range" id="ix-r" type="range" min="' + cfg.min + '" max="' + cfg.max +
+            '" step="' + cfg.step + '" value="' + cfg.default + '">' +
+        '</div>' +
+        '<div class="ix-field">' +
+          '<div class="ix-lab">你的时薪<span class="ix-val">¥ <input id="ix-w" class="ix-input" type="number" value="' +
+            cfg.hourlyDefault + '" min="1" max="2000"></span></div>' +
+        '</div>' +
+        '<div class="ix-grid">' +
+          '<div class="ix-cell"><div class="ix-big" id="ix-hours">0</div><div class="ix-unit">一年耗掉 小时</div></div>' +
+          '<div class="ix-cell"><div class="ix-big" id="ix-days">0</div><div class="ix-unit">折合 个工作日</div></div>' +
+          '<div class="ix-cell"><div class="ix-big" id="ix-cost">0</div><div class="ix-unit">机会成本 元</div></div>' +
+        '</div>' +
+        '<div class="ix-lab">主观幸福感</div>' +
+        '<div class="ix-bar"><span id="ix-happy"></span></div>' +
+        '<div class="ix-btns"><button class="btn primary" id="ix-ok">就这个通勤时长</button></div>' +
+      '</div>';
+
+    const rng = box.querySelector('#ix-r');
+    rng.oninput = (e) => { mins = +e.target.value; paintRange(rng); paint(); };
+    box.querySelector('#ix-w').oninput = (e) => { hourly = +e.target.value || 0; paint(); };
+    box.querySelector('#ix-ok').onclick = () => {
+      done(mins <= 30 ? 1 : (mins <= 60 ? 2 : 0));
+    };
+    paintRange(rng);
+    paint();
+  }
+
+  /* 互动四：三万块怎么分 */
+  function renderBudget(cfg, box, done) {
+    const T = cfg.total;
+    let buy = Math.round(T * 0.45), exp = Math.round(T * 0.25);
+
+    function score(a, b, c, field) {
+      return Math.round((a * cfg.buckets[0][field] + b * cfg.buckets[1][field] + c * cfg.buckets[2][field]) / T * 100);
+    }
+
+    function paint() {
+      const save = T - buy - exp;
+      $('ix-buy').textContent = buy.toLocaleString('zh-CN');
+      $('ix-exp').textContent = exp.toLocaleString('zh-CN');
+      $('ix-save').textContent = save.toLocaleString('zh-CN');
+      $('ix-savebar').style.width = (save / T * 100).toFixed(1) + '%';
+      const now = score(buy, exp, save, 'now');
+      const later = score(buy, exp, save, 'later');
+      $('ix-now').style.width = now + '%';
+      $('ix-now').textContent = now;
+      $('ix-later').style.width = later + '%';
+      $('ix-later').textContent = later;
+      $('ix-flip').style.opacity = (later > now + 6) ? 1 : 0;
+    }
+
+    box.innerHTML =
+      '<div class="ix"><div class="ix-intro">' + escapeHtml(cfg.intro) + '</div>' +
+        '<div class="ix-field">' +
+          '<div class="ix-lab">' + cfg.buckets[0].name +
+            '<span class="ix-val">¥ <b id="ix-buy">0</b></span></div>' +
+          '<input class="ix-range" id="ix-r1" type="range" min="0" max="' + T + '" step="500" value="' + buy + '">' +
+          '<div class="ix-desc">' + cfg.buckets[0].desc + '</div>' +
+        '</div>' +
+        '<div class="ix-field">' +
+          '<div class="ix-lab">' + cfg.buckets[1].name +
+            '<span class="ix-val">¥ <b id="ix-exp">0</b></span></div>' +
+          '<input class="ix-range" id="ix-r2" type="range" min="0" max="' + T + '" step="500" value="' + exp + '">' +
+          '<div class="ix-desc">' + cfg.buckets[1].desc + '</div>' +
+        '</div>' +
+        '<div class="ix-field">' +
+          '<div class="ix-lab">' + cfg.buckets[2].name +
+            '<span class="ix-val">¥ <b id="ix-save">0</b></span></div>' +
+          '<div class="ix-ro"><span id="ix-savebar"></span></div>' +
+          '<div class="ix-desc">' + cfg.buckets[2].desc + '（自动，剩下的都进这里）</div>' +
+        '</div>' +
+        '<div class="ix-cmp">' +
+          '<div class="ix-lab">刚花完那天的快乐</div>' +
+          '<div class="ix-bar"><span id="ix-now"></span></div>' +
+          '<div class="ix-lab">三个月后剩下的快乐</div>' +
+          '<div class="ix-bar alt"><span id="ix-later"></span></div>' +
+          '<div class="ix-flip" id="ix-flip">注意：这两条的长度，通常不一样。</div>' +
+        '</div>' +
+        '<div class="ix-btns"><button class="btn primary" id="ix-ok">就这么花</button></div>' +
+      '</div>';
+
+    const r1 = box.querySelector('#ix-r1'), r2 = box.querySelector('#ix-r2');
+    r1.oninput = () => {
+      buy = +r1.value;
+      if (buy + exp > T) { exp = T - buy; r2.value = exp; }
+      paintRange(r1); paintRange(r2); paint();
+    };
+    r2.oninput = () => {
+      exp = +r2.value;
+      if (buy + exp > T) { buy = T - exp; r1.value = buy; }
+      paintRange(r1); paintRange(r2); paint();
+    };
+    box.querySelector('#ix-ok').onclick = () => {
+      const save = T - buy - exp;
+      const max = Math.max(buy, exp, save);
+      done(max === save ? 2 : (max === buy ? 0 : 1));
+    };
+    paintRange(r1); paintRange(r2);
+    paint();
+  }
+
+  function showChoices() {
+    $('stage-foot').style.display = 'none';
+    const box = $('choices');
+    box.innerHTML = '';
+    if (view.chapter.interact) {
+      box.style.display = '';
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      renderInteract(view.chapter.interact, box, (idx) => pick(idx));
+      return;
+    }
+    view.chapter.choices.forEach((ch, i) => {
+      const b = document.createElement('button');
+      b.className = 'choice';
+      b.innerHTML = '<span class="choice-idx">' + CN_IDX[i] + '</span>' +
+                    '<span class="choice-key">' + (i + 1) + '</span>' +
+                    escapeHtml(ch.text);
+      b.onclick = () => pick(i);
+      box.appendChild(b);
+    });
+    box.style.display = '';
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function pick(i) {
+    clearIxTimers();
+    const ch = view.chapter.choices[i];
+    view.choiceIdx = i;
+
+    const delta = {};
+    STAT_KEYS.forEach(k => {
+      const d = ch.effects[k] || 0;
+      if (!d) return;
+      const before = state.stats[k];
+      state.stats[k] = clamp(before + d);
+      delta[k] = state.stats[k] - before;
+    });
+
+    const net = STAT_KEYS.reduce((s, k) => s + (delta[k] || 0), 0);
+    if (net >= 0) Sfx.up(); else Sfx.down();
+
+    $('choices').style.display = 'none';
+    const o = $('outcome');
+    $('outcome-text').textContent = ch.outcome;
+    // 变化芯片
+    const chips = STAT_KEYS.filter(k => delta[k]).map(k =>
+      '<span class="od-chip ' + (delta[k] > 0 ? 'up' : 'down') + '">' +
+      STAT_META[k].name + ' ' + (delta[k] > 0 ? '+' : '') + delta[k] + '</span>'
+    ).join('');
+    const old = o.querySelector('.outcome-delta');
+    if (old) old.remove();
+    o.style.display = '';
+    $('outcome-text').insertAdjacentHTML('afterend',
+      '<div class="outcome-delta">' + (chips || '<span class="od-chip">几乎没变</span>') + '</div>');
+    o.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    setTimeout(() => syncHud(false, delta), 240);
+    setTimeout(() => burst(o, net >= 0), 380);
+  }
+
+  /* ================= 启示卡 ================= */
+  function openInsight(chapter) {
+    const ins = chapter.insight;
+    $('i-quote').textContent = '「' + ins.quote + '」';
+    $('i-src').textContent = ins.source;
+    $('i-data').textContent = ins.data;
+    $('i-moral').textContent = ins.moral;
+
+    // 「另一条路的账单」：仅在本关刚做出选择时展示
+    const alt = $('i-alt');
+    if (!view.readOnly && view.choiceIdx >= 0) {
+      const rows = chapter.choices.map((ch, i) => {
+        const n = STAT_KEYS.reduce((s, k) => s + (ch.effects[k] || 0), 0);
+        const t = ch.text.length > 20 ? ch.text.slice(0, 20) + '…' : ch.text;
+        return '<div class="alt-row' + (i === view.choiceIdx ? ' me' : '') + '">' +
+               '<span class="alt-t">' + CN_IDX[i] + ' · ' + escapeHtml(t) + '</span>' +
+               '<span class="alt-n ' + (n > 0 ? 'up' : (n < 0 ? 'down' : '')) + '">' +
+               (n > 0 ? '+' : '') + n + '</span></div>';
+      }).join('');
+      alt.innerHTML = '<div class="k">另 一 条 路 的 账 单</div>' + rows;
+      alt.style.display = '';
+    } else {
+      alt.style.display = 'none';
+    }
+
+    $('mask').classList.add('show');
+    Sfx.page();
+  }
+  function closeInsight() { $('mask').classList.remove('show'); }
+
+  function afterInsight() {
+    closeInsight();
+    if (view && view.readOnly) {
+      const to = view.returnTo || 'map';
+      if (to === 'codex') { renderCodex(); show('screen-codex'); }
+      else { renderMap(); show('screen-map'); }
+      return;
+    }
+    commitChoice();
+  }
+
+  // 从列表（时间轴 / 启示录）重读某一页已读过的启示
+  function readInsight(chapter, returnTo) {
+    view = { chapter: chapter, lineIdx: 0, choiceIdx: -1, readOnly: true, returnTo: returnTo };
+    openInsight(chapter);
+  }
+
+  function commitChoice() {
+    const c = view.chapter;
+    const i = view.choiceIdx;
+    const net = STAT_KEYS.reduce((s, k) => s + (c.choices[i].effects[k] || 0), 0);
+    state.picks = state.picks.filter(p => p.id !== c.id);
+    state.picks.push({ id: c.id, choice: i, text: c.choices[i].text, net: net });
+    if (!state.done.includes(c.id)) state.done.push(c.id);
+    state.level = Math.max(state.level || 0, c.id + 1);
+    save();
+
+    // 某一段（era）刚刚全部推开 → 先给一张对账单
+    const newly = [];
+    LIFE_ERAS.forEach((e) => {
+      if (state.stageSeen.indexOf(e.stage) >= 0) return;
+      if (e.ids.every(id => state.done.indexOf(id) >= 0)) newly.push(e.stage);
+    });
+    if (newly.length) {
+      newly.forEach(s => state.stageSeen.push(s));
+      save();
+      showStage(STAGES[newly[0]]);
+      return;
+    }
+
+    if (state.done.length >= CHAPTERS.length) {
+      Sfx.finish();
+      renderResult();
+      show('screen-result');
+    } else {
+      startExplore();
+    }
+  }
+
+  /* ================= 时间轴 ================= */
+  const ERAS = [
+    { at: 0,  name: '起 步' },
+    { at: 5,  name: '立 业' },
+    { at: 11, name: '承 重' },
+    { at: 13, name: '结 账' },
+  ];
+
+  function renderMap() {
+    const tl = $('timeline');
+    tl.innerHTML = '';
+    CHAPTERS.forEach((c, idx) => {
+      const era = ERAS.find(e => e.at === idx);
+      if (era) {
+        const h = document.createElement('div');
+        h.className = 'tl-era';
+        h.textContent = era.name;
+        tl.appendChild(h);
+      }
+      const done = state.done.indexOf(c.id) >= 0;
+      const cur = (!done && state.done.length === 0) ? false : false;
+      const el = document.createElement('div');
+      el.className = 'tl-item' + (done ? ' done' : '') + (done ? '' : ' locked');
+      el.style.animationDelay = (idx * 0.035).toFixed(2) + 's';
+      const pick = state.picks.find(p => p.id === c.id);
+      el.innerHTML =
+        '<span class="tl-dot"></span>' +
+        '<span class="tl-age">' + c.age + '岁</span>' +
+        '<span class="tl-mid"><div class="tl-name">' + escapeHtml(c.title) + '</div>' +
+        '<div class="tl-chap">' + escapeHtml(c.chapter) + '</div></span>' +
+        '<span class="tl-right">' +
+          (done ? '已推开' : '未推开') +
+          (pick ? '<span class="tl-score">' + (pick.net > 0 ? '+' : '') + pick.net + '</span>' : '') +
+        '</span>';
+      if (done) {
+        el.onclick = () => readInsight(c, 'map');
+      }
+      tl.appendChild(el);
+    });
+    const btn = $('btn-go');
+    if (state.done.length >= CHAPTERS.length) {
+      btn.textContent = '查看人生结算';
+      btn.onclick = () => { renderResult(); show('screen-result'); };
+    } else {
+      btn.textContent = '回到回廊';
+      btn.onclick = () => { startExplore(); };
+    }
+    const doneN = state.done.length;
+    $('map-progress') && ($('map-progress').textContent = doneN + ' / ' + CHAPTERS.length);
+  }
+
+  /* ================= 启示录 ================= */
+  function renderCodex() {
+    const list = $('codex-list');
+    list.innerHTML = '';
+    let n = 0;
+    CHAPTERS.forEach(c => {
+      const unlocked = state.done.indexOf(c.id) >= 0;
+      if (unlocked) n++;
+      const el = document.createElement('div');
+      el.className = 'codex-item' + (unlocked ? '' : ' locked');
+      el.innerHTML =
+        '<div class="codex-q">' + (unlocked ? escapeHtml(c.insight.quote) : '？ ？ ？') + '</div>' +
+        '<div class="codex-src">' + (unlocked ? escapeHtml(c.insight.source) : '未推开这扇门') + '</div>' +
+        (unlocked ? '<div class="codex-m">' + escapeHtml(c.insight.moral) + '</div>' : '');
+      if (unlocked) el.onclick = () => readInsight(c, 'codex');
+      list.appendChild(el);
+    });
+    $('codex-count').textContent = '已推开 ' + n + ' / ' + CHAPTERS.length;
+  }
+
+  /* ================= 结算 ================= */
+  function renderResult() {
+    const st = state.stats;
+    const total = STAT_KEYS.reduce((s, k) => s + st[k], 0);
+    const tier = RESULT_TIERS.find(t => total >= t.min) || RESULT_TIERS[RESULT_TIERS.length - 1];
+
+    $('r-grade').textContent = tier.grade;
+    $('r-title').textContent = tier.title;
+    $('r-desc').textContent = tier.desc;
+    $('radar').innerHTML = radarSvg(st);
+
+    setMood('mind');
+
+    // 结局画像：最强项 + 最弱项
+    const pt = portraitOf(st);
+    $('pt-name').textContent = pt.name;
+    $('pt-desc').textContent = pt.desc;
+    $('pt-origin').innerHTML = '起点：' + escapeHtml(originName()) +
+      ' &nbsp;·&nbsp; 总分 ' + total + ' / 400';
+
+    $('ledger').innerHTML = STAT_KEYS.map(k =>
+      '<div class="ledger-row">' +
+        '<span class="lk">' + STAT_META[k].full + '</span>' +
+        '<span class="lb"><span class="lf" data-l="' + k + '" style="background:' + STAT_META[k].color + '"></span></span>' +
+        '<span class="lv">' + st[k] + '</span>' +
+      '</div>'
+    ).join('');
+    setTimeout(() => {
+      STAT_KEYS.forEach((k, i) => {
+        setTimeout(() => {
+          const el = $('ledger').querySelector('[data-l="' + k + '"]');
+          if (el) el.style.width = clamp(st[k]) + '%';
+        }, i * 130);
+      });
+    }, 160);
+
+    let low = STAT_KEYS[0];
+    STAT_KEYS.forEach(k => { if (st[k] < st[low]) low = k; });
+    const tip = LOWEST_TIPS[low];
+    $('tip-title').textContent = tip.title;
+    $('tip-list').innerHTML = tip.tips.map(t => '<li>' + escapeHtml(t) + '</li>').join('');
+
+    const rows = state.picks.slice().sort((a, b) => a.id - b.id);
+    $('path-list').innerHTML = rows.map(p => {
+      const c = CHAPTERS[p.id];
+      return '<div class="path-row ' + (p.net > 0 ? 'good' : (p.net < 0 ? 'bad' : '')) + '">' +
+        '<span class="path-age">' + c.age + '</span>' +
+        '<span class="path-pick">' + escapeHtml(p.text) + '</span>' +
+        '<span class="path-age">' + (p.net > 0 ? '+' : '') + p.net + '</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* 雷达图（四维菱形） */
+  function radarSvg(st) {
+    const W = 320, H = 250, cx = W / 2, cy = H / 2 + 4, R = 82;
+    const axes = [
+      { k: 'health', dx: 0, dy: -1, lx: 0, ly: -22 },
+      { k: 'time',   dx: 1, dy: 0,  lx: 17, ly: 5 },
+      { k: 'money',  dx: 0, dy: 1,  lx: 0, ly: 25 },
+      { k: 'mind',   dx: -1, dy: 0, lx: -17, ly: 5 },
+    ];
+    const pt = (a, r) => [cx + a.dx * R * r, cy + a.dy * R * r];
+    let g = '';
+    [0.25, 0.5, 0.75, 1].forEach(r => {
+      const p = axes.map(a => pt(a, r).map(n => n.toFixed(1)).join(',')).join(' ');
+      g += '<polygon points="' + p + '" fill="none" stroke="#e6dfd1" stroke-width="1"/>';
+    });
+    axes.forEach(a => {
+      const q = pt(a, 1);
+      g += '<line x1="' + cx + '" y1="' + cy + '" x2="' + q[0].toFixed(1) + '" y2="' + q[1].toFixed(1) + '" stroke="#e6dfd1" stroke-width="1"/>';
+    });
+
+    const poly = axes.map(a => {
+      const q = pt(a, clamp(st[a.k]) / 100);
+      return q[0].toFixed(1) + ',' + q[1].toFixed(1);
+    }).join(' ');
+    g += '<polygon points="' + poly + '" fill="rgba(47,93,80,.16)" stroke="#2f5d50" stroke-width="2" stroke-linejoin="round"/>';
+    axes.forEach(a => {
+      const q = pt(a, clamp(st[a.k]) / 100);
+      g += '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="4" fill="' + STAT_META[a.k].color + '" stroke="#fff" stroke-width="2"/>';
+      const l = pt(a, 1);
+      g += '<text x="' + (l[0] + a.lx) + '" y="' + (l[1] + a.ly + 4) + '" font-size="13" fill="#5d564c" text-anchor="middle" font-family="sans-serif">' +
+           STAT_META[a.k].name + ' ' + st[a.k] + '</text>';
+    });
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" style="max-width:' + W + 'px;display:block;margin:0 auto">' + g + '</svg>';
+  }
+
+  /* ================= 结算分享卡 ================= */
+  function drawShareCard() {
+    const st = state.stats;
+    const total = STAT_KEYS.reduce((s, k) => s + st[k], 0);
+    const tier = RESULT_TIERS.find(t => total >= t.min) || RESULT_TIERS[RESULT_TIERS.length - 1];
+    let low = STAT_KEYS[0];
+    STAT_KEYS.forEach(k => { if (st[k] < st[low]) low = k; });
+
+    const W = 660, H = 1040, DPR = 2;
+    const cv = $('share-canvas');
+    cv.width = W * DPR; cv.height = H * DPR;
+    const g = cv.getContext('2d');
+    g.scale(DPR, DPR);
+
+    const F = '"PingFang SC","Microsoft YaHei",system-ui,sans-serif';
+    const FS = '"Noto Serif SC","Songti SC",Georgia,serif';
+
+    // 背景
+    g.fillStyle = '#f5f2ec'; g.fillRect(0, 0, W, H);
+    const rg = g.createRadialGradient(80, 60, 0, 80, 60, 420);
+    rg.addColorStop(0, 'rgba(47,93,80,.10)'); rg.addColorStop(1, 'rgba(47,93,80,0)');
+    g.fillStyle = rg; g.fillRect(0, 0, W, H);
+    const rg2 = g.createRadialGradient(W - 60, H - 80, 0, W - 60, H - 80, 420);
+    rg2.addColorStop(0, 'rgba(184,98,59,.10)'); rg2.addColorStop(1, 'rgba(184,98,59,0)');
+    g.fillStyle = rg2; g.fillRect(0, 0, W, H);
+
+    // 内框
+    g.strokeStyle = '#d5c9b6'; g.lineWidth = 1;
+    g.strokeRect(28, 28, W - 56, H - 56);
+
+    // 抬头
+    g.fillStyle = '#b8623b';
+    g.font = '600 13px ' + F;
+    g.textAlign = 'center';
+    g.fillText('性 价 比 人 生', W / 2, 82);
+    g.fillStyle = '#948c7e';
+    g.font = '12px ' + F;
+    g.fillText('一场 14 关的人生模拟 · 人生结算单', W / 2, 106);
+
+    // 评级
+    g.fillStyle = '#b8623b';
+    g.font = '700 130px ' + FS;
+    g.fillText(tier.grade, W / 2, 268);
+    g.fillStyle = '#2b2723';
+    g.font = '700 30px ' + FS;
+    g.fillText(tier.title, W / 2, 322);
+
+    // 描述（换行）
+    g.fillStyle = '#5d564c';
+    g.font = '14px ' + F;
+    wrapText(g, tier.desc, W / 2, 356, W - 130, 24);
+
+    // 分隔
+    g.strokeStyle = '#e6dfd1'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(90, 400); g.lineTo(W - 90, 400); g.stroke();
+
+    // 四维
+    let y = 446;
+    STAT_KEYS.forEach(k => {
+      const v = st[k];
+      g.textAlign = 'left';
+      g.fillStyle = '#5d564c';
+      g.font = '14px ' + F;
+      g.fillText(STAT_META[k].full, 90, y);
+      g.textAlign = 'right';
+      g.fillStyle = '#2b2723';
+      g.font = '700 16px ' + F;
+      g.fillText(String(v), W - 90, y);
+      // 条
+      const bx = 90, by = y + 12, bw = W - 180, bh = 7;
+      g.fillStyle = '#ebe5d9';
+      roundRect(g, bx, by, bw, bh, 4); g.fill();
+      g.fillStyle = STAT_META[k].color;
+      roundRect(g, bx, by, Math.max(6, bw * v / 100), bh, 4); g.fill();
+      y += 62;
+    });
+
+    // 画像
+    const pt = portraitOf(st);
+    y += 22;
+    g.textAlign = 'center';
+    g.fillStyle = '#948c7e';
+    g.font = '11px ' + F;
+    g.fillText('你 成 了 这 样 的 人', W / 2, y);
+    y += 30;
+    g.fillStyle = '#b8623b';
+    g.font = '700 20px ' + FS;
+    g.fillText(pt.name, W / 2, y);
+    y += 28;
+    g.fillStyle = '#5d564c';
+    g.font = '13.5px ' + F;
+    y += wrapText(g, pt.desc, W / 2, y, W - 150, 23) * 23;
+
+    // 建议
+    y += 28;
+    g.textAlign = 'left';
+    g.fillStyle = '#2f5d50';
+    g.font = '700 16px ' + FS;
+    g.fillText(LOWEST_TIPS[low].title, 90, y);
+    g.fillStyle = '#5d564c';
+    g.font = '13.5px ' + F;
+    y += 26;
+    LOWEST_TIPS[low].tips.forEach(t => {
+      g.fillText('·  ' + t, 92, y);
+      y += 24;
+    });
+
+    // 页脚
+    g.textAlign = 'center';
+    g.fillStyle = '#948c7e';
+    g.font = '11.5px ' + F;
+    g.fillText('内容来源：《高性价比人生指南》全书 34 节 · 765 条', W / 2, H - 74);
+    g.fillText('cdyforever.github.io/how-to-live-better/', W / 2, H - 54);
+
+    return cv;
+  }
+
+  function wrapText(g, text, cx, y, maxW, lh) {
+    const chars = String(text).split('');
+    let line = '', lines = [];
+    chars.forEach(ch => {
+      const test = line + ch;
+      if (g.measureText(test).width > maxW && line) { lines.push(line); line = ch; }
+      else line = test;
+    });
+    if (line) lines.push(line);
+    lines.forEach((l, i) => g.fillText(l, cx, y + i * lh));
+    return lines.length;
+  }
+  function roundRect(g, x, y, w, h, r) {
+    g.beginPath();
+    g.moveTo(x + r, y);
+    g.arcTo(x + w, y, x + w, y + h, r);
+    g.arcTo(x + w, y + h, x, y + h, r);
+    g.arcTo(x, y + h, x, y, r);
+    g.arcTo(x, y, x + w, y, r);
+    g.closePath();
+  }
+
+  function downloadCard() {
+    const cv = drawShareCard();
+    const a = document.createElement('a');
+    a.download = '性价比人生-结算.png';
+    a.href = cv.toDataURL('image/png');
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  /* ================= 封面四本钱 ================= */
+  const STAT_BRIEF = {
+    health: '身体是本钱，也是分母',
+    time:   '唯一不能再生，也存不住',
+    money:  '不是财富，是抗风险余量',
+    mind:   '关系与情绪的续航',
+  };
+  function renderTitleStats() {
+    const box = $('title-stats');
+    if (!box) return;
+    box.innerHTML = STAT_KEYS.map(k =>
+      '<div class="ts-item">' +
+        '<div class="ts-name" style="color:' + STAT_META[k].color + '">' + STAT_META[k].name + '</div>' +
+        '<div class="ts-bar"><div class="ts-fill" style="width:60%;background:' + STAT_META[k].color + '"></div></div>' +
+        '<div class="ts-desc">' + STAT_BRIEF[k] + '</div>' +
+      '</div>'
+    ).join('');
+  }
+
+  /* ================= 场景切换渐隐 ================= */
+  function fadeTo(mid) {
+    const f = $('fade');
+    f.classList.add('show');
+    setTimeout(() => {
+      mid();
+      setTimeout(() => f.classList.remove('show'), 70);
+    }, 380);
+  }
+
+  function goReturn(target) {
+    if (target === 'explore') startExplore();
+    else if (target === 'codex') { renderCodex(); show('screen-codex'); }
+    else { renderMap(); show('screen-map'); }
+  }
+
+  /* 进入 / 返回回廊 */
+  function startExplore() {
+    show('screen-explore');
+    Explore.start();
+  }
+
+  /* 文字速度切换（顶栏与回廊共用） */
+  function toggleSpeed() {
+    fast = !fast;
+    TYPE_SPEED = fast ? 9 : 26;
+    const sp = $('btn-speed'), ex = $('ex-speed');
+    [sp, ex].forEach(b => {
+      if (!b) return;
+      b.textContent = fast ? '▶▶' : '▶';
+      b.title = fast ? '文字速度：快（点击恢复常速）' : '文字速度：常速（点击加快）';
+      b.classList.toggle('on', fast);
+    });
+    Sfx.click();
+  }
+
+  /* 音效切换（顶栏与回廊共用） */
+  function toggleSfx() {
+    Sfx.on = !Sfx.on;
+    try { localStorage.setItem(SFX_KEY, Sfx.on ? 'on' : 'off'); } catch (e) {}
+    syncSfxBtn();
+    if (Sfx.on) Sfx.click();
+  }
+
+  /* ============================================================
+   * 探索回廊（Canvas 顶视角 · 可操控小人 · 开门进场景）
+   * ============================================================ */
+  const Explore = (function () {
+    const WORLD = { w: 1920, h: 660 };
+    const WALL = 40, R = 18, SPEED = 235;
+    let cv, ctx, dpr = 1, raf = 0, last = 0, running = false;
+    let player = { x: WORLD.w / 2, y: WORLD.h / 2, vx: 0, vy: 0, face: 1, bob: 0, moving: false, tx: null, ty: null };
+    let doors = [];
+    let keys = {};
+    let promptId = -1;
+    let cam = { x: 0, y: 0 };
+    const view = { w: 720, h: 460 };
+    let joy = { active: false, dx: 0, dy: 0, id: null };
+
+    const colorOf = (id) => (id === 13 ? '#b8892b' : STAT_META[MOODS[id]].color);
+
+    function hexA(hex, a) {
+      const n = parseInt(hex.slice(1), 16);
+      return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+    }
+    function roundRectPath(g, x, y, w, h, r) {
+      g.beginPath();
+      g.moveTo(x + r, y);
+      g.arcTo(x + w, y, x + w, y + h, r);
+      g.arcTo(x + w, y + h, x, y + h, r);
+      g.arcTo(x, y + h, x, y, r);
+      g.arcTo(x, y, x + w, y, r);
+      g.closePath();
+    }
+
+    function buildDoors() {
+      doors = [];
+      const top = [0, 1, 2, 3, 4, 5, 6], bot = [7, 8, 9, 10, 11,12, 13];
+      const pad = WORLD.w / (7 + 1);
+      top.forEach((id, i) => {
+        const cx = pad * (i + 1);
+        doors.push({ id: id, x: cx - 47, y: 44, w: 94, h: 76, side: 'top', color: colorOf(id) });
+      });
+      bot.forEach((id, i) => {
+        const cx = pad * (i + 1);
+        doors.push({ id: id, x: cx - 47, y: WORLD.h - 44 - 76, w: 94, h: 76, side: 'bottom', color: colorOf(id) });
+      });
+    }
+
+    function resize() {
+      if (!cv) return;
+      const wrap = cv.parentElement;
+      const w = wrap.clientWidth, h = wrap.clientHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+      cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+      cv.style.width = w + 'px'; cv.style.height = h + 'px';
+      view.w = w; view.h = h;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function doneCount() { return state.done.filter(id => id !== 13).length; }
+    function finalLocked() { return state.done.length < CHAPTERS.length - 1; }
+
+    function updateHud() {
+      const c = $('ex-count');
+      if (c) c.textContent = '已推开 ' + doneCount() + ' / 13';
+      const box = $('ex-stats');
+      if (box && !box.dataset.built) {
+        box.innerHTML = STAT_KEYS.map(k =>
+          '<div class="ex-chip"><span class="ex-chip-n" style="color:' + STAT_META[k].color + '">' +
+          STAT_META[k].name + '</span><span class="ex-chip-v" data-v="' + k + '">0</span></div>'
+        ).join('');
+        box.dataset.built = '1';
+      }
+      if (box) STAT_KEYS.forEach(k => {
+        const el = box.querySelector('[data-v="' + k + '"]');
+        if (el) el.textContent = state.stats[k];
+      });
+    }
+
+    function clampPlayer() {
+      const minX = WALL + R, maxX = WORLD.w - WALL - R;
+      const minY = WALL + R, maxY = WORLD.h - WALL - R;
+      player.x = Math.max(minX, Math.min(maxX, player.x));
+      player.y = Math.max(minY, Math.min(maxY, player.y));
+    }
+
+    function nearDoor() {
+      for (const d of doors) {
+        const ex = 18;
+        if (player.x > d.x - ex && player.x < d.x + d.w + ex &&
+            player.y > d.y - ex && player.y < d.y + d.h + ex) return d.id;
+      }
+      return -1;
+    }
+
+    function start() {
+      if (!cv) {
+        cv = document.getElementById('explore-canvas');
+        ctx = cv.getContext('2d');
+        buildDoors();
+        resize();
+        window.addEventListener('resize', () => { if (running) resize(); });
+        bindInput();
+      }
+      updateHud();
+      clampPlayer();
+      cam.x = 0; cam.y = 0;
+      running = true; last = performance.now();
+      if (!raf) raf = requestAnimationFrame(loop);
+    }
+    function stop() { running = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+
+    function loop(t) {
+      if (!running) return;
+      const dt = Math.min(0.05, (t - last) / 1000); last = t;
+      let ix = 0, iy = 0;
+      if (keys['arrowleft'] || keys['a']) ix -= 1;
+      if (keys['arrowright'] || keys['d']) ix += 1;
+      if (keys['arrowup'] || keys['w']) iy -= 1;
+      if (keys['arrowdown'] || keys['s']) iy += 1;
+      if (joy.active) { ix += joy.dx; iy += joy.dy; }
+      if (player.tx != null) {
+        const dx = player.tx - player.x, dy = player.ty - player.y, dist = Math.hypot(dx, dy);
+        if (dist < 6) { player.tx = player.ty = null; }
+        else { ix += dx / dist; iy += dy / dist; }
+      }
+      const mag = Math.hypot(ix, iy);
+      player.moving = mag > 0.05;
+      if (player.moving) {
+        ix /= mag; iy /= mag;
+        if (Math.abs(ix) > 0.12) player.face = ix > 0 ? 1 : -1;
+        player.x += ix * SPEED * dt;
+        player.y += iy * SPEED * dt;
+        player.bob += dt * 11;
+        clampPlayer();
+      } else { player.bob = 0; }
+      cam.x = WORLD.w > view.w ? Math.max(0, Math.min(WORLD.w - view.w, player.x - view.w / 2))
+                              : (WORLD.w - view.w) / 2;
+      cam.y = WORLD.h > view.h ? Math.max(0, Math.min(WORLD.h - view.h, player.y - view.h / 2))
+                              : (WORLD.h - view.h) / 2;
+      const nid = nearDoor();
+      if (nid !== promptId) { promptId = nid; updatePrompt(); }
+      render();
+      raf = requestAnimationFrame(loop);
+    }
+
+    function updatePrompt() {
+      const el = $('door-prompt');
+      if (!el) return;
+      if (promptId < 0) { el.style.opacity = '0'; return; }
+      const ch = CHAPTERS[promptId];
+      if (finalLocked() && promptId === 13) {
+        el.textContent = '终章尚未开启 · 还需推开 ' + (CHAPTERS.length - 1 - doneCount()) + ' 扇门';
+        el.classList.add('locked');
+      } else {
+        el.innerHTML = '「' + escapeHtml(ch.title) + '」 · 按 E / 空格 或点击进入';
+        el.classList.remove('locked');
+      }
+      el.style.opacity = '1';
+    }
+
+    function render() {
+      ctx.clearRect(0, 0, view.w, view.h);
+      ctx.save();
+      ctx.translate(-cam.x, -cam.y);
+      const fg = ctx.createLinearGradient(0, 0, 0, WORLD.h);
+      fg.addColorStop(0, '#f1eadf'); fg.addColorStop(1, '#e8e0d0');
+      ctx.fillStyle = fg; ctx.fillRect(0, 0, WORLD.w, WORLD.h);
+      ctx.strokeStyle = 'rgba(120,100,70,0.05)'; ctx.lineWidth = 1;
+      for (let gx = 0; gx <= WORLD.w; gx += 120) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, WORLD.h); ctx.stroke(); }
+      for (let gy = 0; gy <= WORLD.h; gy += 120) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(WORLD.w, gy); ctx.stroke(); }
+      ctx.fillStyle = '#d8cbb2';
+      ctx.fillRect(0, 0, WORLD.w, WALL); ctx.fillRect(0, WORLD.h - WALL, WORLD.w, WALL);
+      ctx.fillRect(0, 0, WALL, WORLD.h); ctx.fillRect(WORLD.w - WALL, 0, WALL, WORLD.h);
+      ctx.strokeStyle = 'rgba(80,60,40,0.16)'; ctx.lineWidth = 2;
+      ctx.strokeRect(WALL, WALL, WORLD.w - 2 * WALL, WORLD.h - 2 * WALL);
+      doors.forEach(drawDoor);
+      drawPlayer();
+      ctx.restore();
+    }
+
+    function drawDoor(d) {
+      const done = state.done.indexOf(d.id) >= 0;
+      const locked = (d.id === 13) && finalLocked();
+      ctx.save();
+      const cx = d.x + d.w / 2;
+      const gy0 = d.side === 'top' ? d.y - 10 : d.y - 24;
+      const g = ctx.createRadialGradient(cx, d.side === 'top' ? d.y + d.h : d.y, 4, cx, d.y + d.h / 2, 96);
+      g.addColorStop(0, hexA(d.color, locked ? 0.10 : 0.34));
+      g.addColorStop(1, hexA(d.color, 0));
+      ctx.fillStyle = g; ctx.fillRect(d.x - 70, gy0, d.w + 140, d.h + 80);
+      ctx.fillStyle = locked ? '#cfc6b4' : (done ? '#fbf8f2' : '#f3ecdd');
+      ctx.strokeStyle = d.color; ctx.lineWidth = locked ? 2 : 3;
+      roundRectPath(ctx, d.x, d.y, d.w, d.h, 12); ctx.fill(); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = locked ? '#a99f8c' : d.color;
+      ctx.font = '700 23px sans-serif';
+      const by = d.side === 'top' ? d.y + 28 : d.y + d.h - 28;
+      ctx.fillText(String(d.id + 1).padStart(2, '0'), cx, by);
+      ctx.font = '600 13px sans-serif';
+      ctx.fillStyle = locked ? '#a99f8c' : '#5d564c';
+      const ty = d.side === 'top' ? d.y + d.h + 17 : d.y - 13;
+      ctx.fillText(CHAPTERS[d.id].title.slice(0, 8), cx, ty);
+      if (done) { ctx.fillStyle = '#2f7d5f'; ctx.font = '700 16px sans-serif'; ctx.fillText('✓', d.x + d.w - 13, by); }
+      if (locked) { ctx.fillStyle = '#8d7f66'; ctx.font = '14px sans-serif'; ctx.fillText('锁', cx, d.side === 'top' ? d.y + d.h - 26 : d.y + 26); }
+      ctx.restore();
+    }
+
+    function drawPlayer() {
+      const bob = player.moving ? Math.sin(player.bob) * 2 : 0;
+      const x = player.x, y = player.y + bob;
+      ctx.fillStyle = 'rgba(60,45,30,0.18)';
+      ctx.beginPath(); ctx.ellipse(player.x, player.y + R - 2, R * 0.95, R * 0.42, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#2f5d50';
+      roundRectPath(ctx, x - R * 0.72, y - R * 0.2, R * 1.44, R * 1.4, 8); ctx.fill();
+      ctx.fillStyle = '#f3e7d2';
+      ctx.beginPath(); ctx.arc(x, y - R * 0.72, R * 0.62, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#2f5d50'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#2f5d50';
+      ctx.beginPath(); ctx.arc(x + player.face * R * 0.4, y - R * 0.72, 2.4, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function tryEnter(id) {
+      if (finalLocked() && id === 13) {
+        const el = $('door-prompt');
+        if (el) { el.style.transition = 'none'; el.style.transform = 'translateX(-50%) scale(1.12)';
+          setTimeout(() => { el.style.transition = ''; el.style.transform = 'translateX(-50%)'; }, 200); }
+        return;
+      }
+      fadeTo(() => { stop(); enterChapter(id); });
+    }
+
+    function bindInput() {
+      document.addEventListener('keydown', (e) => {
+        if (!document.getElementById('screen-explore').classList.contains('active')) return;
+        const k = e.key.toLowerCase();
+        if (['arrowleft','arrowright','arrowup','arrowdown',' '].indexOf(k) >= 0) e.preventDefault();
+        if (k === 'arrowleft' || k === 'a') keys['a'] = true;
+        if (k === 'arrowright' || k === 'd') keys['d'] = true;
+        if (k === 'arrowup' || k === 'w') keys['w'] = true;
+        if (k === 'arrowdown' || k === 's') keys['s'] = true;
+        if ((k === 'e' || k === 'enter' || k === ' ') && promptId >= 0) tryEnter(promptId);
+      });
+      document.addEventListener('keyup', (e) => {
+        const k = e.key.toLowerCase();
+        if (k === 'arrowleft' || k === 'a') keys['a'] = false;
+        if (k === 'arrowright' || k === 'd') keys['d'] = false;
+        if (k === 'arrowup' || k === 'w') keys['w'] = false;
+        if (k === 'arrowdown' || k === 's') keys['s'] = false;
+      });
+      cv.addEventListener('pointerdown', (e) => {
+        const rect = cv.getBoundingClientRect();
+        const wx = cam.x + (e.clientX - rect.left);
+        const wy = cam.y + (e.clientY - rect.top);
+        for (const d of doors) {
+          if (wx > d.x - 6 && wx < d.x + d.w + 6 && wy > d.y - 6 && wy < d.y + d.h + 6) { tryEnter(d.id); return; }
+        }
+        player.tx = Math.max(WALL + R, Math.min(WORLD.w - WALL - R, wx));
+        player.ty = Math.max(WALL + R, Math.min(WORLD.h - WALL - R, wy));
+      });
+      bindJoystick();
+    }
+
+    function bindJoystick() {
+      const j = document.getElementById('joystick');
+      const s = document.getElementById('stick');
+      if (!j || !s) return;
+      if (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) j.classList.add('show');
+      let pid = null;
+      const set = (dx, dy) => {
+        const m = Math.hypot(dx, dy) || 1;
+        const cl = Math.min(m, 38);
+        const nx = dx / m, ny = dy / m;
+        joy.dx = nx * Math.min(1, cl / 38); joy.dy = ny * Math.min(1, cl / 38);
+        s.style.transform = 'translate(calc(-50% + ' + (nx * cl) + 'px), calc(-50% + ' + (ny * cl) + 'px))';
+      };
+      const reset = () => { joy.active = false; joy.dx = joy.dy = 0; s.style.transform = 'translate(-50%,-50%)'; };
+      j.addEventListener('pointerdown', (e) => {
+        pid = e.pointerId; joy.active = true; j.setPointerCapture(pid);
+        const r = j.getBoundingClientRect(); set(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2)); e.preventDefault();
+      });
+      j.addEventListener('pointermove', (e) => {
+        if (!joy.active || e.pointerId !== pid) return;
+        const r = j.getBoundingClientRect(); set(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
+      });
+      const up = (e) => { if (e.pointerId === pid) { pid = null; reset(); } };
+      j.addEventListener('pointerup', up); j.addEventListener('pointercancel', up);
+    }
+
+    return { start: start, stop: stop, refresh: updateHud, finalLocked: finalLocked };
+  })();
+  window.Explore = Explore;
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, m =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  /* ================= 事件绑定 ================= */
+  function bind() {
+    $('btn-start').onclick = () => { Sfx.click(); reset(); renderOrigin(); show('screen-origin'); };
+    $('origin-back').onclick = () => show('screen-title');
+    $('btn-stage-go').onclick = () => { Sfx.click(); stageContinue(); };
+    $('btn-continue').onclick = () => { Sfx.click(); startExplore(); };
+    $('btn-codex-title').onclick = () => { Sfx.click(); renderCodex(); show('screen-codex'); };
+
+    $('nav-home').onclick = () => show('screen-title');
+    $('nav-codex').onclick = () => { renderCodex(); show('screen-codex'); };
+    $('nav-back').onclick = () => {
+      if (state.done.length >= CHAPTERS.length) { renderResult(); show('screen-result'); }
+      else { renderMap(); show('screen-map'); }
+    };
+    $('btn-reset').onclick = () => {
+      if (!confirm('重新开始会清空当前进度，确定吗？')) return;
+      reset(); renderOrigin(); show('screen-origin');
+    };
+
+    $('btn-gate').onclick = () => { Sfx.click(); startStory(); };
+    $('btn-next').onclick = advance;
+    $('stage').onclick = (e) => { if (e.target.closest('.btn')) return; advance(); };
+
+    $('btn-insight').onclick = () => openInsight(view.chapter);
+    $('btn-insight-close').onclick = afterInsight;
+    $('mask').onclick = (e) => { if (e.target.id === 'mask') afterInsight(); };
+
+    $('btn-again').onclick = () => { Sfx.click(); reset(); renderOrigin(); show('screen-origin'); };
+    $('btn-share').onclick = downloadCard;
+    $('btn-to-codex').onclick = () => { renderCodex(); show('screen-codex'); };
+    $('btn-source').onclick = () => window.open('https://cdyforever.github.io/how-to-live-better/', '_blank');
+
+    // 回廊顶栏
+    $('ex-speed').onclick = toggleSpeed;
+    $('ex-sfx').onclick = toggleSfx;
+    $('ex-map').onclick = () => { Sfx.click(); renderMap(); show('screen-map'); };
+    $('ex-codex').onclick = () => { Sfx.click(); renderCodex(); show('screen-codex'); };
+
+    // 点击涟漪
+    document.addEventListener('pointerdown', (e) => {
+      const t = e.target && e.target.closest && e.target.closest('.btn, .choice, .origin-item');
+      if (!t) return;
+      const r = t.getBoundingClientRect();
+      const size = Math.max(r.width, r.height);
+      const s = document.createElement('span');
+      s.className = 'ripple';
+      s.style.width = s.style.height = size + 'px';
+      s.style.left = (e.clientX - r.left - size / 2) + 'px';
+      s.style.top = (e.clientY - r.top - size / 2) + 'px';
+      t.appendChild(s);
+      setTimeout(() => { if (s.parentNode) s.parentNode.removeChild(s); }, 700);
+    });
+
+    // 文字速度（顶栏共用）
+    $('btn-speed').onclick = toggleSpeed;
+
+    // 音效开关（顶栏共用）
+    $('btn-sfx').onclick = toggleSfx;
+
+    // 键盘
+    document.addEventListener('keydown', (e) => {
+      if ($('mask').classList.contains('show')) {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { e.preventDefault(); afterInsight(); }
+        return;
+      }
+      if (!$('screen-play').classList.contains('active')) return;
+      if (/^[1-4]$/.test(e.key) && $('choices').style.display !== 'none') {
+        const i = parseInt(e.key, 10) - 1;
+        if (view.chapter.choices[i]) { pick(i); e.preventDefault(); }
+        return;
+      }
+      if (e.key === ' ' || e.key === 'Enter') {
+        if ($('gate').style.display !== 'none') { startStory(); e.preventDefault(); return; }
+        if ($('stage').style.display !== 'none') { advance(); e.preventDefault(); }
+      }
+    });
+  }
+
+  function syncSfxBtn() {
+    const b = $('btn-sfx');
+    if (!b) return;
+    b.classList.toggle('off', !Sfx.on);
+    b.title = Sfx.on ? '音效：开（点击静音）' : '音效：关（点击开启）';
+  }
+
+  /* ================= 启动 ================= */
+  function init() {
+    Sfx.boot();
+    syncSfxBtn();
+    renderTitleStats();
+    const s = load();
+    state = s || { level: 0, stats: Object.assign({}, INIT), picks: [], done: [], stageSeen: [] };
+    if (s && s.origin) {
+      $('btn-continue').style.display = '';
+      $('btn-start').textContent = '从头开始';
+    }
+    bind();
+  }
+
+  init();
+})();
+
+</script>
+</body>
+</html>
