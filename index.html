@@ -1022,7 +1022,7 @@
 <div id="vignette"></div>
 <div id="stunt-pop"></div>
 <div id="era-banner"><b></b><span></span></div>
-<div id="drive-tip">按住「蹬」前进 · 石头碾过去 · 倒木和断崖按「跳」· 冲上木质跳台后按住「蹬」能后空翻</div>
+<div id="drive-tip">按住「蹬」前进 · 倒木和断崖按「跳」——腾空时还能再按一次「跳」补力 · 冲上木质跳台按住「蹬」可后空翻</div>
 <div id="drive-hud">
   <span class="lab">体力</span>
   <span class="stam"><span id="stam-fill"></span></span>
@@ -1049,7 +1049,7 @@
   </div>
   <div class="deck-stam"><i id="deck-stam-fill"></i></div>
   <div class="deck-prog" id="deck-prog">已领悟 0 / 14</div>
-  <div class="deck-note" id="deck-note">按住右边的「蹬」出发。倒木和断崖要按「跳」。</div>
+  <div class="deck-note" id="deck-note">按住右边的「蹬」出发，遇到倒木和断崖按左边的「跳」。<br>腾空时还能再按一次「跳」补力。</div>
   <div class="deck-btns">
     <button id="deck-pause" type="button">暂停</button>
     <button id="deck-garage" type="button">车库</button>
@@ -1072,7 +1072,7 @@
   <span class="odo" id="odo" aria-live="off">里程 0.00 km</span>
   <span class="odo" id="score" aria-live="polite">接到鱼 0 条 · 最高 0</span>
 </div>
-<p class="hint"><kbd>→</kbd> 按住蹬车 · <kbd>←</kbd> 刹车 · <kbd>↑</kbd>/点击 起跳 · 石头碾过去、倒木要跳、软沙拖慢你、木质跳台会把你弹上天（空中按住 <kbd>→</kbd> 后空翻、<kbd>←</kbd> 前空翻，落地结算特技分）· 接鱼攒钱去「车库」改装 · 摔了、翻了、蹬不动了，才会懂一条道理 · <kbd>空格</kbd> 响铃 · <kbd>P</kbd> 暂停</p>
+<p class="hint"><kbd>→</kbd> 按住蹬车 · <kbd>←</kbd> 刹车 · <kbd>↑</kbd>/点击画面 起跳（腾空时还能再补跳一次，连按「跳」＝连跳）· 石头碾过去、倒木要跳、软沙拖慢你、木质跳台会把你弹上天（空中按住 <kbd>→</kbd> 后空翻、<kbd>←</kbd> 前空翻，落地结算特技分）· 到站会补给体力 · 同一处连着栽两次就会放行，不会被卡住 · 接鱼攒钱去「车库」改装 · 摔了、翻了、蹬不动了，才会懂一条道理 · <kbd>空格</kbd> 响铃 · <kbd>P</kbd> 暂停</p>
 
 <!-- ===== 人生骑行：HUD 与覆盖层 ===== -->
 <div id="life-hud">
@@ -1958,7 +1958,10 @@ const ICONS = [
 </script>
 <script>
 (() => {
-  const $ = id => document.getElementById(id);
+  // 一帧里 $() 会被调用二十多次，getElementById 虽快但没必要重复找。
+  // 这里用到的元素都是常驻的（动态障碍由 makeOb 自己持有引用，不走 $）。
+  const _dc = Object.create(null);
+  const $ = id => (_dc[id] !== undefined ? _dc[id] : (_dc[id] = document.getElementById(id)));
   const svg = $("scene");
   const BB = { x: 440, y: 430 };     // 牙盘中心
   const HIP = { x: 424, y: 278 };    // 髋关节
@@ -2042,7 +2045,7 @@ const ICONS = [
     const c = document.createElementNS(NS, "circle");
     c.setAttribute("r", 0);
     $("dust").appendChild(c);
-    return { el: c, life: 0, x: 0, y: 0, vx: 0, vy: 0, r: 0 };
+    return { el: c, life: 0, x: 0, y: 0, vx: 0, vy: 0, r: 0, shown: false };
   });
   let dustAcc = 0;
   // 落地/撞击时的一团尘
@@ -2069,7 +2072,10 @@ const ICONS = [
       });
     }
     for (const p of dust) {
-      if (p.life <= 0) continue;
+      if (p.life <= 0) {
+        if (p.shown) { p.shown = false; p.el.setAttribute("r", 0); }
+        continue;
+      }
       p.life -= dt * 1.4;
       p.x += p.vx * dt; p.y += p.vy * dt;
       const k = Math.max(p.life, 0);
@@ -2077,6 +2083,7 @@ const ICONS = [
       p.el.setAttribute("cy", p.y.toFixed(1));
       p.el.setAttribute("r", (p.r * (1.8 - k)).toFixed(1));
       p.el.setAttribute("opacity", (k * 0.45).toFixed(2));
+      p.shown = true;
     }
   }
 
@@ -2109,7 +2116,7 @@ const ICONS = [
     return cfg.h * (cfg.w - d) / (2 * cfg.w);
   }
   const obstacles = OB_ORDER.map((k, i) => ({
-    type: k, el: makeOb(k), wx: 2400 + i * 1500, hit: false,
+    type: k, el: makeOb(k), wx: 2400 + i * 1500, hit: false, miss: 0,
   }));
   let shake = 0;
 
@@ -2252,7 +2259,7 @@ const ICONS = [
     return h;
   }
   // 站牌附近放缓坡度，方便停靠
-  function groundY(x) {
+  function groundYRaw(x) {
     if (inGap(x)) return Infinity;
     const d = ((x - 1500) % 1600 + 1600) % 1600;
     const near = Math.min(d, 1600 - d);
@@ -2261,7 +2268,38 @@ const ICONS = [
     h = Math.max(-30, Math.min(112, h));
     return GROUND_Y - h;
   }
+  // 起伏是固定函数，没必要每帧重算近七十遍三角函数：开局一次性打成表，
+  // 以后每帧只做一次线性插值。中低端手机上这一项能省掉一大半帧时间。
+  const GY_STEP = 8, GY_END = 27200, GY_N = Math.floor(GY_END / GY_STEP) + 2;
+  const GY_MARK = 1e7;                 // 断崖在表里用大数占位
+  const gyTable = new Float64Array(GY_N);
+  for (let i = 0; i < GY_N; i++) {
+    const v = groundYRaw(i * GY_STEP);
+    gyTable[i] = isFinite(v) ? v : GY_MARK;
+  }
+  function groundY(x) {
+    const f = x / GY_STEP, i0 = Math.floor(f);
+    if (!(x >= 0) || i0 >= GY_N - 1) return groundYRaw(x);
+    const a = gyTable[i0], b = gyTable[i0 + 1];
+    if (a >= GY_MARK || b >= GY_MARK) return groundYRaw(x);   // 崖口走精确值
+    return a + (b - a) * (f - i0);
+  }
   const gySafe = x => { const g = groundY(x); return g === Infinity ? 498 : g; };
+
+  // 绕回起点时把路重新摆一遍：障碍和鱼都留在两万多米外的话，
+  // 接下来几千米会是一条什么都没有的空路。
+  function resetRoad() {
+    obstacles.forEach((o, i) => {
+      o.wx = dist + 1500 + i * 620 + Math.random() * 200;
+      o.hit = false; o.miss = 0;
+    });
+    treats.forEach(t => t.el.remove());
+    treats.length = 0;
+    nextTreat = dist + 420;
+    prevGY = null;
+    gapEntryY = null;
+    canFlip = false; airRot = 0; airTime = 0; airPeak = 0;
+  }
 
   // 远景剪影：城市楼群 / 雪山
   const backG = document.createElementNS(NS, "g");
@@ -2344,6 +2382,12 @@ const ICONS = [
   let tiltDeg = 0, tiltRate = 0, onGround = true, dy = 0, gapEntryY = null;
 
   let jumpLock = 0;                 // 落地后的短暂冷却，防止连跳“飘”过去
+  // 让跳跃跟手的三个小东西：落地瞬间的提前量、离地后的宽限、以及空中补跳。
+  // 少任何一个，手机上都会觉得「我明明按了却没跳」。
+  const COYOTE_MAX = 0.15;          // 土狼时间：刚离开地面还能再跳一下
+  const JUMP_BUF = 0.18;            // 跳跃缓冲：空中按了跳，落地那一帧补上
+  const AIR_JUMP_MAX = 1;           // 每段滞空可以再补跳一次
+  let coyote = 0, jumpBuf = 0, airJumps = 0;
   let logCool = 0;                  // 撞倒木后的冷却，避免同一帧反复弹
 
   // ---- 悬挂：轮子贴地，车身用弹簧跟着，落地会“墩”一下再回弹 ----
@@ -2366,19 +2410,30 @@ const ICONS = [
   const norm180 = a => ((a % 360) + 540) % 360 - 180;    // 归一到 [-180,180)
 
   // 落地结算：转够一圈算空翻，飞得够高算腾空，都吃连击倍率
-  function settleStunt() {
-    if (airTime < 0.28) { airTime = 0; airPeak = 0; return; }
-    const spins = Math.floor(Math.abs(airRot) / 280);
+  function settleStunt(dev) {
+    // 小颠簸直接跳过，但**必须连 airRot 一起清**：
+    // 否则连续几个小跳会把转角攒起来，某一跳落地突然判定成两圈空翻。
+    if (airTime < 0.28) { airTime = 0; airPeak = 0; airRot = 0; return; }
+    const spins = Math.floor(Math.abs(airRot) / 260);
     const back = airRot < 0;
     let gained = 0, label = "";
     if (spins >= 1) {
       gained = spins * 140 * mul();
-      label = (back ? "后空翻" : "前空翻") + (spins > 1 ? " ×" + spins : "") + " +" + Math.round(gained);
+      label = (back ? "后空翻" : "前空翻") + (spins > 1 ? " ×" + spins : "");
+    } else if (airTime > 0.8) {                 // 飞得高不算本事，飞得久才算
+      gained = Math.round(45 * mul());
+      label = "滞空 " + airTime.toFixed(1) + "s";
     } else if (airPeak > 95) {
       gained = Math.round(60 * mul());
-      label = "腾空 " + Math.round(airPeak) + " +" + gained;
+      label = "腾空 " + Math.round(airPeak);
+    }
+    // 姿态正好贴着坡面落地 = 完美落地，额外给一笔
+    if (gained > 0 && typeof dev === "number" && Math.abs(dev) < 14) {
+      gained += Math.round(40 * mul());
+      label += " · 完美落地";
     }
     if (gained > 0) {
+      label += " +" + Math.round(gained);
       score += Math.round(gained);
       stuntScore += Math.round(gained);
       if (score > best) {
@@ -2394,24 +2449,45 @@ const ICONS = [
     airTime = 0; airPeak = 0; airRot = 0;
   }
 
-  function jump() {
-    if (!running || !onGround || jumpLock > 0) return;
-    // 门槛别设太高：撞了东西被弹回去、速度归零时，也要能立刻跳起来自救
-    if (Math.abs(speed) < 0.12) {
-      say("得先蹬一下才跳得动");
-      tone("sine", 200, 140, 0.1, 0.04);
-      return;
-    }
-    bikeVY = -JUMP_V;
+  // 真正把车踹离地面：三种跳法都走这里，差别只有力度和能不能翻
+  function doJump(vy, allowFlip) {
+    bikeVY = -vy;
     tiltRate = -60;                 // 轻轻抬一下前轮（再大就会自己转翻）
     onGround = false;
-    jumpLock = 0.34;
-    // 小跳不给翻转权限：按着蹬跳一下就自己转翻，太难玩了。
-    // 想空翻请冲上右前方那种木质跳台。
-    canFlip = false;
+    // 按「跳」自己起的小跳不给翻转权限：按着蹬跳一下就自己转翻，太难玩了。
+    // 想空翻请冲上木质跳台，或者用二段跳。
+    canFlip = !!allowFlip;
     airRot = 0; airTime = 0; airPeak = 0; lastTilt = tiltDeg;
+    jumpBuf = 0; coyote = 0;
+    jumpLock = 0.1;
     kickSusp(70);                   // 起跳时车身先抬一下
     tone("triangle", 320, 760, 0.16, 0.07);
+  }
+  function jump() {
+    if (!running) return;
+    const canGround = (onGround || coyote > 0) && jumpLock <= 0;
+    if (canGround) {
+      // 门槛别设太高：撞了东西被弹回去、速度归零时，也要能立刻跳起来自救
+      if (Math.abs(speed) < 0.12) {
+        say("得先蹬一下才跳得动");
+        tone("sine", 200, 140, 0.1, 0.04);
+        return;
+      }
+      airJumps = 0;
+      doJump(JUMP_V, false);
+      return;
+    }
+    // 空中补跳：过不去的时候给自己续一口气，滞空里只能用一次
+    if (!onGround && airJumps < AIR_JUMP_MAX) {
+      airJumps++;
+      doJump(JUMP_V * 0.84, true);
+      kickSusp(40);
+      tone("triangle", 420, 900, 0.14, 0.06);
+      return;
+    }
+    // 现在跳不了（还在冷却 / 补跳用完了）：先记着，落地那一帧替他跳出去，
+    // 这样连着按「跳」是连贯的连跳，而不是要掐着落地那一瞬间去点。
+    jumpBuf = JUMP_BUF;
   }
 
   // 画地形：整个世界宽度一次重算，断崖处断开
@@ -2432,11 +2508,12 @@ const ICONS = [
       const g = groundY(shift + sx);
       pts.push({ x: sx, y: g === Infinity ? null : g });
     }
-    let fill = "";
+    const fbuf = [];
     for (let i = 0; i < pts.length; i++) {
       const y = pts[i].y === null ? GROUND_Y + PIT : pts[i].y;
-      fill += (i ? "L" : "M") + pts[i].x + " " + y.toFixed(1);
+      fbuf.push((i ? "L" : "M") + pts[i].x + " " + y.toFixed(1));
     }
+    const fill = fbuf.join("");
     hillFill.setAttribute("d", fill + "L930 1000L-30 1000Z");
 
     let road = "", open = false, cliff = "";
@@ -2561,15 +2638,20 @@ const ICONS = [
   }
   let suspHard = 1;                 // 硬着陆阈值系数，避震越好越宽容
   function applyUpgrades() {
-    ACCEL = 1.8 + upg.power * 0.34;
-    speedCap = 2.1 + upg.power * 0.2;
-    const wanted = 100 + upg.stam * 26;
-    stamina = stamina + (wanted - staminaMax);      // 加上限时把新增的部分直接补满
+    // 基准值取自出身那辆车，不能写死：写死会把「碳纤公路车 2.45 / 加固载货车 1.95
+    // / 通勤车体力 86」的差异全部抹平，出身选了等于白选。
+    const base = vehicle || { cap: 2.1, accel: 1.8, stam: 100 };
+    ACCEL = base.accel + upg.power * 0.34;
+    speedCap = base.cap + upg.power * 0.2;
+    const wanted = base.stam + upg.stam * 26;
+    stamina = stamina + (wanted - staminaMax);
     staminaMax = wanted;
+    if (stamina > staminaMax) stamina = staminaMax;
+    if (exhausted && stamina > 40) exhausted = false;   // 买了心肺就该立刻缓过来
     JUMP_V = 400 + upg.jump * 48;
     suspHard = 1 + upg.susp * 0.42;
     const slider = $("speed");
-    if (slider) slider.max = (2.1 + upg.power * 0.2 + 0.9).toFixed(2);
+    if (slider) slider.max = (base.cap + upg.power * 0.2 + 0.9).toFixed(2);
   }
 
   const upgListEl = $("upg-list"), garageFishEl = $("garage-fish");
@@ -2682,7 +2764,7 @@ const ICONS = [
     l.style.opacity = (0.35 + (i % 3) * 0.22).toFixed(2);
     speedLines.appendChild(l);
   }
-  let hudTimer = 0, tipGone = false, scoreAcc = 0;
+  let hudTimer = 0, tipGone = false, scoreAcc = 0, lastDist = 0;
 
   // ---------- 竖屏驾驶舱的读数 ----------
   const deckKmh = $("deck-kmh"), deckDist = $("deck-dist"), deckFish = $("deck-fish"),
@@ -2709,11 +2791,17 @@ const ICONS = [
     if (exhausted) setDeckNote("蹬不动了……松开「蹬」缓一缓，体力会自己回来。");
     else if (combo > 0) setDeckNote(`连击 ×${mul().toFixed(1)}！保持不摔，分数翻倍。`);
     else if (noteHoldT > 0) setDeckNote(noteHold);
+    else if (window.__allDone)
+      setDeckNote("该学的都学过了。现在这一段，纯粹是骑给你自己的。");
     else if (window.__nextStopPx && typeof window.__nextStopPx === "number")
       setDeckNote(`距下一站 ${Math.round(window.__nextStopPx * 0.5)} m`);
   }
 
   let curSlope = 0;                 // 上一帧的坡度（>0 下坡），驱动时用
+  let sandWarned = false;           // 软沙提示只说一次
+  // 脱困兜底：只要还在按「蹬」却五秒钟没能往前挪，就把车抬过这一关。
+  // 有了它，任何障碍组合都不可能把人永久困在原处。
+  let stuckRef = 0, stuckT = 0;
   let dbgDrive = {}, dbgOnSand = false;   // 调试用：把驱动内部状态暴露出去
   function drive(dt) {
     // 坡度只影响「这口气能蹬到多快」，绝不往回拽。
@@ -2721,7 +2809,7 @@ const ICONS = [
     // 车会永久钉在原地（测试里复现了：dist 卡在 3300 反复抽搐）。
     const grade = Math.max(0, -curSlope);                       // 上坡程度
     const climb = Math.min(1, grade * 1.7);
-    let cap = speedCap * (1 - 0.56 * climb);                    // 上坡：能到的最高速
+    let cap = speedCap * (1 - 0.40 * climb);                    // 上坡：能到的最高速
     if (curSlope > 0) cap = speedCap * (1 + 0.45 * Math.min(1, curSlope * 1.7)); // 下坡：冲得更快
 
     // 力竭**不禁止**蹬车，只是没劲：否则「被倒木顶住 + 刚好力竭」会彻底动不了。
@@ -2733,7 +2821,7 @@ const ICONS = [
       const acc = ACCEL * power;
       if (speed < cap) speed = Math.min(cap, speed + acc * dt);
       else speed = Math.max(cap, speed - FRICTION * 1.6 * dt);   // 超过上限就自然回落
-      stamina -= (4.0 + speed * 2.8 + grade * 4.5) * dt;
+      stamina -= (3.4 + speed * 2.3 + grade * 3.6) * dt;
       if (stamina <= 0 && !exhausted) {
         stamina = 0; exhausted = true; say("呼…先松口气，缓一缓");
         tone("sawtooth", 240, 120, 0.3, 0.05);
@@ -2767,6 +2855,21 @@ const ICONS = [
     time += dt;
     if (running) { drive(dt); dist += BASE_SPEED * speed * dt; updateDust(dt); }
     else { if (stamina < staminaMax) stamina = Math.min(staminaMax, stamina + 18 * dt); }
+    if (dist < lastDist - 1) { resetRoad(); stuckRef = dist; stuckT = 0; }   // 骑到尽头绕回了
+    lastDist = dist;
+    // 脱困检测：只在「还在按蹬」时计时，停下来歇脚回体力不算卡住
+    if (dist > stuckRef + 60) { stuckRef = dist; stuckT = 0; }
+    else if (running && input.pedal) stuckT += dt;
+    else stuckT = 0;
+    if (stuckT > 5) {
+      stuckT = 0; stuckRef = dist + 400;
+      speed = Math.max(speed, 1.5);
+      stamina = Math.max(stamina, staminaMax * 0.55); exhausted = false;
+      bikeVY = -560; onGround = false; airJumps = 0; jumpBuf = 0; coyote = 0;
+      canFlip = true; airRot = 0; airTime = 0; airPeak = 0; lastTilt = tiltDeg;
+      say("别急，这一段我帮你抬过去");
+      tone("triangle", 300, 640, 0.22, 0.07);
+    }
     updateSusp(dt);
     // 连击有保鲜期：6 秒没动作就断
     if (combo > 0) { comboT -= dt; if (comboT <= 0) breakCombo(); }
@@ -2842,19 +2945,29 @@ const ICONS = [
 
     if (jumpLock > 0) jumpLock = Math.max(0, jumpLock - dt);
     if (logCool > 0) logCool = Math.max(0, logCool - dt);
+    if (jumpBuf > 0) jumpBuf = Math.max(0, jumpBuf - dt);
     if (running) {
       // 坡度影响车速：上坡拖慢，下坡冲快（放大到能明显感觉到）
       curSlope = slope;      // 交给 drive() 处理：上坡只降上限，不往回拽
 
       const groundVy = (!support || prevGY === null) ? 0 : (gyMid - prevGY) / Math.max(dt, 1e-4);
+      // 腾空/过崖时也要维护 prevGY：否则落地那一帧会拿很久以前的地面高度
+      // 去算垂直速度，车会被凭空弹一下。
       if (support) prevGY = gyMid;
+      else prevGY = isFinite(gyMid) ? gyMid : null;
 
       bikeVY += G * dt;
       bikeY += bikeVY * dt;
 
       // 在断崖上：掉得够深就算没过去
       if (inGapNow) {
-        if (bikeY - gapEntryY > 34) { fallIntoGap(); return; }
+        if (bikeY - gapEntryY > 34) {
+          fallIntoGap();
+          // 这里的 return 会跳过 frame 末尾的 requestAnimationFrame，
+          // 不手动补一个，整个游戏循环就断了：画面定住、再也骑不动。
+          requestAnimationFrame(frame);
+          return;
+        }
       }
 
       if (support && bikeY >= gyMid) {               // 落到地面
@@ -2870,7 +2983,7 @@ const ICONS = [
             if (window.Ride && window.Ride.onFail) window.Ride.onFail("flip");
           } else {
             // 平稳落地：结算这一跳的特技
-            settleStunt(impact);
+            settleStunt(dev);
             if (impact > 760 * suspHard) {           // 硬着陆（避震好就更扛得住）
               speed *= 0.7; stamina = Math.max(0, stamina - 5); shake = 0.8;
               say("咚！落地有点重"); tone("sine", 120, 70, 0.18, 0.1);
@@ -2885,23 +2998,38 @@ const ICONS = [
         canFlip = false;
         tiltDeg = slopeDeg;
         tiltRate = 0;
+        airJumps = 0; coyote = COYOTE_MAX;
+        // 刚才在空中按过「跳」，这里立刻兑现——连跳才连得起来
+        if (jumpBuf > 0 && jumpLock <= 0) { airJumps = 0; doJump(JUMP_V, false); }
       } else {                                       // 腾空
         onGround = false;
+        coyote = Math.max(0, coyote - dt);
         airTime += dt;
-        airPeak = Math.max(airPeak, gyMid - bikeY);
+        // 断崖上方没有「地面」，gyMid 是 Infinity，直接拿去算会把腾空高度
+        // 也变成 Infinity，落地飘字就成了「腾空 Infinity」。用基线兜住。
+        const refY = isFinite(gyMid) ? gyMid : GROUND_Y;
+        airPeak = Math.max(airPeak, refY - bikeY);
         // 空中姿态：蹬=后空翻，刹=前空翻。只有起跳后才有这个权限，落地姿态更可控
         if (canFlip) {
-          if (input.pedal) tiltRate -= 620 * dt;
-          if (input.brake) tiltRate += 620 * dt;
-          tiltRate = Math.max(-420, Math.min(420, tiltRate));
+          if (input.pedal) tiltRate -= 1100 * dt;
+          else if (input.brake) tiltRate += 1100 * dt;
+          // 松手要自动稳住：不然跳台弹射自带的那点初速会让你慢慢转过去，
+          // 落地必翻——那跳台就成了陷阱，没人愿意踩第二次。
+          else tiltRate -= tiltRate * Math.min(1, 3.0 * dt);
+          tiltRate = Math.max(-520, Math.min(520, tiltRate));
         } else {
           if (input.pedal) tiltRate -= 55 * dt;
-          if (input.brake) tiltRate += 55 * dt;
+          else if (input.brake) tiltRate += 55 * dt;
+          else tiltRate -= tiltRate * Math.min(1, 4.0 * dt);
           tiltRate = Math.max(-90, Math.min(90, tiltRate));
         }
         tiltDeg += tiltRate * dt;
-        tiltRate *= 0.985;
-        tiltDeg = Math.max(-760, Math.min(760, tiltDeg));
+        // 空气阻尼：用 exp 而不是每帧乘常数，否则高刷屏上车转得快一倍
+        tiltRate *= Math.exp(-2.2 * dt);
+        // 封顶到一整圈多一点：手机上为了加速会一直按着「蹬」，不封的话
+        // 很容易转到一圈半——那个角度落地必翻，而且玩家根本判断不出来。
+        // 封住之后，最多只会停在「正好一圈」附近，一定是平稳落地。
+        tiltDeg = Math.max(-380, Math.min(380, tiltDeg));
         airRot += (tiltDeg - lastTilt);
         lastTilt = tiltDeg;
       }
@@ -2911,15 +3039,30 @@ const ICONS = [
     // 相机：车顶到画面上沿附近就把镜头抬起来，飞多高都看得见
     const bikeTop = bikeY - 214;
     camTarget = Math.max(0, Math.min(340, (camView.y + 78) - bikeTop));
-    applyCam(camTarget);
+    applyCam(camTarget, false, dt);
 
     // 摆位置（出画面就换一种类型重新出现）
     for (const o of obstacles) {
       let rx = o.wx - dist;
-      if (rx < -160) {
-        let nx = dist + 1500 + Math.random() * 900;
-        if (inGap(nx + 450)) nx += 300;               // 别把障碍丢进断崖里
-        o.wx = nx; o.hit = false; rx = nx - dist;
+      // 绕回起点后 rx 会是上万，只判 rx<-160 的话这些障碍再也回不来。
+      // 上界要给足 4000：resetRoad 重排后最远的一块在 dist+3360 左右，
+      // 阈值卡在 1500 会把刚摆好的障碍立刻再回收一次，顺序全乱。
+      if (rx < -160 || rx > 4000) {
+        // 障碍放稀一点：两座之间永远留得出看清路再起跳的距离
+        let nx = dist + 2100 + Math.random() * 1100;
+        // 两块障碍挨太近会凑出「跳起来落地必撞」的死局，强制留出助跑距离
+        for (let g = 0; g < 14; g++) {
+          let bad = false;
+          for (const p of obstacles) {
+            if (p === o) continue;
+            if (Math.abs(p.wx - nx) < 760) { bad = true; break; }
+          }
+          if (!bad) break;
+          nx += 260;
+        }
+        // 别丢进断崖里，也别贴着崖口——刚跳过崖就撞上，不讲理
+        for (let g = 0; g < 24 && (inGap(nx - 120) || inGap(nx) || inGap(nx + 260)); g++) nx += 260;
+        o.wx = nx; o.hit = false; o.miss = 0; rx = nx - dist;
         const others = OB_ORDER.filter(k => k !== o.type);
         const nextType = others[Math.floor(Math.random() * others.length)];
         if (nextType !== o.type) {
@@ -2929,7 +3072,8 @@ const ICONS = [
         }
       }
       o.el.setAttribute("transform", `translate(${rx.toFixed(1)} ${(groundY(o.wx) - GROUND_Y).toFixed(1)})`);
-      if (rx < -40) o.hit = false;                    // 甩到身后才重置，避免同一块石头连着扣
+      // 甩到身后才重置，避免同一块石头连着扣；失败次数也清零，下次重新算
+      if (rx < -40) { o.hit = false; o.miss = 0; }
     }
 
     // 踩在软沙里：不撞，但蹬不动，只能慢慢爬出去
@@ -2938,17 +3082,22 @@ const ICONS = [
       speed = Math.min(speed, 0.95);
       speed *= Math.max(0, 1 - 1.6 * dt);
       if (Math.random() < dt * 22) burstDust(430, gyMid, 1, 0.5);
-    }
+      if (!sandWarned) { sandWarned = true; say("沙子太软，蹬不动，慢慢挪出去"); }
+    } else sandWarned = false;
 
+    // 同一块障碍连着让你栽两次，第三次就放行：任何人都不该被一块石头劝退
+    if (hitOb && hitOb.miss >= 2) hitOb = null;
     if (hitOb) {
       if (hitOb.type === "rock" && !hitOb.hit && Math.abs(speed) > 0.15) {
         hitOb.hit = true;
         if (Math.abs(speed) > 2.3) {                  // 太快，直接绊翻
+          hitOb.miss++;
           speed *= 0.3; shake = 1; stamina = Math.max(0, stamina - 12);
           say("太快了，石头把车绊翻了！"); tone("square", 120, 60, 0.3, 0.14);
           breakCombo();
           if (window.Ride && window.Ride.onFail) window.Ride.onFail("rock");
         } else {                                      // 碾过去：掉点速度，车身自己爬上去
+          hitOb.hit = true;                           // 只结算一次，别在石头上连乘掉速
           speed *= 0.86;
           stamina = Math.max(0, stamina - 3);
           shake = Math.max(shake, 0.45);
@@ -2956,17 +3105,19 @@ const ICONS = [
           tone("square", 190, 120, 0.1, 0.06);
         }
       } else if (hitOb.type === "ramp") {
-        // 骑到跳台顶端的那一刻把你弹上天，速度越快飞得越高
+        // 用「前轮被斜面抬了多高」来判时机，而不是拿屏幕坐标猜一段区间。
+        // 按坐标算的话，弹射发生在车已经开过跳台、落回地面之后——
+        // 看着就是压过去毫无反应，再突然平地起飞，手感很假。
         const cfg = OB.ramp;
-        const atTop = hitRx <= 450 - cfg.w * 0.35 && hitRx > 450 - cfg.w * 1.4;
-        if (!hitOb.hit && onGround && atTop && speed > 1.0) {
+        const lf = obLift(cfg, hitRx, CONTACT_R);
+        if (!hitOb.hit && onGround && lf > cfg.h * 0.7 && speed > 0.85) {
           hitOb.hit = true;
-          bikeVY = -(300 + speed * 250);
+          bikeVY = -(340 + speed * 265);
           onGround = false;
           jumpLock = 0.3;
           canFlip = true;
           airRot = 0; airTime = 0; airPeak = 0; lastTilt = tiltDeg;
-          tiltRate = -170;
+          tiltRate = -60;                    // 只抬一下前轮，别自带旋转
           kickSusp(120);
           tone("triangle", 300, 700, 0.2, 0.08);
           say("飞起来了！按住「蹬」可以后空翻");
@@ -2983,15 +3134,23 @@ const ICONS = [
             burstDust(450, gyMid, 12, 1.4);
             breakCombo();
             if (window.Ride && window.Ride.onFail) window.Ride.onFail("log");
-          } else {                                    // 顶住，被弹回来一点
-            speed = 0;
-            dist = Math.max(0, dist - 62);            // 退开一点留出助跑距离（别退太狠，退多了像被弹飞）
+          } else {                                    // 顶住：退回去，重新冲一次
+            hitOb.miss++;
+            // 原来是「顶在原地 + 每撞一次后退 62px」：力竭时会一路倒退，
+            // 而且 speed 清零后 jump() 的门槛都过不去，玩家被彻底卡死。
+            // 改成一次退够助跑距离，节奏才顺。
+            hitOb.hit = true;
+            let nd = hitOb.wx - 760;
+            for (let g = 0; g < 24 && inGap(nd + 450); g++) nd -= 120;
+            dist = Math.max(0, nd);
+            speed = 0.5;
             let gr2 = groundY(dist + CONTACT_L), gf2 = groundY(dist + CONTACT_R);
             if (!isFinite(gr2)) gr2 = GROUND_Y;
             if (!isFinite(gf2)) gf2 = GROUND_Y;
             bikeY = (gr2 + gf2) / 2; bikeVY = 0; onGround = true; prevGY = bikeY;
-            stamina = Math.max(0, stamina - 8); shake = 1; logCool = 0.5;
-            say("撞上倒木了，得跳过去"); tone("square", 150, 90, 0.2, 0.12);
+            stamina = Math.max(0, stamina - 8); shake = 1; logCool = 0.6;
+            stuckRef = dist; stuckT = 0;
+            say("撞上倒木了，退回去重新冲"); tone("square", 150, 90, 0.2, 0.12);
             burstDust(450, gyMid, 8, 1.0);
           }
         }
@@ -3020,7 +3179,9 @@ const ICONS = [
       const x = t.wx - dist;
       const y = groundY(t.wx) - t.h + Math.sin(time * 3 + t.ph) * 6;
       const hit = x > 538 && x < 652 && y > 198 + dy && y < 288 + dy;
-      if (hit || x < -60) {
+      // x>1300 也要回收：绕回后剩下的鱼会算出上万的屏幕坐标，
+      // 看不见又永不清除，数组一直涨。
+      if (hit || x < -60 || x > 1300) {
         if (hit) catchTreat(t, x, y);
         t.el.remove();
         treats.splice(i, 1);
@@ -3104,9 +3265,10 @@ const ICONS = [
     const vb = camView.x + " " + Math.round(y) + " " + camView.w + " " + camView.h;
     if (vb !== lastVB) { lastVB = vb; svg.setAttribute("viewBox", vb); }
   }
-  function applyCam(shift, instant) {
+  function applyCam(shift, instant, dt) {
     const target = Math.round(shift);
-    camShift = instant ? target : camShift + (target - camShift) * 0.32;
+    if (instant) camShift = target;
+    else camShift += (target - camShift) * (1 - Math.exp(-9 * (dt || 0.0166)));
     setVB(camView.y - camShift);
   }
   function fitView() {
@@ -3270,15 +3432,17 @@ const ICONS = [
     const cx = dist + 450;
     const g = gapRange(cx);
     const left = g ? g[0] : cx - 200;
-    dist = left - 640;
+    dist = Math.max(0, left - 900);        // 退远一点，留出重新起速的距离
     let gr = groundY(dist + CONTACT_L), gf = groundY(dist + CONTACT_R);
     if (!isFinite(gr)) gr = GROUND_Y;
     if (!isFinite(gf)) gf = GROUND_Y;
     bikeY = (gr + gf) / 2; bikeVY = 0; onGround = true; prevGY = bikeY;
-    tiltDeg = 0; tiltRate = 0; speed = 0; shake = 1;
+    tiltDeg = 0; tiltRate = 0; speed = 0.9; shake = 1;   // 给点初速，别每次从零磨
+    canFlip = false; airRot = 0; airTime = 0; airPeak = 0;
     say("掉下去了…退回来重来");
     tone("square", 200, 60, 0.5, 0.12);
     breakCombo();
+    stuckRef = dist; stuckT = 0;
     if (window.Ride && window.Ride.onFail) window.Ride.onFail("cliff");
   }
 
@@ -3322,6 +3486,8 @@ const ICONS = [
       stamina = staminaMax; exhausted = false; speed = 0; bikeVY = 0;
       bikeY = gySafe(dist + 450); bikeVY = 0; onGround = true; prevGY = bikeY;
       tiltDeg = 0; tiltRate = 0; jumpLock = 0; logCool = 0; gapEntryY = null;
+      airJumps = 0; jumpBuf = 0; coyote = 0; stuckRef = dist; stuckT = 0;
+      airJumps = 0; jumpBuf = 0; coyote = 0; stuckRef = dist; stuckT = 0;
     },
     // 调试：重排障碍（自动化测试用）
     debugSetObstacles: list => {
@@ -3339,6 +3505,7 @@ const ICONS = [
       vehicle = v;
       speedCap = v.cap; ACCEL = v.accel;
       staminaMax = v.stam; stamina = v.stam;
+      applyUpgrades();            // 改装加成叠加在出身车之上
       const fg = $("frameG"); if (fg) fg.setAttribute("stroke", v.frame);
       document.querySelectorAll("#riderWrap .tire").forEach(c => c.setAttribute("stroke", v.tire));
       document.querySelectorAll("#riderWrap .rim").forEach(c => c.setAttribute("stroke", v.rim));
@@ -3349,6 +3516,7 @@ const ICONS = [
     getEra: () => eraAt(dist + 450),
     showEra: () => showEraBanner(curEra < 0 ? 0 : curEra),
     getStamina: () => stamina,
+    refillStamina: () => { stamina = staminaMax; exhausted = false; },
     groundY: gySafe,
     onGround: () => onGround,
     inGap: inGap,
@@ -3459,6 +3627,18 @@ const ICONS = [
       m.el.classList.toggle('done', m.done);
       m.el.classList.toggle('active', stationActive === m.id);
     });
+    // 到站补给：经过一座站牌就歇一口气——回满体力、给一条鱼。
+    // 不然「距下一站 XXXm」只是句装饰：玩家骑了半天也不知道往前有什么意义。
+    milestones.forEach(m => {
+      if (m.supplied) return;
+      if (rider < m.worldX || rider > m.worldX + 300) return;
+      m.supplied = true;
+      if (Ride.refillStamina) Ride.refillStamina();
+      if (Ride.addFish) Ride.addFish(1);
+      if (Ride.tone) Ride.tone('sine', 520, 880, 0.18, 0.07);
+      if (Ride.setNote) Ride.setNote('到站了，歇口气。体力回满，+1 条鱼', 9);
+    });
+
     const next = milestones.find(x => x.worldX > rider - 80);
     window.__nextStopPx = next ? Math.max(0, next.worldX - rider) : 0;
 
@@ -3536,6 +3716,7 @@ const ICONS = [
     }
     STAT_KEYS.forEach(k => { const el = box.querySelector('[data-v="' + k + '"]'); if (el) el.textContent = state.stats[k]; });
     $('lhud-prog').textContent = '已领悟 ' + state.done.length + ' / ' + CHAPTERS.length;
+    window.__allDone = state.done.length >= CHAPTERS.length;   // 骑行引擎要用，跨域只能挂 window
   }
   const originName = () => { const o = ORIGINS.find(x => x.id === state.origin); return o ? o.name : '未知起点'; };
 
@@ -3837,7 +4018,7 @@ const ICONS = [
   $('r-restart').onclick = () => {
     try { localStorage.removeItem(K); } catch (_) {}
     state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 }, picks: [], done: [], stageSeen: [] };
-    milestones.forEach(m => m.done = false);
+    milestones.forEach(m => { m.done = false; m.supplied = false; });
     Ride.setDist(0);
     hideOverlay('life-result');
     buildOrigin(); showOverlay('life-origin'); setOpen(true);
@@ -3857,7 +4038,7 @@ const ICONS = [
   $('lhud-reset').onclick = () => {
     try { localStorage.removeItem(K); } catch (_) {}
     state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 }, picks: [], done: [], stageSeen: [] };
-    milestones.forEach(m => m.done = false);
+    milestones.forEach(m => { m.done = false; m.supplied = false; });
     Ride.setDist(0);
     ['life-chapter', 'life-insight', 'life-stage', 'life-result', 'life-codex'].forEach(hideOverlay);
     hidePrompt();
