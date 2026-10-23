@@ -863,6 +863,21 @@
     </g>
   </g>
 
+  <!-- 岔路口的路牌 -->
+  <g id="forkSign" style="opacity:0;transition:opacity .3s">
+    <rect x="-4" y="392" width="8" height="112" rx="3" fill="#7d6a4a"/>
+    <path d="M-92 372 L92 372 L92 424 L-92 424 Z" fill="#fbf8f2" stroke="#c98a2e" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M-86 398 L86 398" stroke="#e0d6c4" stroke-width="2"/>
+    <text x="-46" y="392" text-anchor="middle" font-size="19" font-weight="800" fill="#2f5d50"
+          font-family="system-ui, sans-serif">近道 ⤴</text>
+    <text x="46" y="392" text-anchor="middle" font-size="19" font-weight="800" fill="#6b6358"
+          font-family="system-ui, sans-serif">大路</text>
+    <text x="-46" y="418" text-anchor="middle" font-size="11" fill="#7a7266"
+          font-family="system-ui, sans-serif">按「跳」</text>
+    <text x="46" y="418" text-anchor="middle" font-size="11" fill="#7a7266"
+          font-family="system-ui, sans-serif">照直骑</text>
+  </g>
+
   <!-- 障碍物层 -->
   <g id="obLayer"></g>
 
@@ -2298,6 +2313,23 @@ const ICONS = [
       return out;
     };
   })();
+  // ===== 岔路：隔一段路就有一个岔口，走哪条自己定 =====
+  // 近道：直接省掉一段里程，但接下来的路更挤（障碍间距压到 420，且扣体力）
+  // 大路：照常骑，但体力回满，算是「踏实」的回报
+  const FORK_FIRST = 3600, FORK_STEP = 4200, FORK_GAIN = 820;
+  const forkX = k => FORK_FIRST + k * FORK_STEP;
+  let forkId = -1, forkArmed = false, hardUntil = -1, nextFork = 0;
+  const forkSign = $("forkSign");
+
+  // ===== 风：每 2600 米换一次风向 =====
+  // 用固定种子的伪随机，同一段路每次来风向都一样，玩家能记住「哪儿顶风」。
+  const WIND_STEP = 2600;
+  const hash01 = k => { const h = Math.sin(k * 12.9898) * 43758.5453; return h - Math.floor(h); };
+  const windAt = x => {
+    const r = hash01(Math.floor(Math.max(0, x) / WIND_STEP));
+    return r < 0.32 ? 1 : (r < 0.60 ? -1 : 0);      // 1 顺风 / -1 顶风 / 0 无风
+  };
+
   // 台地：平台 → 抬升 → 平台 → 落回，一格一格往上爬。
   // 首尾都落回 0，保证跨周期连续（不然每隔 520px 就有一堵墙）。
   function terrace(x) {
@@ -2395,6 +2427,8 @@ const ICONS = [
     prevGY = null;
     gapEntryY = null;
     canFlip = false; airRot = 0; airTime = 0; airPeak = 0;
+    forkId = -1; forkArmed = false; hardUntil = -1; nextFork = 0;
+    if (forkSign) forkSign.style.opacity = "0";
   }
 
   // 远景剪影：城市楼群 / 雪山
@@ -2582,6 +2616,7 @@ const ICONS = [
   }
   function jump() {
     if (!running) return;
+    if (forkArmed) { chooseFork(true); return; }   // 岔口上「跳」= 抄近道
     const canGround = (onGround || coyote > 0) && jumpLock <= 0;
     if (canGround) {
       // 门槛别设太高：撞了东西被弹回去、速度归零时，也要能立刻跳起来自救
@@ -2924,6 +2959,7 @@ const ICONS = [
   // 有了它，任何障碍组合都不可能把人永久困在原处。
   let stuckRef = 0, stuckT = 0;
   let dbgDrive = {}, dbgOnSand = false;   // 调试用：把驱动内部状态暴露出去
+  let lastWind = 0;                       // 上一次的风向，用来判断「刚换风区」
   // 加速带的余韵：光把速度加上去没用，drive() 每帧都会把速度夹回 1.45 倍上限，
   // 冲过去那一帧就被吃回去了。得连上限一起临时抬高，这段冲刺才真的存在。
   let boostT = 0;
@@ -2936,6 +2972,11 @@ const ICONS = [
     let cap = speedCap * (1 - 0.40 * climb);                    // 上坡：能到的最高速
     if (boostT > 0) cap = speedCap * 1.72;                      // 加速带期间放开上限
     if (curSlope > 0) cap = speedCap * (1 + 0.45 * Math.min(1, curSlope * 1.7)); // 下坡：冲得更快
+    // 风必须放在最后：上面那两行是 cap = ...（赋值），
+    // 放在前面会被下坡整段覆盖掉，顺风就白算了。
+    const w = windAt(dist + 450);
+    if (w > 0) cap *= 1.13;                                     // 顺风：推着你走
+    else if (w < 0) cap *= 0.87;                                // 顶风：得自己扛
 
     // 力竭**不禁止**蹬车，只是没劲：否则「被倒木顶住 + 刚好力竭」会彻底动不了。
     // 想恢复体力就得松手——但哪怕一直按着，也总能慢慢爬出去。
@@ -2946,7 +2987,7 @@ const ICONS = [
       const acc = ACCEL * power;
       if (speed < cap) speed = Math.min(cap, speed + acc * dt);
       else speed = Math.max(cap, speed - FRICTION * 1.6 * dt);   // 超过上限就自然回落
-      stamina -= (3.4 + speed * 2.3 + grade * 3.6) * dt;
+      stamina -= (3.4 + speed * 2.3 + grade * 3.6) * (w > 0 ? 0.80 : (w < 0 ? 1.26 : 1)) * dt;
       if (stamina <= 0 && !exhausted) {
         stamina = 0; exhausted = true; say("呼…先松口气，缓一缓");
         tone("sawtooth", 240, 120, 0.3, 0.05);
@@ -2970,7 +3011,14 @@ const ICONS = [
     if (stamina > staminaMax) stamina = staminaMax;
     speed = Math.max(0, Math.min(speedCap * (boostT > 0 ? 1.78 : 1.45), speed));
     dbgDrive = { speed: speed, cap: cap, power: pedaling ? 1 : 0, exhausted: exhausted,
-                 stamina: stamina, grade: grade, slope: curSlope, pedaling: pedaling };
+                 stamina: stamina, grade: grade, slope: curSlope, pedaling: pedaling, wind: w };
+    // 换风区时说一句，别让玩家莫名其妙觉得今天蹬不动
+    if (w !== lastWind) {
+      const had = lastWind;
+      lastWind = w;
+      if (w > 0 && had <= 0) say("顺风！省力不少");
+      else if (w < 0 && had >= 0) { say("顶风了，蹬重点"); popStunt("逆风"); }
+    }
   }
 
 
@@ -3173,6 +3221,32 @@ const ICONS = [
     camTarget = Math.max(0, Math.min(340, (camView.y + 78) - bikeTop));
     applyCam(camTarget, false, dt);
 
+    // ===== 岔路：到点亮牌，走过去没选就默认大路 =====
+    {
+      const riderX = dist + 450;
+      let guard = 0;
+      while (guard++ < 8) {
+        const fx = forkX(nextFork);
+        if (riderX < fx - 760) break;                 // 离得还远
+        if (riderX < fx - 90) {                       // 预告区：把牌子亮出来
+          if (forkId !== nextFork) { forkId = nextFork; armFork(); }
+          break;
+        }
+        if (forkArmed) chooseFork(false);             // 没抄近道，就是走大路
+        nextFork++;                                   // 抄近道会往前跳一大截，可能连过好几个岔口
+      }
+      if (forkSign) {
+        const fx = forkX(nextFork), off = fx - riderX;
+        if (off < 760 && off > -220) {
+          forkSign.setAttribute("transform",
+            `translate(${(fx - dist + 450).toFixed(1)} ${(groundY(fx) - GROUND_Y).toFixed(1)})`);
+          forkSign.style.opacity = "1";
+        } else {
+          forkSign.style.opacity = "0";
+        }
+      }
+    }
+
     // 摆位置（出画面就换一种类型重新出现）
     for (const o of obstacles) {
       let rx = o.wx - dist;
@@ -3187,7 +3261,9 @@ const ICONS = [
           let bad = false;
           for (const p of obstacles) {
             if (p === o) continue;
-            if (Math.abs(p.wx - nx) < 760) { bad = true; break; }
+            // 抄近道省下的里程，用更挤的障碍还回来
+            const minGap = (hardUntil > 0 && nx < hardUntil) ? 430 : 760;
+            if (Math.abs(p.wx - nx) < minGap) { bad = true; break; }
           }
           if (!bad) break;
           nx += 260;
@@ -3502,6 +3578,51 @@ const ICONS = [
   // 对话气泡
   const bubble = $("bubble"), bubbleText = $("bubbleText");
   let bubbleTimer;
+  function chooseFork(shortcut) {
+    forkArmed = false;
+    if (forkSign) forkSign.style.opacity = "0";
+    const rider = dist + 450;
+    if (shortcut) {
+      dist += FORK_GAIN;
+      hardUntil = rider + FORK_GAIN + 1700;      // 接下来这段障碍更挤
+      stamina = Math.max(0, stamina - 15);
+      // 把前方的障碍重新排紧：省下的里程要用密度还回来
+      obstacles.forEach((o, i) => {
+        if (o.wx > dist - 200) o.wx = dist + 900 + i * 420;      // 近道：排紧
+      });
+      say("抄近道！省下 " + Math.round(FORK_GAIN * 0.5) + " 米，但接下来有点挤");
+      popStunt("近道 -" + Math.round(FORK_GAIN * 0.5) + "m");
+      tone("triangle", 380, 760, 0.2, 0.07);
+      if (window.Ride && window.Ride.setNote)
+        window.Ride.setNote("近道：省了 " + Math.round(FORK_GAIN * 0.5) + " 米，接下来障碍很密", 8);
+    } else {
+      hardUntil = -1;
+      stamina = staminaMax; exhausted = false;
+      obstacles.forEach((o, i) => {
+        if (o.wx > dist - 200) o.wx = dist + 1200 + i * 1050;    // 大路：排松
+      });
+      say("走大路。远是远了点，体力补满了");
+      tone("sine", 520, 680, 0.18, 0.05);
+      if (window.Ride && window.Ride.setNote)
+        window.Ride.setNote("大路：体力回满，慢慢骑", 8);
+    }
+    lastDist = dist; stuckRef = dist; stuckT = 0;
+  }
+  // 「跳」在岔口是「抄近道」的意思：竖屏只有两个键，
+  // 再塞一个选择按钮就违背「简单」了。
+  function armFork() {
+    forkArmed = true;
+    // 岔口附近清场：这一下按「跳」是选路，不是起跳，
+    // 万一跟前杵着根倒木，玩家会以为是自己按晚了。
+    const rider = dist + 450;
+    obstacles.forEach(o => {
+      if (o.wx > rider - 500 && o.wx < rider + 700) { o.wx += 1100; o.hit = false; o.miss = 0; }
+    });
+    say("前面有个岔口：按「跳」抄近道，不按就走大路");
+    if (window.Ride && window.Ride.setNote)
+      window.Ride.setNote("岔路：按「跳」抄近道（省 410 米但更挤），不按走大路（体力回满）", 7);
+  }
+
   function say(text) {
     bubbleText.textContent = text;
     bubble.classList.add("show");
@@ -3686,6 +3807,10 @@ const ICONS = [
     refillStamina: () => { stamina = staminaMax; exhausted = false; },
     getEvent: () => lastEvent,
     clearEvent: () => { lastEvent = null; },
+    getWind: () => windAt(dist + 450),
+    getFork: () => ({ armed: forkArmed, id: forkId, hardUntil: hardUntil,
+                      next: forkX(nextFork), nextId: nextFork, at: dist + 450 }),
+    armFork: armFork,
     groundY: gySafe,
     onGround: () => onGround,
     inGap: inGap,
@@ -3807,10 +3932,15 @@ const ICONS = [
       if (m.supplied) return;
       if (rider < m.worldX || rider > m.worldX + 300) return;
       m.supplied = true;
-      if (Ride.refillStamina) Ride.refillStamina();
       if (Ride.addFish) Ride.addFish(1);
-      if (Ride.tone) Ride.tone('sine', 520, 880, 0.18, 0.07);
-      if (Ride.setNote) Ride.setNote('到站了，歇口气。体力回满，+1 条鱼', 9);
+      const tired = Ride.getStamina && Ride.getStamina() < 62;
+      if (tired) {
+        if (Ride.refillStamina) Ride.refillStamina();
+        if (Ride.tone) Ride.tone('sine', 520, 880, 0.18, 0.07);
+        if (Ride.setNote) Ride.setNote('到站了，歇口气。体力回满，+1 条鱼', 9);
+      } else {
+        if (Ride.setNote) Ride.setNote('路过一处站点，+1 条鱼', 6);
+      }
     });
 
     const next = milestones.find(x => x.worldX > rider - 80);
