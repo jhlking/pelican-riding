@@ -840,6 +840,27 @@
       <path d="M-50 504 L44 470" stroke="#8a5a34" stroke-width="4" stroke-linecap="round"/>
       <path d="M-30 504 L-24 484 M-6 504 L0 487 M18 504 L22 490" stroke="#8a5a34" stroke-width="2.5" opacity=".55"/>
     </g>
+    <!-- 加速带：压过去白捡一段速度，纯正反馈 -->
+    <g id="boostProto">
+      <ellipse cx="0" cy="504" rx="46" ry="6" fill="#2f5d50" opacity=".18"/>
+      <path d="M-44 504 L44 504 L44 496 L-44 496 Z" fill="#2f8f6a" opacity=".9"/>
+      <g fill="#eafff6">
+        <path d="M-30 500 L-14 492 L-14 508 Z"/>
+        <path d="M-8 500 L8 492 L8 508 Z"/>
+        <path d="M14 500 L30 492 L30 508 Z"/>
+      </g>
+      <path d="M-44 492 L44 492" stroke="#9fe8c8" stroke-width="2" opacity=".8"/>
+    </g>
+    <!-- 水坑：溅一身水，掉点速度和体力，但不算摔 -->
+    <g id="puddleProto">
+      <ellipse cx="0" cy="504" rx="52" ry="7" fill="#000" opacity=".14"/>
+      <path d="M-50 503 Q-38 492 -18 495 Q2 490 22 496 Q40 494 50 503 Q30 510 0 510 Q-28 510 -50 503 Z"
+            fill="#5aa8d8" opacity=".82"/>
+      <path d="M-34 499 Q-20 494 -6 499 Q8 495 20 500" stroke="#cdeaf8" stroke-width="2.5"
+            fill="none" opacity=".85" stroke-linecap="round"/>
+      <path d="M-16 505 Q0 502 16 505" stroke="#cdeaf8" stroke-width="2"
+            fill="none" opacity=".6" stroke-linecap="round"/>
+    </g>
   </g>
 
   <!-- 障碍物层 -->
@@ -1026,7 +1047,7 @@
 <div id="vignette"></div>
 <div id="stunt-pop"></div>
 <div id="era-banner"><b></b><span></span></div>
-<div id="drive-tip">按住「蹬」前进 · 倒木和断崖按「跳」——腾空时还能再按一次「跳」补力 · 冲上木质跳台按住「蹬」可后空翻</div>
+<div id="drive-tip">按住「蹬」前进 · 倒木和断崖按「跳」，腾空时还能再按一次补力 · 跳台按住「蹬」可后空翻 · 路上共六段地形，越往后越颠</div>
 <div id="drive-hud">
   <span class="lab">体力</span>
   <span class="stam"><span id="stam-fill"></span></span>
@@ -1076,7 +1097,7 @@
   <span class="odo" id="odo" aria-live="off">里程 0.00 km</span>
   <span class="odo" id="score" aria-live="polite">接到鱼 0 条 · 最高 0</span>
 </div>
-<p class="hint"><kbd>→</kbd> 按住蹬车 · <kbd>←</kbd> 刹车 · <kbd>↑</kbd>/点击画面 起跳（腾空时还能再补跳一次，连按「跳」＝连跳）· 石头碾过去、倒木要跳、软沙拖慢你、木质跳台会把你弹上天（空中按住 <kbd>→</kbd> 后空翻、<kbd>←</kbd> 前空翻，落地结算特技分）· 到站会补给体力 · 同一处连着栽两次就会放行，不会被卡住 · 接鱼攒钱去「车库」改装 · 摔了、翻了、蹬不动了，才会懂一条道理 · <kbd>空格</kbd> 响铃 · <kbd>P</kbd> 暂停</p>
+<p class="hint"><kbd>→</kbd> 按住蹬车 · <kbd>←</kbd> 刹车 · <kbd>↑</kbd>/点击画面 起跳（腾空时还能再补跳一次，连按「跳」＝连跳）· 石头碾过去、倒木要跳、软沙拖慢你、木质跳台会把你弹上天、绿色加速带压过去白捡一口气、水坑会溅你一身并掉速（空中按住 <kbd>→</kbd> 后空翻、<kbd>←</kbd> 前空翻，落地结算特技分）· 到站会补给体力 · 同一处连着栽两次就会放行，不会被卡住 · 接鱼攒钱去「车库」改装 · 摔了、翻了、蹬不动了，才会懂一条道理 · <kbd>空格</kbd> 响铃 · <kbd>P</kbd> 暂停</p>
 
 <!-- ===== 人生骑行：HUD 与覆盖层 ===== -->
 <div id="life-hud">
@@ -2097,12 +2118,17 @@ const ICONS = [
   // ---------- 路上的四种障碍：各有各的应付方式 ----------
   // rock 碾过去 / log 得跳过去 / sand 拖慢你 / ramp 把你弹起来
   const OB = {
-    rock: { w: 26, h: 26, lift: "cos" },
-    log:  { w: 56, h: 38, lift: null },
-    sand: { w: 78, h: 0,  lift: null },
-    ramp: { w: 50, h: 34, lift: "ramp" },
+    rock:   { w: 26, h: 26, lift: "cos" },
+    log:    { w: 56, h: 38, lift: null },
+    sand:   { w: 78, h: 0,  lift: null },
+    ramp:   { w: 50, h: 34, lift: "ramp" },
+    boost:  { w: 48, h: 0,  lift: null },
+    puddle: { w: 54, h: 0,  lift: null },
   };
-  const OB_ORDER = ["rock", "log", "sand", "ramp"];
+  // 前四种是「要应付的」，后两种是「要利用 / 会拖慢的」，
+  // 随机时各占一半，路上才不会只剩一种节奏。
+  const OB_ORDER = ["rock", "log", "sand", "ramp", "boost", "puddle"];
+  const OB_FRIENDLY = ["boost", "puddle"];
   const obLayer = $("obLayer");
   function makeOb(type) {
     const proto = document.getElementById(type + "Proto");
@@ -2122,6 +2148,14 @@ const ICONS = [
   const obstacles = OB_ORDER.map((k, i) => ({
     type: k, el: makeOb(k), wx: 2400 + i * 1500, hit: false, miss: 0,
   }));
+  // 开局六块排成「坎 → 甜头 → 坎 → 拖一下 → 跳台 → 拖一下」的节奏：
+  // 一上来就把六种东西各露一次，玩家很快就能摸清路上都有些什么。
+  ["rock", "boost", "log", "puddle", "ramp", "sand"].forEach((k, i) => {
+    if (!obstacles[i] || obstacles[i].type === k) return;
+    obstacles[i].el.remove();
+    obstacles[i].type = k;
+    obstacles[i].el = makeOb(k);
+  });
   let shake = 0;
 
   // 环境：昼夜 + 雨天，两者都用 0~1 的值平滑过渡
@@ -2230,21 +2264,73 @@ const ICONS = [
   roadDash.setAttribute("opacity", ".85");
   $("lRoad").style.display = "none";
 
-  // ===== 人生的三段路：越往后，路越难 =====
+  // ===== 路不是一条道走到黑：一共六段，每段有自己的脾气 =====
+  // 0 起步缓坡（海边） 1 连绵起伏 2 台阶台地 3 搓板碎石 4 沙丘 5 山口断崖
+  const ZONES = [
+    { at: 0,     kind: 'beach',     age: '18 – 24 岁', name: '海边的路',   tip: '慢慢骑，先熟悉手感' },
+    { at: 3400,  kind: 'roller',    age: '25 – 31 岁', name: '连绵的丘陵', tip: '一路起起伏伏，别一直按着蹬' },
+    { at: 7200,  kind: 'terrace',   age: '32 – 38 岁', name: '梯田台地',   tip: '一级一级往上，落地要稳' },
+    { at: 11000, kind: 'washboard', age: '39 – 45 岁', name: '碎石搓板路', tip: '颠得厉害，体力掉得快' },
+    { at: 14700, kind: 'dunes',     age: '46 – 52 岁', name: '风蚀沙丘',   tip: '大起大落，冲坡前先攒速度' },
+    { at: 18400, kind: 'cliff',     age: '53 – 60 岁', name: '山口的断崖', tip: '断崖只能靠跳台和二段跳' },
+  ];
+  const ZONE_FADE = 900;            // 路段之间的过渡带，太短地形会出现硬拐角
+  const zoneAt = x => {
+    let k = 0;
+    for (let i = 1; i < ZONES.length; i++) if (x >= ZONES[i].at - ZONE_FADE * 0.5) k = i;
+    return k;
+  };
+  // 钟形权重：入口淡入、出口淡出。两段交界处两个权重都不到 1，
+  // 加出来的高度就是两者的自然混合 —— 这是地形不会「断层」的根本原因。
+  const zoneW = (function () {
+    const cache = { x: NaN, out: null };
+    return function (x) {
+      if (cache.x === x) return cache.out;
+      const out = {};
+      for (let i = 1; i < ZONES.length; i++) {
+        const a = ZONES[i].at;
+        const b = (i + 1 < ZONES.length) ? ZONES[i + 1].at : 40000;
+        const w = smoothstep(a - ZONE_FADE * 0.5, a + ZONE_FADE * 0.5, x) *
+                  (1 - smoothstep(b - ZONE_FADE * 0.5, b + ZONE_FADE * 0.5, x));
+        if (w > 0.002) out[ZONES[i].kind] = w;
+      }
+      cache.x = x; cache.out = out;
+      return out;
+    };
+  })();
+  // 台地：平台 → 抬升 → 平台 → 落回，一格一格往上爬。
+  // 首尾都落回 0，保证跨周期连续（不然每隔 520px 就有一堵墙）。
+  function terrace(x) {
+    const T = 520, H = 30;
+    const t = (((x % T) + T) % T) / T;
+    if (t < 0.38) return 0;
+    if (t < 0.56) return smoothstep(0.38, 0.56, t) * H;
+    if (t < 0.78) return H;
+    return H * (1 - smoothstep(0.78, 1.0, t));
+  }
   const ERA_X = [9500, 19100];                    // 分界（世界坐标，约在第 5 站 / 第 11 站）
+  // 六段路六种颜色，跟 ZONES 一一对应
   const ERA_PAL = [
-    { fill: "#e6d4b0", road: "#71757c", tint: "#ffb26b", op: 0.00 },   // 海边缓坡
-    { fill: "#dbcbae", road: "#6b6f76", tint: "#ff9a4d", op: 0.09 },   // 进城的坡道
-    { fill: "#e9eff5", road: "#5f6772", tint: "#7fa8d8", op: 0.20 },   // 山口的断崖
+    { fill: "#e6d4b0", road: "#71757c", tint: "#ffb26b", op: 0.00 },  // 海边缓坡
+    { fill: "#dfd3b4", road: "#6e737a", tint: "#ffa858", op: 0.05 },  // 连绵丘陵
+    { fill: "#d8cba6", road: "#6d6f72", tint: "#f0a04a", op: 0.09 },  // 梯田台地
+    { fill: "#d2c8b0", road: "#6a6a6c", tint: "#d99a52", op: 0.12 },  // 碎石搓板
+    { fill: "#e7d8b4", road: "#6f6a60", tint: "#e8b45e", op: 0.15 },  // 风蚀沙丘
+    { fill: "#e9eff5", road: "#5f6772", tint: "#7fa8d8", op: 0.20 },  // 山口断崖
   ];
   const smoothstep = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
-  const eraAt = x => (x < ERA_X[0] ? 0 : (x < ERA_X[1] ? 1 : 2));
+  const eraAt = zoneAt;          // 路段判定统一走 zoneAt（六段）
   function ampAt(x) {
-    return 0.72 + 0.44 * smoothstep(ERA_X[0] - 800, ERA_X[0] + 800, x)
-                + 0.42 * smoothstep(ERA_X[1] - 800, ERA_X[1] + 800, x);
+    // 难度逐级抬：每一段比上一段更颠一点，段内保持一致，避免忽高忽低
+    return 0.70 + 0.10 * smoothstep(0, 3400, x)
+                + 0.10 * smoothstep(3400, 7200, x)
+                + 0.12 * smoothstep(7200, 11000, x)
+                + 0.10 * smoothstep(11000, 14700, x)
+                + 0.12 * smoothstep(14700, 18400, x)
+                + 0.12 * smoothstep(18400, 21400, x);
   }
   // 断崖：只在最后一段出现，越往后越宽（要靠跳台和改装才过得去）
-  const GAP_BASE = ERA_X[1] + 400, GAP_STEP = 1250, GAP_W = 150;
+  const GAP_BASE = 19200, GAP_STEP = 1250, GAP_W = 150;
   function gapRange(x) {
     if (x < GAP_BASE) return null;
     const k = Math.floor((x - GAP_BASE) / GAP_STEP);
@@ -2255,21 +2341,27 @@ const ICONS = [
   const inGap = x => gapRange(x) !== null;
 
   function hillRaw(x) {
-    let h = Math.sin(x / 310) * 40 + Math.sin(x / 131 + 1.3) * 16 +
-            Math.sin(x / 620 + 0.7) * 26 + Math.sin(x / 71 + 2.1) * 7;
-    // 山口那段加一层搓板路：连续小起伏，避震差的会被颠得很难受
-    const w = smoothstep(ERA_X[1] - 700, ERA_X[1] + 500, x);
-    if (w > 0) h += Math.sin(x / 47) * 9 * w;
+    // 底噪：整条路都有的基础起伏
+    let h = Math.sin(x / 310) * 32 + Math.sin(x / 131 + 1.3) * 12 +
+            Math.sin(x / 620 + 0.7) * 20 + Math.sin(x / 71 + 2.1) * 6;
+    // 各路段的专属形态，乘上钟形权重后叠加。
+    // 用叠加而不是「按路段切换公式」，是为了让交界处天然连续。
+    const w = zoneW(x);
+    if (w.roller)    h += Math.sin(x / 245 + 0.6) * 27 * w.roller;              // 连绵大起伏
+    if (w.terrace)   h += terrace(x) * w.terrace;                               // 一格一格的台地
+    if (w.washboard) h += Math.sin(x / 47) * 9 * w.washboard;                   // 密集搓板
+    if (w.dunes)     h += (Math.sin(x / 690 + 2.2) * 33 + Math.sin(x / 175) * 9) * w.dunes; // 大沙丘
+    if (w.cliff)     h += Math.sin(x / 47) * 8 * w.cliff;                       // 崖前的碎石
     return h;
   }
-  // 站牌附近放缓坡度，方便停靠
   function groundYRaw(x) {
     if (inGap(x)) return Infinity;
-    const d = ((x - 1500) % 1600 + 1600) % 1600;
-    const near = Math.min(d, 1600 - d);
-    const damp = Math.min(1, Math.max(0.22, near / 330));
-    let h = (hillRaw(x) * ampAt(x) + 42) * damp;
-    h = Math.max(-30, Math.min(112, h));
+    // 原来这里会在每个站牌前后把地形压平到 22%，那是给「到站停靠」用的；
+    // 现在站牌只是路标不再拦路，压平反而让整条路每 1600px 出现一段怪异的死平。
+    let h = hillRaw(x) * ampAt(x) + 42;
+    // 上限放宽到 140：梯田和沙丘叠在一起时会超出原来的 112，
+    // 一被削平山顶就变成平台，看着假、骑着也怪。相机有跟随，飞多高都看得见。
+    h = Math.max(-38, Math.min(140, h));
     return GROUND_Y - h;
   }
   // 起伏是固定函数，没必要每帧重算近七十遍三角函数：开局一次性打成表，
@@ -2319,6 +2411,20 @@ const ICONS = [
         r.setAttribute("fill", "#b3aa9b");
         g.appendChild(r);
       }
+    } else if (kind === "dune") {
+      // 风蚀沙丘：圆缓的沙脊，不是尖锐的山
+      for (let t = 0; t < 2; t++) for (let i = 0; i < 6; i++) {
+        const bx = t * 900 + i * 155, h = 66 + (i * 47) % 58;
+        const p = document.createElementNS(NS, "path");
+        p.setAttribute("d", `M${bx - 120} 505 Q${bx - 40} ${505 - h} ${bx + 34} ${505 - h * 0.52} Q${bx + 86} ${505 - h * 0.18} ${bx + 128} 505 Z`);
+        p.setAttribute("fill", "#dccaa0");
+        g.appendChild(p);
+        const l = document.createElementNS(NS, "path");
+        l.setAttribute("d", `M${bx - 40} ${505 - h} Q${bx - 4} ${505 - h * 0.8} ${bx + 34} ${505 - h * 0.52}`);
+        l.setAttribute("fill", "none"); l.setAttribute("stroke", "#efe0bd"); l.setAttribute("stroke-width", "2.5");
+        l.setAttribute("opacity", ".8");
+        g.appendChild(l);
+      }
     } else {
       for (let t = 0; t < 2; t++) for (let i = 0; i < 7; i++) {
         const bx = t * 900 + i * 150, h = 150 + (i * 71) % 120;
@@ -2334,26 +2440,24 @@ const ICONS = [
     }
     return g;
   }
-  const cityG = buildBack("city"), snowG = buildBack("snow");
-  cityG.style.display = "none"; snowG.style.display = "none";
-  backG.appendChild(cityG); backG.appendChild(snowG);
+  const cityG = buildBack("city"), snowG = buildBack("snow"), duneG = buildBack("dune");
+  cityG.style.display = "none"; snowG.style.display = "none"; duneG.style.display = "none";
+  backG.appendChild(cityG); backG.appendChild(snowG); backG.appendChild(duneG);
 
   // 时代切换（颜色平滑过渡）
   const eraTintEl = $("eraTint");
   let curEra = -1, tintOp = 0;
 
   // 人生阶段字幕
-  const ERA_TITLE = [
-    { age: "18 – 28 岁", name: "海边的路" },
-    { age: "29 – 45 岁", name: "进城的坡道" },
-    { age: "46 – 60 岁", name: "山口的断崖" },
-  ];
   const eraBanner = $("era-banner");
   let eraBannerT = null;
   function showEraBanner(e) {
     if (!eraBanner) return;
-    eraBanner.querySelector("b").textContent = ERA_TITLE[e].age;
-    eraBanner.querySelector("span").textContent = ERA_TITLE[e].name;
+    const z = ZONES[e] || ZONES[0];
+    eraBanner.querySelector("b").textContent = z.age;
+    eraBanner.querySelector("span").textContent = z.name;
+    // 换路段时再补一句怎么骑，气泡里说完就散，不占屏幕
+    if (z.tip && running && !window.__lifeOpen) say(z.tip);
     eraBanner.classList.add("on");
     // 窄屏上字幕会压住开场的操作提示，先把提示让开，字幕淡出后再还回来
     const narrow = window.matchMedia("(max-width: 700px)").matches;
@@ -2364,7 +2468,11 @@ const ICONS = [
       if (narrow && driveTip && !tipGone) driveTip.style.opacity = "";
     }, 3000);
   }
+  let curZone = -1;
   const lTreesEl = $("lTrees");
+  const wavesEl = $("lWaves"), beachEl = $("lBeach");
+  if (wavesEl) wavesEl.style.transition = "opacity 1.4s";
+  if (beachEl) beachEl.style.transition = "opacity 1.4s";
   lTreesEl.style.transition = "opacity 1.2s";
   hillFill.style.transition = "fill 1s linear";
   roadBand.style.transition = "stroke 1s linear";
@@ -2376,9 +2484,14 @@ const ICONS = [
     hillFill.style.fill = ERA_PAL[e].fill;
     roadBand.style.stroke = ERA_PAL[e].road;
     eraTintEl.setAttribute("fill", ERA_PAL[e].tint);
-    cityG.style.display = e === 1 ? "" : "none";
-    snowG.style.display = e === 2 ? "" : "none";
-    lTreesEl.style.opacity = e === 2 ? 0.25 : (e === 1 ? 0.7 : 1);
+    // 远景按路段分配，别让雪山凭空出现在梯田后面
+    cityG.style.display = (e === 1 || e === 3) ? "" : "none";
+    duneG.style.display = e === 4 ? "" : "none";
+    snowG.style.display = e === 5 ? "" : "none";
+    lTreesEl.style.opacity = e === 5 ? 0.2 : (e >= 1 ? 0.62 : 1);
+    // 越往内陆走海越远：到梯田之后就不该还贴着海岸线骑了
+    if (wavesEl) wavesEl.style.opacity = e >= 4 ? "0.10" : (e >= 2 ? "0.38" : "1");
+    if (beachEl) beachEl.style.opacity = e >= 4 ? "0.35" : "1";
   }
 
   // 车身状态
@@ -2770,6 +2883,10 @@ const ICONS = [
   }
   let hudTimer = 0, tipGone = false, scoreAcc = 0, lastDist = 0;
 
+  // 自动化验证用：记录最近一次路面事件（加速带 / 水坑）碰撞那一帧的前后速度。
+  // 靠外部采样永远对不准碰撞时刻——碰撞判定的半径比车身中心大得多。
+  let lastEvent = null;
+
   // ---------- 竖屏驾驶舱的读数 ----------
   const deckKmh = $("deck-kmh"), deckDist = $("deck-dist"), deckFish = $("deck-fish"),
         deckCombo = $("deck-combo"), deckComboBox = $("deck-combo-box"),
@@ -2807,6 +2924,9 @@ const ICONS = [
   // 有了它，任何障碍组合都不可能把人永久困在原处。
   let stuckRef = 0, stuckT = 0;
   let dbgDrive = {}, dbgOnSand = false;   // 调试用：把驱动内部状态暴露出去
+  // 加速带的余韵：光把速度加上去没用，drive() 每帧都会把速度夹回 1.45 倍上限，
+  // 冲过去那一帧就被吃回去了。得连上限一起临时抬高，这段冲刺才真的存在。
+  let boostT = 0;
   function drive(dt) {
     // 坡度只影响「这口气能蹬到多快」，绝不往回拽。
     // 之前的写法是用 slope 直接减速度，结果陡坡上蹬车力小于重力，
@@ -2814,6 +2934,7 @@ const ICONS = [
     const grade = Math.max(0, -curSlope);                       // 上坡程度
     const climb = Math.min(1, grade * 1.7);
     let cap = speedCap * (1 - 0.40 * climb);                    // 上坡：能到的最高速
+    if (boostT > 0) cap = speedCap * 1.72;                      // 加速带期间放开上限
     if (curSlope > 0) cap = speedCap * (1 + 0.45 * Math.min(1, curSlope * 1.7)); // 下坡：冲得更快
 
     // 力竭**不禁止**蹬车，只是没劲：否则「被倒木顶住 + 刚好力竭」会彻底动不了。
@@ -2847,7 +2968,7 @@ const ICONS = [
       }
     }
     if (stamina > staminaMax) stamina = staminaMax;
-    speed = Math.max(0, Math.min(speedCap * 1.45, speed));
+    speed = Math.max(0, Math.min(speedCap * (boostT > 0 ? 1.78 : 1.45), speed));
     dbgDrive = { speed: speed, cap: cap, power: pedaling ? 1 : 0, exhausted: exhausted,
                  stamina: stamina, grade: grade, slope: curSlope, pedaling: pedaling };
   }
@@ -2857,6 +2978,7 @@ const ICONS = [
     const dt = Math.min(now - last, 50) / 1000;
     last = now;
     time += dt;
+    if (boostT > 0) boostT = Math.max(0, boostT - dt);
     if (running) { drive(dt); dist += BASE_SPEED * speed * dt; updateDust(dt); }
     else { if (stamina < staminaMax) stamina = Math.min(staminaMax, stamina + 18 * dt); }
     if (dist < lastDist - 1) { resetRoad(); stuckRef = dist; stuckT = 0; }   // 骑到尽头绕回了
@@ -2912,6 +3034,12 @@ const ICONS = [
     drawTerrain(dist);
     // 阶段切换：地形、色调、远景随之变化
     applyEra(eraAt(dist + 450));
+    // 第一次踏进某一段路时，把路名和这一段的脾气念一遍
+    if (curZone !== curEra) {
+      const first = curZone < 0;
+      curZone = curEra;
+      if (!first) { showEraBanner(curZone); tone("sine", 430, 640, 0.22, 0.05); }
+    }
     const wantOp = ERA_PAL[curEra].op;
     tintOp += (wantOp - tintOp) * Math.min(1, dt * 1.6);
     eraTintEl.setAttribute("opacity", tintOp.toFixed(3));
@@ -3068,7 +3196,13 @@ const ICONS = [
         for (let g = 0; g < 24 && (inGap(nx - 120) || inGap(nx) || inGap(nx + 260)); g++) nx += 260;
         o.wx = nx; o.hit = false; o.miss = 0; rx = nx - dist;
         const others = OB_ORDER.filter(k => k !== o.type);
-        const nextType = others[Math.floor(Math.random() * others.length)];
+        // 三块里至少留一块是「加速带 / 水坑」这类不伤人的，
+        // 否则连续四块都是要跳要躲的，骑起来只剩紧张没有喘息。
+        const gentle = others.filter(k => OB_FRIENDLY.indexOf(k) >= 0);
+        const rough = others.filter(k => OB_FRIENDLY.indexOf(k) < 0);
+        const roughN = obstacles.filter(p => p !== o && OB_FRIENDLY.indexOf(p.type) < 0).length;
+        const pool = (roughN >= 3 && gentle.length) ? gentle : others;
+        const nextType = pool[Math.floor(Math.random() * pool.length)];
         if (nextType !== o.type) {
           o.el.remove();
           o.type = nextType;
@@ -3125,6 +3259,35 @@ const ICONS = [
           kickSusp(120);
           tone("triangle", 300, 700, 0.2, 0.08);
           say("飞起来了！按住「蹬」可以后空翻");
+        }
+      } else if (hitOb.type === "boost") {
+        // 加速带：白捡一段速度，蹬得越猛弹得越远，是路上唯一的「白给」
+        if (!hitOb.hit && onGround) {
+          hitOb.hit = true;
+          const vBefore = speed;
+          boostT = 2.2;                     // 放开上限的时间，够冲过一个小坡
+          speed = Math.min(speedCap * 1.72, speed + 0.85);
+          lastEvent = { kind: "boost", before: vBefore, after: speed };
+          kickSusp(60);
+          tone("triangle", 520, 1040, 0.16, 0.06);
+          burstDust(hitRx, gyMid, 6, 0.7);
+          score += Math.round(5 * mul());
+          showScore();
+          bumpCombo();
+          popStunt("加速！");
+        }
+      } else if (hitOb.type === "puddle") {
+        // 水坑：溅一身水。掉速度和体力，但不算摔——路不好走，不等于你做错了
+        if (!hitOb.hit && onGround) {
+          hitOb.hit = true;
+          const vBefore = speed;
+          speed *= 0.78;
+          stamina = Math.max(0, stamina - 4);
+          lastEvent = { kind: "puddle", before: vBefore, after: speed };
+          shake = Math.max(shake, 0.4);
+          for (let i = 0; i < 3; i++) burstDust(hitRx, gyMid - 4, 3, 0.9);
+          tone("sine", 700, 260, 0.16, 0.05);
+          say("溅了一身水");
         }
       } else if (hitOb.type === "log") {
         const cfg = OB.log;
@@ -3521,6 +3684,8 @@ const ICONS = [
     showEra: () => showEraBanner(curEra < 0 ? 0 : curEra),
     getStamina: () => stamina,
     refillStamina: () => { stamina = staminaMax; exhausted = false; },
+    getEvent: () => lastEvent,
+    clearEvent: () => { lastEvent = null; },
     groundY: gySafe,
     onGround: () => onGround,
     inGap: inGap,
@@ -3616,6 +3781,7 @@ const ICONS = [
     title.setAttribute('text-anchor', 'middle'); title.setAttribute('x', '0'); title.setAttribute('y', '432');
     title.setAttribute('font-size', '11'); title.setAttribute('fill', '#3a3530');
     title.textContent = CHAPTERS[m.id].title.slice(0, 7); g.appendChild(title);
+    g.style.transition = 'opacity .25s';
     m.el = g; msLayer.appendChild(g);
   }
 
@@ -3630,6 +3796,10 @@ const ICONS = [
       m.el.setAttribute('transform', `translate(${sx.toFixed(1)} ${(gy - 498).toFixed(1)})`);
       m.el.classList.toggle('done', m.done);
       m.el.classList.toggle('active', stationActive === m.id);
+      // 站牌一靠近就让开：它是路标，不该在最后两百米挡住你眼前的倒木和断崖。
+      // 远处照样看得见（知道前面有站），近了只剩个影子。
+      const d2 = Math.abs(sx - 450);
+      m.el.style.opacity = d2 < 300 ? String(Math.max(0.16, d2 / 300 * 0.75)) : '';
     });
     // 到站补给：经过一座站牌就歇一口气——回满体力、给一条鱼。
     // 不然「距下一站 XXXm」只是句装饰：玩家骑了半天也不知道往前有什么意义。
