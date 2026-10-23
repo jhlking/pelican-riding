@@ -76,6 +76,10 @@
     display: flex; justify-content: space-between; align-items: flex-end;
     pointer-events: none;
   }
+  /* 「蹬」放右边：它要一直按着，右手拇指最省力；「跳」是点按，交给左手。
+     之前 DOM 里「蹬」排在前面（靠左），提示文案全在说反话。 */
+  #pedalBtn { order: 2; }
+  #jumpBtn2 { order: 1; }
   #pedal-pad button {
     pointer-events: auto;
     width: 66px; height: 66px; border-radius: 50%; padding: 0; line-height: 1.1;
