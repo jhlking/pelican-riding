@@ -412,6 +412,43 @@
   .path-row.good .path-age:last-child { color: #2f7d5f; font-weight: 700; }
   .path-row.bad .path-age:last-child { color: #b0473f; font-weight: 700; }
 
+  /* 结算 · 六十岁的结语 + 路上的行囊 */
+  .r-epi {
+    margin: 2px 0 12px; padding: 12px 15px; border-radius: 12px;
+    background: rgba(47,93,80,.08); border-left: 3px solid #2f5d50;
+    font-size: .92rem; line-height: 1.85; color: #33413a;
+  }
+  .r-epi b {
+    display: block; font-size: .72rem; letter-spacing: .25em;
+    color: #2f5d50; opacity: .75; margin-bottom: 4px; font-weight: 700;
+  }
+  .r-props { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; margin-bottom: 12px; }
+  .r-props h3 { margin: 0 0 8px; font-size: .9rem; color: #2f5d50; }
+  .rp-grid { display: flex; flex-wrap: wrap; gap: 7px; }
+  .rp-chip {
+    display: inline-flex; align-items: center; gap: 4px; font-size: .78rem;
+    border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; background: #f7f3ea;
+  }
+  .rp-chip i { font-style: normal; opacity: .6; font-variant-numeric: tabular-nums; }
+  .rp-none { font-size: .84rem; opacity: .75; line-height: 1.6; }
+
+  /* 道具飘字：和特技飘字错开，上面报道理，中间报收获 */
+  #prop-pop {
+    position: absolute; left: 50%; top: 14%; transform: translateX(-50%);
+    z-index: 5; pointer-events: none; text-align: center; opacity: 0;
+    background: rgba(47,93,80,.93); color: #fff; border-radius: 12px;
+    padding: 8px 16px; max-width: 86%; box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  }
+  #prop-pop .pp-name { font-size: .95rem; font-weight: 800; letter-spacing: .04em; }
+  #prop-pop .pp-line { font-size: .78rem; line-height: 1.5; opacity: .92; margin-top: 2px; }
+  #prop-pop.on { animation: propPop 3.2s ease forwards; }
+  @keyframes propPop {
+    0% { opacity: 0; transform: translate(-50%, -10px); }
+    8% { opacity: 1; transform: translate(-50%, 0); }
+    82% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, 0); }
+  }
+
   /* 启示录 */
   .codex-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
   .codex-item { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; background: #fff; }
@@ -1061,8 +1098,9 @@
 <div id="speedlines"></div>
 <div id="vignette"></div>
 <div id="stunt-pop"></div>
+<div id="prop-pop"><div class="pp-name" id="pp-name"></div><div class="pp-line" id="pp-line"></div></div>
 <div id="era-banner"><b></b><span></span></div>
-<div id="drive-tip">按住「蹬」前进 · 倒木和断崖按「跳」，腾空时还能再按一次补力 · 跳台按住「蹬」可后空翻 · 路上共六段地形，越往后越颠</div>
+<div id="drive-tip">按住「蹬」前进 · 倒木和断崖按「跳」，腾空时还能再按一次补力 · 路上飘着的小物件每件都带一条道理，顺手接住</div>
 <div id="drive-hud">
   <span class="lab">体力</span>
   <span class="stam"><span id="stam-fill"></span></span>
@@ -1089,7 +1127,7 @@
   </div>
   <div class="deck-stam"><i id="deck-stam-fill"></i></div>
   <div class="deck-prog" id="deck-prog">已领悟 0 / 14</div>
-  <div class="deck-note" id="deck-note">按住右边的「蹬」出发，遇到倒木和断崖按左边的「跳」。<br>腾空时还能再按一次「跳」补力。</div>
+  <div class="deck-note" id="deck-note">按住右边的「蹬」出发，倒木和断崖按左边的「跳」。<br>路上飘着的小物件，接住都带一条道理。</div>
   <div class="deck-btns">
     <button id="deck-pause" type="button">暂停</button>
     <button id="deck-garage" type="button">车库</button>
@@ -1112,7 +1150,7 @@
   <span class="odo" id="odo" aria-live="off">里程 0.00 km</span>
   <span class="odo" id="score" aria-live="polite">接到鱼 0 条 · 最高 0</span>
 </div>
-<p class="hint"><kbd>→</kbd> 按住蹬车 · <kbd>←</kbd> 刹车 · <kbd>↑</kbd>/点击画面 起跳（腾空时还能再补跳一次，连按「跳」＝连跳）· 石头碾过去、倒木要跳、软沙拖慢你、木质跳台会把你弹上天、绿色加速带压过去白捡一口气、水坑会溅你一身并掉速 · 每 2600 米换一次风向，顺风省力、顶风费劲 · 岔路口按「跳」抄近道（省 410 米但后面更挤），不按就走大路（体力回满）（空中按住 <kbd>→</kbd> 后空翻、<kbd>←</kbd> 前空翻，落地结算特技分）· 到站会补给体力 · 同一处连着栽两次就会放行，不会被卡住 · 接鱼攒钱去「车库」改装 · 摔了、翻了、蹬不动了，才会懂一条道理 · <kbd>空格</kbd> 响铃 · <kbd>P</kbd> 暂停</p>
+<p class="hint"><kbd>→</kbd> 按住蹬车 · <kbd>←</kbd> 刹车 · <kbd>↑</kbd>/点击画面 起跳（腾空时还能再补跳一次，连按「跳」＝连跳）· 石头碾过去、倒木要跳、软沙拖慢你、木质跳台会把你弹上天、绿色加速带压过去白捡一口气、水坑会溅你一身并掉速 · 每 2600 米换一次风向，顺风省力、顶风费劲 · 岔路口按「跳」抄近道（省 410 米但后面更挤），不按就走大路（体力回满）（空中按住 <kbd>→</kbd> 后空翻、<kbd>←</kbd> 前空翻，落地结算特技分）· 到站会补给体力 · 同一处连着栽两次就会放行，不会被卡住 · 路上飘着的小物件（夜灯、伞、旧书……）每一件都藏着一条道理，顺手接住 · 接鱼攒钱去「车库」改装 · 摔了、翻了、蹬不动了，才会懂一条道理 · <kbd>空格</kbd> 响铃 · <kbd>P</kbd> 暂停</p>
 
 <!-- ===== 人生骑行：HUD 与覆盖层 ===== -->
 <div id="life-hud">
@@ -1188,8 +1226,10 @@
     <div id="r-radar"></div>
     <div class="pt-name" id="pt-name"></div>
     <div class="pt-desc" id="pt-desc"></div>
+    <div class="r-epi" id="r-epi"></div>
     <div class="ledger" id="ledger"></div>
     <div class="tip"><h3 id="tip-title"></h3><ul id="tip-list"></ul></div>
+    <div class="r-props" id="r-props"></div>
     <div class="path" id="path-list"></div>
     <button class="btn primary" id="r-restart">再骑一趟</button>
   </div>
@@ -2424,6 +2464,10 @@ const ICONS = [
     treats.forEach(t => t.el.remove());
     treats.length = 0;
     nextTreat = dist + 420;
+    props.forEach(it => it.el.remove());
+    props.length = 0;
+    nextProp = dist + 900 + Math.random() * 600;
+    shieldOn = false; charmT = 0; guardT = 0;
     prevGY = null;
     gapEntryY = null;
     canFlip = false; airRot = 0; airTime = 0; airPeak = 0;
@@ -2750,13 +2794,137 @@ const ICONS = [
     if (t.gold) say("金色的鱼！");
   }
 
+  // ---------- 路上的行囊：八件小东西，每件一句道理 ----------
+  // 模仿登山赛车的路上道具：接住就有看得见的好处，也顺手带走书里的一条道理。
+  // 出处在游戏已引用的章节之内，不编造原书没有的内容。
+  const PROPS = [
+    { key: 'lamp',     name: '一盏小夜灯',  ico: '🏮', color: '#b8892b',
+      line: '到点就睡。熬夜不是偷时间，是向明天的自己借命。',
+      fx: '体力回满，力竭解除' },
+    { key: 'apple',    name: '一只苹果',    ico: '🍎', color: '#c0504d',
+      line: '好好吃饭，每天走够步数——最便宜的药，都摆在超市里。',
+      fx: '体力 +22' },
+    { key: 'book',     name: '一本旧书',    ico: '📖', color: '#4a7fa5',
+      line: '学一门越老越值钱的手艺，复利才算真正开始。',
+      fx: '学问加分 · 鱼 +2' },
+    { key: 'umbrella', name: '一把伞',      ico: '🌂', color: '#5a8a5f',
+      line: '伞在晴天是累赘，在雨天是命。留一笔亏得起的本，就是给自己留一把伞。',
+      fx: '挡住下一次摔跤（断崖除外）' },
+    { key: 'piggy',    name: '一只存钱罐',  ico: '🐷', color: '#b0473f',
+      line: '三十岁的人九成二能活到六十岁——别拿「活不到」当不存钱的理由。',
+      fx: '鱼 +4' },
+    { key: 'battery',  name: '一块电池',    ico: '🔋', color: '#5a8a5f',
+      line: '心力也是本钱。崩了没关系，头三个月别做任何不可逆的决定。',
+      fx: '解除力竭 · 体力 +25' },
+    { key: 'compass',  name: '一枚指南针',  ico: '🧭', color: '#4a7fa5',
+      line: '时间花在哪儿，人就长在哪儿。把它记在你自己的账上。',
+      fx: '接下来 9 秒一路顺风' },
+    { key: 'bird',     name: '一只同行的鸟', ico: '🐦', color: '#2f5d50',
+      line: '把账算明白的关系，才跑得久。有人同行，上坡就不那么陡。',
+      fx: '连击 +2 · 10 秒内摔跤不掉连击' },
+  ];
+  const props = [];                    // 路上飘着的道具
+  let nextProp = 900;                  // 第一个道具早点出现，让人知道有这回事
+  let shieldOn = false;                // 伞：挡住下一次摔跤
+  let charmT = 0;                      // 指南针：临时顺风
+  let guardT = 0;                      // 同行的鸟：连击保护
+  let propTaken = 0;
+  let noProps = false;                 // 自动化测试可以关掉道具生成
+  function makePropEl(p) {
+    const g = document.createElementNS(NS, "g");
+    const halo = document.createElementNS(NS, "circle");
+    halo.setAttribute("r", "22"); halo.setAttribute("fill", "none");
+    halo.setAttribute("stroke", p.color); halo.setAttribute("stroke-width", "1.4");
+    halo.setAttribute("opacity", ".5");
+    const bg = document.createElementNS(NS, "circle");
+    bg.setAttribute("r", "17.5"); bg.setAttribute("fill", "#fffdf6");
+    bg.setAttribute("stroke", p.color); bg.setAttribute("stroke-width", "2.4");
+    const em = document.createElementNS(NS, "text");
+    em.setAttribute("text-anchor", "middle"); em.setAttribute("y", "6.5");
+    em.setAttribute("font-size", "17");
+    em.textContent = p.ico;
+    g.appendChild(halo); g.appendChild(bg); g.appendChild(em);
+    return g;
+  }
+  function spawnProp() {
+    if (noProps || props.length >= 2) return;
+    const p = PROPS[Math.floor(Math.random() * PROPS.length)];
+    const el = makePropEl(p);
+    treatsG.appendChild(el);
+    props.push({ p, el, wx: dist + 980, h: 250 + Math.random() * 58, ph: Math.random() * 6.28 });
+  }
+  function saveBank() { try { localStorage.setItem("pelican-bank", String(fishBank)); } catch (_) {} }
+  function applyProp(p) {
+    switch (p.key) {
+      case 'lamp': stamina = staminaMax; exhausted = false; break;
+      case 'apple': stamina = Math.min(staminaMax, stamina + 22); break;
+      case 'book': {
+        const g = Math.round(120 * mul());
+        score += g; fishBank += 2; saveBank();
+        if (score > best) best = score;
+        showScore();
+        popStunt("学问 +" + g);
+        break;
+      }
+      case 'umbrella': shieldOn = true; break;
+      case 'piggy': fishBank += 4; saveBank(); showScore(); break;
+      case 'battery': exhausted = false; stamina = Math.min(staminaMax, stamina + 25); break;
+      case 'compass': charmT = 9; break;
+      case 'bird':
+        bumpCombo();
+        if (combo < 9) combo = Math.min(9, combo + 1);
+        if (combo > comboBest) comboBest = combo;
+        comboT = Math.max(comboT, 12); guardT = 10;
+        stamina = Math.min(staminaMax, stamina + 8);
+        break;
+    }
+    if (window.Ride && window.Ride.setNote) window.Ride.setNote(p.line, 12);
+  }
+  // 飘字：上面是道具名，下面是这条道理。3 秒散掉，不挡路。
+  const propPopEl = document.getElementById("prop-pop");
+  let propPopT = null;
+  function showPropPop(p) {
+    if (!propPopEl) return;
+    document.getElementById("pp-name").textContent = p.ico + " " + p.name + " · " + p.fx;
+    document.getElementById("pp-line").textContent = p.line;
+    propPopEl.classList.remove("on");
+    void propPopEl.offsetWidth;
+    propPopEl.classList.add("on");
+    clearTimeout(propPopT);
+    propPopT = setTimeout(() => propPopEl.classList.remove("on"), 3200);
+  }
+  function catchProp(item, x, y) {
+    const p = item.p;
+    propTaken++;
+    applyProp(p);
+    showPropPop(p);
+    tone("sine", 740, 1180, 0.18, 0.07);
+    tone("sine", 1180, 1560, 0.16, 0.05, 0.09);
+    burstDust(x, y + 34, 6, 0.7);
+    if (window.Ride && window.Ride.onProp) { try { window.Ride.onProp(p.key); } catch (_) {} }
+  }
+  // 伞用掉的那一下：不摔了，但伞也没了——风险这东西，挡一次就得再备一把
+  function shieldUsed(what) {
+    shieldOn = false;
+    shake = 0.6;
+    say("那把伞替你挡了一下：" + what + "没摔成");
+    popStunt("伞护住了");
+    tone("triangle", 420, 840, 0.22, 0.08);
+    if (window.Ride && window.Ride.setNote)
+      window.Ride.setNote("伞用掉了。风险这东西，挡一次就要再备一把。", 10);
+  }
+
   // ---------- 连击 ----------
   function bumpCombo() {
     combo = Math.min(9, combo + 1);
     comboT = 6;
     if (combo > comboBest) comboBest = combo;
   }
-  function breakCombo() { combo = 0; comboT = 0; }
+  // 同行的鸟还在的那几秒，摔一跤不掉连击：有人扶你一把，就不算全输
+  function breakCombo() {
+    if (guardT > 0) { comboT = Math.max(comboT, 6); return; }
+    combo = 0; comboT = 0;
+  }
 
   // ---------- 特技飘字 ----------
   const stuntPopEl = $("stunt-pop");
@@ -2974,7 +3142,9 @@ const ICONS = [
     if (curSlope > 0) cap = speedCap * (1 + 0.45 * Math.min(1, curSlope * 1.7)); // 下坡：冲得更快
     // 风必须放在最后：上面那两行是 cap = ...（赋值），
     // 放在前面会被下坡整段覆盖掉，顺风就白算了。
-    const w = windAt(dist + 450);
+    // 指南针（charmT）把风掰成顺风：时间花对地方，路就顺了。
+    const wReal = windAt(dist + 450);
+    const w = charmT > 0 ? Math.max(wReal, 1) : wReal;
     if (w > 0) cap *= 1.13;                                     // 顺风：推着你走
     else if (w < 0) cap *= 0.87;                                // 顶风：得自己扛
 
@@ -3012,12 +3182,12 @@ const ICONS = [
     speed = Math.max(0, Math.min(speedCap * (boostT > 0 ? 1.78 : 1.45), speed));
     dbgDrive = { speed: speed, cap: cap, power: pedaling ? 1 : 0, exhausted: exhausted,
                  stamina: stamina, grade: grade, slope: curSlope, pedaling: pedaling, wind: w };
-    // 换风区时说一句，别让玩家莫名其妙觉得今天蹬不动
-    if (w !== lastWind) {
+    // 换风区时说一句，别让玩家莫名其妙觉得今天蹬不动（按真实风说，不受指南针干扰）
+    if (wReal !== lastWind) {
       const had = lastWind;
-      lastWind = w;
-      if (w > 0 && had <= 0) say("顺风！省力不少");
-      else if (w < 0 && had >= 0) { say("顶风了，蹬重点"); popStunt("逆风"); }
+      lastWind = wReal;
+      if (wReal > 0 && had <= 0) say("顺风！省力不少");
+      else if (wReal < 0 && had >= 0) { say("顶风了，蹬重点"); popStunt("逆风"); }
     }
   }
 
@@ -3027,6 +3197,8 @@ const ICONS = [
     last = now;
     time += dt;
     if (boostT > 0) boostT = Math.max(0, boostT - dt);
+    if (charmT > 0) charmT = Math.max(0, charmT - dt);
+    if (guardT > 0) guardT = Math.max(0, guardT - dt);
     if (running) { drive(dt); dist += BASE_SPEED * speed * dt; updateDust(dt); }
     else { if (stamina < staminaMax) stamina = Math.min(staminaMax, stamina + 18 * dt); }
     if (dist < lastDist - 1) { resetRoad(); stuckRef = dist; stuckT = 0; }   // 骑到尽头绕回了
@@ -3070,6 +3242,8 @@ const ICONS = [
       }
       // 生成空中的鱼
       if (dist >= nextTreat) { spawnTreat(); nextTreat = dist + 420 + Math.random() * 520; }
+      // 生成路上的行囊：比鱼稀得多，每件都值一句道理
+      if (dist >= nextProp) { spawnProp(); nextProp = dist + 1500 + Math.random() * 1200; }
     }
     if (rainGain) rainGain.gain.value = soundOn && running ? rain * 0.07 : 0;
     if (flash > 0) {
@@ -3155,12 +3329,18 @@ const ICONS = [
           const impact = bikeVY;
           const dev = norm180(tiltDeg - slopeDeg);   // 离“正着落”差多少度
           if (Math.abs(dev) > 76) {                  // 姿态不对 = 翻车
-            stamina = Math.max(0, stamina - 16);
-            speed *= 0.22; shake = 1; tiltDeg = slopeDeg; tiltRate = 0;
-            say("翻车啦！"); tone("square", 110, 60, 0.3, 0.14);
-            burstDust(450, gyMid, 12, 1.5);
-            breakCombo();
-            if (window.Ride && window.Ride.onFail) window.Ride.onFail("flip");
+            if (shieldOn) {                          // 伞替你扛了这一下
+              shieldUsed("空翻");
+              tiltDeg = slopeDeg; tiltRate = 0;
+              kickSusp(-Math.min(impact, 1400) * 0.32);
+            } else {
+              stamina = Math.max(0, stamina - 16);
+              speed *= 0.22; shake = 1; tiltDeg = slopeDeg; tiltRate = 0;
+              say("翻车啦！"); tone("square", 110, 60, 0.3, 0.14);
+              burstDust(450, gyMid, 12, 1.5);
+              breakCombo();
+              if (window.Ride && window.Ride.onFail) window.Ride.onFail("flip");
+            }
           } else {
             // 平稳落地：结算这一跳的特技
             settleStunt(dev);
@@ -3305,11 +3485,16 @@ const ICONS = [
       if (hitOb.type === "rock" && !hitOb.hit && Math.abs(speed) > 0.15) {
         hitOb.hit = true;
         if (Math.abs(speed) > 2.3) {                  // 太快，直接绊翻
-          hitOb.miss++;
-          speed *= 0.3; shake = 1; stamina = Math.max(0, stamina - 12);
-          say("太快了，石头把车绊翻了！"); tone("square", 120, 60, 0.3, 0.14);
-          breakCombo();
-          if (window.Ride && window.Ride.onFail) window.Ride.onFail("rock");
+          if (shieldOn) {                             // 伞扛住了：不掉速，碾过去
+            speed = Math.max(speed, 1.4);
+            shieldUsed("石头");
+          } else {
+            hitOb.miss++;
+            speed *= 0.3; shake = 1; stamina = Math.max(0, stamina - 12);
+            say("太快了，石头把车绊翻了！"); tone("square", 120, 60, 0.3, 0.14);
+            breakCombo();
+            if (window.Ride && window.Ride.onFail) window.Ride.onFail("rock");
+          }
         } else {                                      // 碾过去：掉点速度，车身自己爬上去
           hitOb.hit = true;                           // 只结算一次，别在石头上连乘掉速
           speed *= 0.86;
@@ -3372,11 +3557,17 @@ const ICONS = [
         const touching = Math.abs(hitRx - 450) < 44;
         if (!high && touching && logCool <= 0) {
           if (Math.abs(speed) > 2.2) {                // 高速撞倒木 → 摔
-            speed *= 0.25; shake = 1; stamina = Math.max(0, stamina - 12);
-            say("被倒木绊翻了！"); tone("square", 120, 60, 0.3, 0.14);
-            burstDust(450, gyMid, 12, 1.4);
-            breakCombo();
-            if (window.Ride && window.Ride.onFail) window.Ride.onFail("log");
+            if (shieldOn) {                           // 伞把你撑了过去：白得一次小跳
+              hitOb.hit = true; logCool = 0.5;
+              shieldUsed("倒木");
+              doJump(JUMP_V * 0.95, false);
+            } else {
+              speed *= 0.25; shake = 1; stamina = Math.max(0, stamina - 12);
+              say("被倒木绊翻了！"); tone("square", 120, 60, 0.3, 0.14);
+              burstDust(450, gyMid, 12, 1.4);
+              breakCombo();
+              if (window.Ride && window.Ride.onFail) window.Ride.onFail("log");
+            }
           } else {                                    // 顶住：退回去，重新冲一次
             hitOb.miss++;
             // 原来是「顶在原地 + 每撞一次后退 62px」：力竭时会一路倒退，
@@ -3431,6 +3622,21 @@ const ICONS = [
         continue;
       }
       t.el.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${(Math.sin(time * 4 + t.ph) * 8).toFixed(1)})`);
+    }
+
+    // 路上的行囊：和鱼一样飘着（判定窗口也相同），接住就带走一条道理
+    for (let i = props.length - 1; i >= 0; i--) {
+      const it = props[i];
+      const x = it.wx - dist;
+      const y = gySafe(it.wx) - it.h + Math.sin(time * 2.2 + it.ph) * 7;
+      const hit = x > 538 && x < 652 && y > 198 + dy && y < 288 + dy;
+      if (hit || x < -80 || x > 1300) {
+        if (hit) catchProp(it, x, y);
+        it.el.remove();
+        props.splice(i, 1);
+        continue;
+      }
+      it.el.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
     }
     if (plus.life > 0) {
       plus.life -= dt * 1.2;
@@ -3727,11 +3933,21 @@ const ICONS = [
     bikeY = (gr + gf) / 2; bikeVY = 0; onGround = true; prevGY = bikeY;
     tiltDeg = 0; tiltRate = 0; speed = 0.9; shake = 1;   // 给点初速，别每次从零磨
     canFlip = false; airRot = 0; airTime = 0; airPeak = 0;
-    say("掉下去了…退回来重来");
+    // 伞挡得住雨，挡不住悬崖：有些风险没法转嫁，只能靠提前攒够速度
+    const savedByShield = shieldOn;
+    if (savedByShield) {
+      shieldOn = false;
+      say("伞挡得住雨，挡不住悬崖");
+      popStunt("伞救不了断崖");
+      if (window.Ride && window.Ride.setNote)
+        window.Ride.setNote("伞挡得住雨，挡不住悬崖。有些坎，只能靠提前攒够速度。", 10);
+    } else {
+      say("掉下去了…退回来重来");
+    }
     tone("square", 200, 60, 0.5, 0.12);
     breakCombo();
     stuckRef = dist; stuckT = 0;
-    if (window.Ride && window.Ride.onFail) window.Ride.onFail("cliff");
+    if (!savedByShield && window.Ride && window.Ride.onFail) window.Ride.onFail("cliff");
   }
 
   // 让车身立刻贴合当前地面（到站 / 恢复骑行时用）
@@ -3808,6 +4024,24 @@ const ICONS = [
     getEvent: () => lastEvent,
     clearEvent: () => { lastEvent = null; },
     getWind: () => windAt(dist + 450),
+    // ---- 路上的行囊 ----
+    onProp: null,                          // 由人生系统注入：拾取记录进存档
+    getPropMeta: () => PROPS.map(p => ({ key: p.key, name: p.name, ico: p.ico, line: p.line })),
+    getPropsTaken: () => propTaken,
+    getShield: () => shieldOn,
+    getCharm: () => charmT,
+    getGuard: () => guardT,
+    debugNoProps: f => { noProps = !!f; },
+    // 测试：在车头正前方摆一个指定道具（放进必被接住的判定窗口里）
+    debugSpawnProp: (key, ahead) => {
+      const p = PROPS.find(x => x.key === key) || PROPS[0];
+      const el = makePropEl(p);
+      treatsG.appendChild(el);
+      const wx = dist + 450 + (ahead || 90);
+      const h = Math.min(340, Math.max(60, gySafe(wx) - bikeY + 255));
+      props.push({ p, el, wx, h, ph: 0 });
+      return p.key;
+    },
     getFork: () => ({ armed: forkArmed, id: forkId, hardUntil: hardUntil,
                       next: forkX(nextFork), nextId: nextFork, at: dist + 450 }),
     armFork: armFork,
@@ -3858,13 +4092,14 @@ const ICONS = [
 
   /* ---------- 状态 ---------- */
   let state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 },
-                picks: [], done: [], stageSeen: [] };
+                picks: [], done: [], stageSeen: [], props: {} };
   function load() {
     try {
       const s = JSON.parse(localStorage.getItem(K));
       if (s && s.origin) {
         state = Object.assign(state, s);
         if (!state.stageSeen) state.stageSeen = [];
+        if (!state.props) state.props = {};
       }
     } catch (_) {}
   }
@@ -3996,6 +4231,11 @@ const ICONS = [
   }
   Ride.onFail = onFail;
   window.__lifeFail = function (kind) { lastFailAt = 0; onFail(kind || "test"); };
+  // 路上捡到一件行囊：记进存档，结算那天一起清点
+  Ride.onProp = key => {
+    state.props[key] = (state.props[key] || 0) + 1;
+    save();
+  };
 
   /* ---------- 覆盖层工具 ---------- */
   function showOverlay(id) { $(id).classList.remove('hidden'); }
@@ -4254,6 +4494,37 @@ const ICONS = [
     });
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" style="max-width:' + W + 'px;display:block;margin:0 auto">' + g + '</svg>';
   }
+  /* ---------- 结局结语：无论骑成什么样，六十岁那年都有一句话等着你 ----------
+     按「最薄的一样本钱 × 最终评级」组合：好结局有好的清醒，坏结局有坏的翻篇，
+     没有一句话是审判，每一句都是账。 */
+  const EPILOGUES = {
+    health: {
+      good: '你把别的都经营得不错，唯独身体一直欠着账。那些用睡眠和久坐换来的效率，其实都记在利息里。好在身体这本账什么时候开始记都不晚：睡够、走够、体检按时做，它比任何投资都讲信用。',
+      mid:  '平平安安到了六十岁，命却是四样本钱里最薄的一页。人总以为命是免费的本钱，用的时候不打招呼，还的时候不商量。往后最划算的一笔投资，是每天七千步和一顿好好吃的饭。',
+      bad:  '你几乎把身体当成了唯一取之不尽的东西，它也最先见了底。这一趟最贵的一课是：靠透支身体换来的一切，最后都要连本带息地还回去——而有些利息，还不清。',
+    },
+    time: {
+      good: '别的都好，只是时间一直不是你的。你替所有人赶路，唯独没替自己留过一段。到六十岁才看明白：时间不在于挤，在于认领——先想清楚日子是谁的，再谈怎么花。',
+      mid:  '时间在你这儿一直是紧的。它是最公平的一本账，人人每天二十四小时，区别只在记没记在自己名下。往后的日子，先把想做的事排进日历，再让别的事来挤——顺序反了，一辈子都是替别人过。',
+      bad:  '回过头看，你的时间大多花在了不值得的人和事上。时间没法攒，只能换。这笔账亏了就认——认了它，反而是往后最划算的一次止损。',
+    },
+    money: {
+      good: '你活得明白，只是手头一直不宽裕。好在钱这本账有个别的账没有的好处：它认积累。从留出第一笔亏得起的本钱起，复利就开始替你干活——六十岁开始，也不算晚。',
+      mid:  '钱这一页平平。它买不来你这一生最重要的东西，却决定你摔倒时有没有缓冲。往后少赌一点、多存一点，不是抠，是给自己垫一层「摔了也伤不到骨头」的软垫。',
+      bad:  '你被钱困了大半辈子——要么从没算过账，要么算了不该赌的账。钱最狠的地方是它会放大错：没钱的时候，错误的代价都要翻倍。翻篇只有一个办法：从今往后，只拿亏得起的钱去冒险。',
+    },
+    mind: {
+      good: '什么都还凑合，只是心里一直空着一块。心力和别的本钱不一样：它不是花完就没，而是越用越懂怎么省。把关系算明白、把大决定往后放三个月，心里空着的那块地，慢慢会长出东西来。',
+      mid:  '心力这本账，你记了一半。最难的时候你扛过来了，只是扛的方式太贵——全靠硬撑。往后把「停下来」也算进成本：很多坎其实绕得过去，不必每次都拿脑门去撞。',
+      bad:  '这一路你心里受的伤最重。可你还是骑到了六十岁——这件事本身就值一笔大账，它证明你比自己想的结实。心力见底的人不是坏了，是该充电了：先照顾好这盏灯，再谈照亮谁。',
+    },
+  };
+  function epilogueFor(st, tier, low) {
+    const band = (tier.grade === 'S' || tier.grade === 'A') ? 'good' : (tier.grade === 'B' ? 'mid' : 'bad');
+    const main = (EPILOGUES[low] || EPILOGUES.health)[band];
+    return main + '车到六十岁会停，账不会。这趟骑行真正留下的不是里程，是你从每一跤里捡起来的那几句道理。';
+  }
+
   function renderResult() {
     const st = state.stats;
     const total = STAT_KEYS.reduce((s, k) => s + st[k], 0);
@@ -4277,6 +4548,20 @@ const ICONS = [
     const tip = LOWEST_TIPS[low];
     $('tip-title').textContent = tip.title;
     $('tip-list').innerHTML = tip.tips.map(t => '<li>' + escapeHtml(t) + '</li>').join('');
+    // 六十岁的结语：无论结局好坏，都落在一条道理上
+    $('r-epi').innerHTML = '<b>六 十 岁 的 结 语</b>' + escapeHtml(epilogueFor(st, tier, low));
+    // 路上的行囊：这一程顺手捡起的道理
+    const taken = Object.keys(state.props).filter(k => state.props[k] > 0);
+    const propMeta = (window.Ride && Ride.getPropMeta) ? Ride.getPropMeta() : [];
+    if (taken.length) {
+      const chips = propMeta.filter(p => state.props[p.key])
+        .map(p => '<span class="rp-chip">' + p.ico + ' ' + escapeHtml(p.name) +
+                  '<i>×' + state.props[p.key] + '</i></span>').join('');
+      $('r-props').innerHTML = '<h3>路上的行囊 · ' + taken.reduce((s, k) => s + state.props[k], 0) + ' 件</h3>' +
+        '<div class="rp-grid">' + chips + '</div>';
+    } else {
+      $('r-props').innerHTML = '<h3>路上的行囊</h3><div class="rp-none">这一程你什么都没捡。路上飘着的小物件，每一件都带一条道理——下回骑慢一点，顺手接住。</div>';
+    }
     const rows = state.picks.slice().sort((a, b) => a.id - b.id);
     $('path-list').innerHTML = rows.map(p => {
       const c = CHAPTERS[p.id];
@@ -4321,7 +4606,7 @@ const ICONS = [
   };
   $('r-restart').onclick = () => {
     try { localStorage.removeItem(K); } catch (_) {}
-    state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 }, picks: [], done: [], stageSeen: [] };
+    state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 }, picks: [], done: [], stageSeen: [], props: {} };
     milestones.forEach(m => { m.done = false; m.supplied = false; });
     Ride.setDist(0);
     hideOverlay('life-result');
@@ -4341,7 +4626,7 @@ const ICONS = [
   };
   $('lhud-reset').onclick = () => {
     try { localStorage.removeItem(K); } catch (_) {}
-    state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 }, picks: [], done: [], stageSeen: [] };
+    state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 }, picks: [], done: [], stageSeen: [], props: {} };
     milestones.forEach(m => { m.done = false; m.supplied = false; });
     Ride.setDist(0);
     ['life-chapter', 'life-insight', 'life-stage', 'life-result', 'life-codex'].forEach(hideOverlay);
