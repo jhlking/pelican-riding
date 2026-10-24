@@ -2473,6 +2473,7 @@ const ICONS = [
     canFlip = false; airRot = 0; airTime = 0; airPeak = 0;
     forkId = -1; forkArmed = false; hardUntil = -1; nextFork = 0;
     if (forkSign) forkSign.style.opacity = "0";
+    cleanMark = dist;                        // 绕回后干净里程重新起算
   }
 
   // 远景剪影：城市楼群 / 雪山
@@ -2631,6 +2632,8 @@ const ICONS = [
       label += " +" + Math.round(gained);
       score += Math.round(gained);
       stuntScore += Math.round(gained);
+      gcount.stunt++;
+      if (spins >= 1) gcount.flip++;
       if (score > best) {
         best = score;
         try { localStorage.setItem("pelican-best", String(best)); } catch (_) {}
@@ -2649,6 +2652,7 @@ const ICONS = [
     bikeVY = -vy;
     tiltRate = -60;                 // 轻轻抬一下前轮（再大就会自己转翻）
     onGround = false;
+    gcount.jump++;
     // 按「跳」自己起的小跳不给翻转权限：按着蹬跳一下就自己转翻，太难玩了。
     // 想空翻请冲上木质跳台，或者用二段跳。
     canFlip = !!allowFlip;
@@ -2775,6 +2779,7 @@ const ICONS = [
     score += pts;
     fishTotal += t.gold ? 3 : 1;
     fishBank += t.gold ? 3 : 1;
+    gcount.fish += t.gold ? 3 : 1;
     try { localStorage.setItem("pelican-bank", String(fishBank)); } catch (_) {}
     bumpCombo();
     stamina = Math.min(staminaMax, stamina + (t.gold ? 34 : 13));   // 吃鱼回体力
@@ -2896,6 +2901,8 @@ const ICONS = [
   function catchProp(item, x, y) {
     const p = item.p;
     propTaken++;
+    gcount.prop++;
+    buzz(18);
     applyProp(p);
     showPropPop(p);
     tone("sine", 740, 1180, 0.18, 0.07);
@@ -3115,6 +3122,9 @@ const ICONS = [
     if (exhausted) setDeckNote("蹬不动了……松开「蹬」缓一缓，体力会自己回来。");
     else if (combo > 0) setDeckNote(`连击 ×${mul().toFixed(1)}！保持不摔，分数翻倍。`);
     else if (noteHoldT > 0) setDeckNote(noteHold);
+    else if (goals.length && goals[0])
+      setDeckNote("🎯 " + goals[0].desc + " · " + goalProg(goals[0]) + "/" + goals[0].target +
+        (goals[1] ? "　🎯 " + goals[1].desc + " · " + goalProg(goals[1]) + "/" + goals[1].target : ""));
     else if (window.__allDone)
       setDeckNote("该学的都学过了。现在这一段，纯粹是骑给你自己的。");
     else if (window.__nextStopPx && typeof window.__nextStopPx === "number")
@@ -3128,6 +3138,94 @@ const ICONS = [
   let stuckRef = 0, stuckT = 0;
   let dbgDrive = {}, dbgOnSand = false;   // 调试用：把驱动内部状态暴露出去
   let lastWind = 0;                       // 上一次的风向，用来判断「刚换风区」
+
+  // ===== 自动昼夜与天气：路走远了，天自己会黑，雨自己会来 =====
+  // 按里程分段（固定种子伪随机），同一段路每次来天气都一样，玩家能记住。
+  // 第一段强制晴朗白天——刚上手就要摸黑骑车太欺负人。
+  let weatherAuto = true, lastWeatherKey = "";
+  const WBAND = 4600;
+  function weatherAt(x) {
+    const band = Math.floor(Math.max(0, x) / WBAND);
+    if (band === 0) return { n: 0, r: 0 };
+    const r = hash01(band * 7.13 + 3.7);
+    if (r < 0.40) return { n: 0, r: 0 };   // 晴
+    if (r < 0.66) return { n: 1, r: 0 };   // 夜
+    if (r < 0.84) return { n: 0, r: 1 };   // 雨
+    return { n: 1, r: 1 };                 // 雨夜（最有记忆点的一段）
+  }
+  function applyAutoWeather() {
+    if (!weatherAuto || !running) return;
+    const w = weatherAt(dist + 450);
+    const key = w.n + "-" + w.r;
+    if (key === lastWeatherKey) return;
+    const prev = lastWeatherKey;
+    lastWeatherKey = key;
+    if (!prev) return;                     // 开局那次只记下，不宣布
+    nightTarget = w.n; rainTarget = w.r;
+    if (w.r) { ensureRainSound(); lightTimer = Math.min(lightTimer, 4); if (w.n) say("雨夜。路滑，慢一点"); else say("下雨了"); }
+    else if (w.n) say("天黑了，车灯亮着呢");
+    else say("天亮了，放晴了");
+    if (!w.r) lightTimer = 99;             // 晴天把雷电计时推远
+  }
+
+  // ===== 手机震动：摔一跤抖一下，捡到东西轻轻一下 =====
+  // iOS Safari 不支持 navigator.vibrate，自动跳过；安卓上有它手感立起来了。
+  function buzz(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (_) {}
+  }
+
+  // ===== 本程目标：给「随便骑骑」一个方向 =====
+  // 同时挂两个小目标，完成一个补上一个；完成奖 5 条鱼。
+  // 全部走事件计数，不碰物理，不影响任何现有机制。
+  let gcount = { jump: 0, prop: 0, fish: 0, flip: 0, stunt: 0, fail: 0 };
+  let cleanMark = 0;                      // 最近一次摔跤的位置（干净里程目标用）
+  const GOAL_POOL = [
+    { key: 'jump10',    desc: '跳 10 次',           target: 10,   prog: () => gcount.jump },
+    { key: 'prop2',     desc: '接住 2 件行囊',      target: 2,    prog: () => gcount.prop },
+    { key: 'fish8',     desc: '接 8 条鱼',          target: 8,    prog: () => gcount.fish },
+    { key: 'flip1',     desc: '来一次后空翻',       target: 1,    prog: () => gcount.flip },
+    { key: 'stunt3',    desc: '落地结算 3 次特技',  target: 3,    prog: () => gcount.stunt },
+    { key: 'clean1000', desc: '不摔连骑 1000 米',   target: 1000, prog: () => Math.floor(Math.max(0, dist - cleanMark) * 0.5) },
+  ];
+  let goals = [], goalsDoneCount = 0, goalsDoneKeys = [];
+  function goalProg(g) { return Math.min(g.target, Math.round(g.prog())); }
+  function dealGoal() {
+    // 本程内完成过的 key 不再发：计数器还停在超额值，重发会瞬间再「完成」，
+    // 无限循环把渲染器卡死（测试里抓到过）。
+    const left = GOAL_POOL.filter(p =>
+      !goals.some(g => g.key === p.key) && goalsDoneKeys.indexOf(p.key) < 0);
+    if (!left.length) return null;
+    return Object.assign({}, left[Math.floor(Math.random() * left.length)]);
+  }
+  function resetGoals() {
+    goals = [];
+    goalsDoneKeys = [];
+    for (let i = 0; i < 2; i++) { const g = dealGoal(); if (g) goals.push(g); }
+    goalsDoneCount = 0;
+    gcount = { jump: 0, prop: 0, fish: 0, flip: 0, stunt: 0, fail: 0 };
+    cleanMark = dist;
+  }
+  function checkGoals() {
+    for (let i = 0; i < goals.length; i++) {
+      const g = goals[i];
+      if (goalProg(g) < g.target) continue;
+      goals.splice(i, 1); i--;
+      goalsDoneCount++;
+      goalsDoneKeys.push(g.key);
+      fishBank += 5; saveBank(); showScore();
+      const next = dealGoal(); if (next) goals.push(next);
+      popStunt("🎯 " + g.desc + " · 鱼 +5");
+      tone("sine", 660, 990, 0.16, 0.07); tone("sine", 990, 1320, 0.2, 0.06, 0.1);
+      buzz([20, 60, 30]);
+      if (window.Ride && window.Ride.setNote) window.Ride.setNote("🎯 " + g.desc + " —— 达成。鱼 +5", 9);
+    }
+  }
+  // 摔跤的统一登记处：震动 + 干净里程重新起算
+  function registerFail() {
+    gcount.fail++;
+    cleanMark = dist;
+    buzz(45);
+  }
   // 加速带的余韵：光把速度加上去没用，drive() 每帧都会把速度夹回 1.45 倍上限，
   // 冲过去那一帧就被吃回去了。得连上限一起临时抬高，这段冲刺才真的存在。
   let boostT = 0;
@@ -3240,6 +3338,7 @@ const ICONS = [
         lightTimer -= dt;
         if (lightTimer <= 0) { strike(); lightTimer = 5 + Math.random() * 7; }
       }
+      applyAutoWeather();
       // 生成空中的鱼
       if (dist >= nextTreat) { spawnTreat(); nextTreat = dist + 420 + Math.random() * 520; }
       // 生成路上的行囊：比鱼稀得多，每件都值一句道理
@@ -3339,7 +3438,7 @@ const ICONS = [
               say("翻车啦！"); tone("square", 110, 60, 0.3, 0.14);
               burstDust(450, gyMid, 12, 1.5);
               breakCombo();
-              if (window.Ride && window.Ride.onFail) window.Ride.onFail("flip");
+              registerFail();
             }
           } else {
             // 平稳落地：结算这一跳的特技
@@ -3493,7 +3592,7 @@ const ICONS = [
             speed *= 0.3; shake = 1; stamina = Math.max(0, stamina - 12);
             say("太快了，石头把车绊翻了！"); tone("square", 120, 60, 0.3, 0.14);
             breakCombo();
-            if (window.Ride && window.Ride.onFail) window.Ride.onFail("rock");
+            registerFail();
           }
         } else {                                      // 碾过去：掉点速度，车身自己爬上去
           hitOb.hit = true;                           // 只结算一次，别在石头上连乘掉速
@@ -3566,7 +3665,7 @@ const ICONS = [
               say("被倒木绊翻了！"); tone("square", 120, 60, 0.3, 0.14);
               burstDust(450, gyMid, 12, 1.4);
               breakCombo();
-              if (window.Ride && window.Ride.onFail) window.Ride.onFail("log");
+              registerFail();
             }
           } else {                                    // 顶住：退回去，重新冲一次
             hitOb.miss++;
@@ -3672,6 +3771,7 @@ const ICONS = [
       speedLines.style.opacity = (sp * 0.85).toFixed(2);
       if (vigEl) vigEl.style.opacity = (sp * 0.9).toFixed(2);
       pedalBtn.classList.toggle("on", !!input.pedal && !exhausted);
+      checkGoals();
     }
 
     const wheel = dist / WHEEL_R;          // 车轮角度（弧度）
@@ -3701,6 +3801,7 @@ const ICONS = [
   }
   applyUpgrades();
   showScore();
+  resetGoals();
   requestAnimationFrame(frame);
 
   // ---------- 自适应取景 ----------
@@ -3775,6 +3876,7 @@ const ICONS = [
   // 昼夜切换
   const dn = $("dayNight");
   const toggleNight = () => {
+    weatherAuto = false;
     nightTarget = nightTarget ? 0 : 1;
     dn.textContent = nightTarget ? "切到白天" : "切到夜晚";
     dn.setAttribute("aria-pressed", String(!!nightTarget));
@@ -3847,6 +3949,7 @@ const ICONS = [
   // 雨天切换
   const rainBtn = $("rainBtn");
   const toggleRain = () => {
+    weatherAuto = false;
     rainTarget = rainTarget ? 0 : 1;
     rainBtn.textContent = rainTarget ? "放晴" : "下雨";
     rainBtn.setAttribute("aria-pressed", String(!!rainTarget));
@@ -3946,6 +4049,7 @@ const ICONS = [
     }
     tone("square", 200, 60, 0.5, 0.12);
     breakCombo();
+    if (!savedByShield) registerFail();
     stuckRef = dist; stuckT = 0;
     if (!savedByShield && window.Ride && window.Ride.onFail) window.Ride.onFail("cliff");
   }
@@ -4024,6 +4128,14 @@ const ICONS = [
     getEvent: () => lastEvent,
     clearEvent: () => { lastEvent = null; },
     getWind: () => windAt(dist + 450),
+    // ---- 本程目标 / 天气 ----
+    getGoals: () => goals.map(g => ({ key: g.key, desc: g.desc, target: g.target, prog: goalProg(g) })),
+    getCounters: () => Object.assign({}, gcount, { goalsDone: goalsDoneCount }),
+    resetGoals: resetGoals,
+    debugBump: (k, n) => { gcount[k] = (gcount[k] || 0) + (n || 1); },
+    debugSetClean: () => { cleanMark = dist; },
+    getWeather: () => ({ n: nightTarget, r: rainTarget, auto: weatherAuto, band: weatherAt(dist + 450) }),
+    debugSetWeatherAuto: f => { weatherAuto = !!f; },
     // ---- 路上的行囊 ----
     onProp: null,                          // 由人生系统注入：拾取记录进存档
     getPropMeta: () => PROPS.map(p => ({ key: p.key, name: p.name, ico: p.ico, line: p.line })),
@@ -4605,6 +4717,7 @@ const ICONS = [
     else { setOpen(false); Ride.resume(); }
   };
   $('r-restart').onclick = () => {
+    if (Ride.resetGoals) Ride.resetGoals();
     try { localStorage.removeItem(K); } catch (_) {}
     state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 }, picks: [], done: [], stageSeen: [], props: {} };
     milestones.forEach(m => { m.done = false; m.supplied = false; });
@@ -4625,6 +4738,7 @@ const ICONS = [
     if (codexWasRiding) Ride.resume();
   };
   $('lhud-reset').onclick = () => {
+    if (Ride.resetGoals) Ride.resetGoals();
     try { localStorage.removeItem(K); } catch (_) {}
     state = { origin: null, stats: { health: 60, time: 60, money: 60, mind: 60 }, picks: [], done: [], stageSeen: [], props: {} };
     milestones.forEach(m => { m.done = false; m.supplied = false; });
