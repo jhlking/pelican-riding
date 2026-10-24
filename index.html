@@ -2144,7 +2144,7 @@ const ICONS = [
     }
   }
   function updateDust(dt) {
-    dustAcc = !onGround ? 0 : dustAcc + dt * 16 * Math.abs(speed); // 腾空时不扬尘
+    dustAcc = !onGround ? 0 : dustAcc + dt * (perfLow ? 8 : 16) * Math.abs(speed); // 腾空时不扬尘
     while (dustAcc >= 1) {
       dustAcc -= 1;
       const p = dust.find(d => d.life <= 0);
@@ -2528,7 +2528,7 @@ const ICONS = [
 
   // 时代切换（颜色平滑过渡）
   const eraTintEl = $("eraTint");
-  let curEra = -1, tintOp = 0;
+  let curEra = -1, tintOp = 0, eraTintLast = "";
 
   // 人生阶段字幕
   const eraBanner = $("era-banner");
@@ -2705,7 +2705,7 @@ const ICONS = [
   terrainG.appendChild(cliffEdge);
 
   function drawTerrain(shift) {
-    const STEP = 14, PIT = 330;
+    const STEP = 17, PIT = 330;
     const pts = [];
     for (let sx = -30; sx <= 930; sx += STEP) {
       const g = groundY(shift + sx);
@@ -3016,13 +3016,14 @@ const ICONS = [
   }
 
   // ---------- 雨滴与水花 ----------
-  const drops = Array.from({ length: 110 }, () => {
+  const RAIN_N = (window.matchMedia && window.matchMedia("(max-width: 700px)").matches) ? 64 : 110;
+  const drops = Array.from({ length: RAIN_N }, () => {
     const l = document.createElementNS(NS, "line");
     $("rain").appendChild(l);
     return { el: l, x: Math.random() * 1100, y: Math.random() * 560, v: 650 + Math.random() * 250,
              len: 12 + Math.random() * 10, gy: 500 + Math.random() * 56 };
   });
-  const splashes = Array.from({ length: 24 }, () => {
+  const splashes = Array.from({ length: RAIN_N < 100 ? 14 : 24 }, () => {
     const e = document.createElementNS(NS, "ellipse");
     e.setAttribute("rx", 0); e.setAttribute("ry", 0);
     $("splashes").appendChild(e);
@@ -3292,10 +3293,30 @@ const ICONS = [
   }
 
 
+  // ---- 自适应性能档：中低端手机掉帧时自动减负，缓过来再升回 ----
+  let perfLow = false, perfAcc = 0, perfN = 0, perfGood = 0;
+  function perfWatch(dt) {
+    perfAcc += dt; perfN++;
+    if (perfN < 90) return;
+    const avg = perfAcc / perfN;
+    perfAcc = 0; perfN = 0;
+    if (!perfLow && avg > 0.024) {          // 平均帧时超 24ms（<42fps）：降档
+      perfLow = true; perfGood = 0;
+      drops.forEach((d, i) => { if (i % 2 === 1) d.el.style.display = "none"; });
+    } else if (perfLow && avg < 0.0175) {   // 稳定在 57fps 以上：升回
+      if (++perfGood >= 3) {
+        perfLow = false; perfGood = 0;
+        drops.forEach(d => { d.el.style.display = ""; });
+      }
+    } else {
+      perfGood = 0;
+    }
+  }
   function frame(now) {
     const dt = Math.min(now - last, 50) / 1000;
     last = now;
     time += dt;
+    perfWatch(dt);
     if (boostT > 0) boostT = Math.max(0, boostT - dt);
     if (charmT > 0) charmT = Math.max(0, charmT - dt);
     if (guardT > 0) guardT = Math.max(0, guardT - dt);
@@ -3365,7 +3386,8 @@ const ICONS = [
     }
     const wantOp = ERA_PAL[curEra].op;
     tintOp += (wantOp - tintOp) * Math.min(1, dt * 1.6);
-    eraTintEl.setAttribute("opacity", tintOp.toFixed(3));
+    const tintStr = tintOp.toFixed(3);
+    if (tintStr !== eraTintLast) { eraTintLast = tintStr; eraTintEl.setAttribute("opacity", tintStr); }
     backG.setAttribute("transform", `translate(${-((dist * 0.35) % 900).toFixed(1)} 0)`);
 
     // 障碍物的“坡包”：石头是圆顶、跳台是斜面，轮子压上去就被抬高
@@ -4137,6 +4159,7 @@ const ICONS = [
     debugBump: (k, n) => { gcount[k] = (gcount[k] || 0) + (n || 1); },
     debugSetClean: () => { cleanMark = dist; },
     getWeather: () => ({ n: nightTarget, r: rainTarget, auto: weatherAuto, band: weatherAt(dist + 450) }),
+    perfLow: () => perfLow,
     debugSetWeatherAuto: f => { weatherAuto = !!f; },
     // ---- 路上的行囊 ----
     onProp: null,                          // 由人生系统注入：拾取记录进存档
@@ -4780,7 +4803,13 @@ const ICONS = [
   load();
   milestones.forEach(m => { m.done = state.done.indexOf(m.id) >= 0; });
   updateHud();
-  Ride.onFrame = updateMilestones;
+  let msTick = 0;
+  const updateMilestonesThrottled = (d, dt) => {
+    // 站牌是背景路标，隔帧刷新完全看不出；低性能档再降到 1/3 帧
+    const skip = (Ride.perfLow && Ride.perfLow()) ? 3 : 2;
+    if ((++msTick % skip) === 0) updateMilestones(d, dt);
+  };
+  Ride.onFrame = updateMilestonesThrottled;
   if (state.origin && state.done.length >= CHAPTERS.length) {
     renderResult(); showOverlay('life-result'); setOpen(true);
   } else if (state.origin) {
