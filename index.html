@@ -432,20 +432,21 @@
   .rp-chip i { font-style: normal; opacity: .6; font-variant-numeric: tabular-nums; }
   .rp-none { font-size: .84rem; opacity: .75; line-height: 1.6; }
 
-  /* 道具飘字：和特技飘字错开，上面报道理，中间报收获 */
+  /* 道具飘字：只报「道具名 · 效果」一行，钉在画面最顶上的天空区。
+     那条道理不在这里占路面——它会落到驾驶舱的提示行里停 12 秒。 */
   #prop-pop {
-    position: absolute; left: 50%; top: 14%; transform: translateX(-50%);
+    position: absolute; left: 50%; top: 10px; transform: translateX(-50%);
     z-index: 5; pointer-events: none; text-align: center; opacity: 0;
-    background: rgba(47,93,80,.93); color: #fff; border-radius: 12px;
-    padding: 8px 16px; max-width: 86%; box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    background: rgba(47,93,80,.88); color: #fff; border-radius: 999px;
+    padding: 5px 14px; max-width: 88%; box-shadow: 0 6px 18px rgba(0,0,0,.22);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  #prop-pop .pp-name { font-size: .95rem; font-weight: 800; letter-spacing: .04em; }
-  #prop-pop .pp-line { font-size: .78rem; line-height: 1.5; opacity: .92; margin-top: 2px; }
-  #prop-pop.on { animation: propPop 3.2s ease forwards; }
+  #prop-pop .pp-name { font-size: .8rem; font-weight: 700; letter-spacing: .02em; }
+  #prop-pop.on { animation: propPop 2.4s ease forwards; }
   @keyframes propPop {
-    0% { opacity: 0; transform: translate(-50%, -10px); }
-    8% { opacity: 1; transform: translate(-50%, 0); }
-    82% { opacity: 1; transform: translate(-50%, 0); }
+    0% { opacity: 0; transform: translate(-50%, -8px); }
+    10% { opacity: 1; transform: translate(-50%, 0); }
+    80% { opacity: 1; transform: translate(-50%, 0); }
     100% { opacity: 0; transform: translate(-50%, 0); }
   }
 
@@ -556,6 +557,8 @@
     .origin-item .oi-stats { gap: 5px; margin-top: 5px; font-size: .7rem; }
     .lc-title { font-size: 1.18rem; }
     #stunt-pop { font-size: 1.15rem; top: 30%; }
+    #prop-pop { top: 4px; padding: 4px 11px; max-width: 92%; }
+    #prop-pop .pp-name { font-size: .72rem; }
   }
 
   /* ===== 矮屏手机（640 / 667 高的老机型）：整体缩一档，别把驾驶舱顶出屏幕 ===== */
@@ -1098,7 +1101,7 @@
 <div id="speedlines"></div>
 <div id="vignette"></div>
 <div id="stunt-pop"></div>
-<div id="prop-pop"><div class="pp-name" id="pp-name"></div><div class="pp-line" id="pp-line"></div></div>
+<div id="prop-pop"><div class="pp-name" id="pp-name"></div></div>
 <div id="era-banner"><b></b><span></span></div>
 <div id="drive-tip">按住「蹬」前进 · 倒木和断崖按「跳」，腾空时还能再按一次补力 · 路上飘着的小物件每件都带一条道理，顺手接住</div>
 <div id="drive-hud">
@@ -2891,12 +2894,11 @@ const ICONS = [
   function showPropPop(p) {
     if (!propPopEl) return;
     document.getElementById("pp-name").textContent = p.ico + " " + p.name + " · " + p.fx;
-    document.getElementById("pp-line").textContent = p.line;
     propPopEl.classList.remove("on");
     void propPopEl.offsetWidth;
     propPopEl.classList.add("on");
     clearTimeout(propPopT);
-    propPopT = setTimeout(() => propPopEl.classList.remove("on"), 3200);
+    propPopT = setTimeout(() => propPopEl.classList.remove("on"), 2400);
   }
   function catchProp(item, x, y) {
     const p = item.p;
