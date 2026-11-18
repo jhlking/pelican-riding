@@ -8,6 +8,21 @@
 内容改编自《高性价比人生指南》全书 34 节 · 765 条（每条附证据等级与文献）：
 <https://cdyforever.github.io/how-to-live-better/>
 
+**English Overview**
+
+A pelican, a bicycle, and a ride from age 18 to 60 — every bump and fall teaches a lesson about life. This is a single-file HTML game that wraps life lessons in a mountain-bike climbing simulation. You manage four resources (life, time, money, and energy) as you ride through 14 life milestones, collect 8 item-based lessons, upgrade your bike, and reach a reflective ending. It is a zero-dependency, mobile-first web game built with vanilla JavaScript and hand-drawn SVG.
+
+## 技术栈 · Tech Stack
+
+| 技术 Technology | 用途 Purpose |
+| --- | --- |
+| HTML5 (single file) | 单文件游戏载体 Single-file game container |
+| Vanilla JavaScript | 游戏逻辑与渲染 Game logic & rendering |
+| SVG | 手绘角色与场景 Hand-drawn graphics |
+| CSS | 竖屏布局与动画 Portrait layout & animation |
+| Web Audio API | 音效（外部库无关）Sound effects |
+| Chrome DevTools Protocol | 本地自动化测试 Local automated QA (Python) |
+
 ---
 
 ## 这是个什么游戏
